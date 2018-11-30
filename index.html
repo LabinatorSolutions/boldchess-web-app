@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="styles.css"/>
+    <link rel="icon" type="image/png" sizes="32x32" href="icon-32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="icon-96.png">
+    <title>PeshkaChess - Chess Analysis Tool</title>
+    <script>
+        var _mobile = false;
+        if(navigator.userAgent.match(/Android/i) || navigator.userAgent.match(/webOS/i) || navigator.userAgent.match(/iPhone/i) || navigator.userAgent.match(/iPad/i) || navigator.userAgent.match(/iPod/i) || navigator.userAgent.match(/BlackBerry/i) || navigator.userAgent.match(/Windows Phone/i) || window.location.href.match(/([?&]mobile=1(&|#|$))/i))
+        {
+          if (!window.location.href.match(/([?&]mobile=0(&|#|$))/i)) {
+            document.write('<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, maximum-scale=1"/>');
+           _mobile = true;
+          }
+        }
+    </script>
+</head>
+<body>
+<div id="fen" style="display:none;">rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1</div>
+<div id="container">
+<div class="col left" id="colLeft">
+
+<div id="logo">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="64" height="64"><defs><linearGradient id="grd1" gradientUnits="userSpaceOnUse"  x1="-230.4" y1="256" x2="281.6" y2="256"><stop offset="0" stop-color="#609fb1"  /><stop offset="1" stop-color="#bce8e9"  /></linearGradient><linearGradient id="grd2" gradientUnits="userSpaceOnUse"  x1="-486.4" y1="384" x2="537.6" y2="384"><stop offset="0" stop-color="#bce8e9"  /><stop offset="1" stop-color="#609fb1"  /></linearGradient></defs><style>tspan { white-space:pre }.shp0 { fill: url(#grd1) } .shp1 { fill: url(#grd2) } .shp2 { fill: #ffffff } .shp3 { fill: #000000;stroke: #000000;stroke-linecap:round;stroke-width: 21.9 } </style><path class="shp0" d="M512,256c0,-141.57 -114.43,-256 -256,-256c-141.57,0 -256,114.43 -256,256c0,141.57 114.43,256 256,256c141.57,0 256,-114.43 256,-256z" /><path class="shp1" d="M512,256h-512c0,141.57 114.43,256 256,256c141.57,0 256,-114.43 256,-256z" /><path class="shp2" d="M463.25,256c0,-114.61 -92.64,-207.25 -207.25,-207.25c-114.61,0 -207.25,92.64 -207.25,207.25c0,114.61 92.64,207.25 207.25,207.25c114.61,0 207.25,-92.64 207.25,-207.25z" /><path class="shp3" d="M257,55.83c-33.05,0 -59.83,26.77 -59.83,59.83c0,13.31 4.34,25.58 11.67,35.6c-29.17,16.75 -49.06,48.01 -49.06,84.06c0,30.36 14.06,57.43 36.05,75.23c-44.87,15.85 -110.83,83.01 -110.83,201.46h344c0,-118.46 -65.96,-185.61 -110.83,-201.46c21.99,-17.8 36.05,-44.87 36.05,-75.23c0,-36.05 -19.89,-67.3 -49.06,-84.06c7.33,-10.02 11.67,-22.29 11.67,-35.6c0,-33.05 -26.77,-59.83 -59.83,-59.83z" /></svg>
+    <div id="logotextmain">PeshkaChess</div>
+    <div id="logotextsub">Simple On-line Chess Analysis Tool</div>
+    <div id="logotextsub2">“Just enjoy chess!”<br/>― Tihon Chernyaev</div>
+    <div id="toolbar" class="toolbar">
+        <div id="buttonBack" class="off" title="Go back"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path d="M15 7H3.414l4.293-4.293a1 1 0 0 0-1.414-1.414l-6 6a1 1 0 0 0 0 1.414l6 6a1 1 0 0 0 1.414-1.414L3.414 9H15a1 1 0 0 0 0-2z"/></svg></div>
+        <div id="buttonForward" class="off" title="Go forward"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path d="M15.707 7.293l-6-6a1 1 0 0 0-1.414 1.414L12.586 7H1a1 1 0 0 0 0 2h11.586l-4.293 4.293a1 1 0 1 0 1.414 1.414l6-6a1 1 0 0 0 0-1.414z"/></svg></div>
+        <div id="buttonRevert" class="off" title="Revert changes"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="16" height="16"><path d="M431.85,79.13l-433.36,433.37l433.37,431.64v-273.34c463.64,-39.79 591.66,197.22 591.66,197.22c0,0 0,-431.63 -591.66,-512.94z" /></svg></div>
+        <div id="buttonMenu" class="on" title="Menu"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path d="M0,3c0,-0.55 0.45,-1 1,-1h14c0.55,0 1,0.45 1,1c0,0.55 -0.45,1 -1,1h-14c-0.55,0 -1,-0.45 -1,-1zM0,8c0,-0.55 0.45,-1 1,-1h14c0.55,0 1,0.45 1,1c0,0.55 -0.45,1 -1,1h-14c-0.55,0 -1,-0.45 -1,-1zM15,12c0.55,0 1,0.45 1,1c0,0.55 -0.45,1 -1,1h-14c-0.55,0 -1,-0.45 -1,-1c0,-0.55 0.45,-1 1,-1z" /></svg></div>
+    </div>
+</div>
+<div id="wb"></div>
+
+
+<div class="box" style="height:437px;min-width: 108px;min-height: 161px" id="wChessboard">
+    <div id="positionInfo" class="boxTop"></div>
+    <div id="searchWrapper" class="boxMid">
+        <form id="simpleSearch">
+            <input name="search" placeholder="Enter FEN, PGN or command" id="searchInput" type="search">
+            <div id="buttonGo" title="Load FEN, PGN or command" style="display:none;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path d="M15.707 7.293l-6-6a1 1 0 0 0-1.414 1.414L12.586 7H1a1 1 0 0 0 0 2h11.586l-4.293 4.293a1 1 0 1 0 1.414 1.414l6-6a1 1 0 0 0 0-1.414z" opacity="0.6"/></svg></div>
+        </form>
+    </div>
+    <div id="boxBoardOuter"><div id="boxBoard">
+    <div id="boardWrapper">
+
+        <div id="arrowWrapper1"><svg height="100%" width="100%"><defs><marker id="markerArrow1" markerWidth="13" markerHeight="13" orient="auto" refX="3" refY="3"><path d="M1,1 L1,5 L4,3 Z" style="fill: #000000;"></path></marker></defs><line style="stroke:#000000;stroke-width:6;marker-end:url(#markerArrow1);" y2="0" y1="0" x1="0" x2="0"></line></svg></div>
+        <div id="arrowWrapper2"><svg height="100%" width="100%"><defs><marker id="markerArrow2" markerWidth="13" markerHeight="13" orient="auto" refX="3" refY="3"><path d="M1,1 L1,5 L4,3 Z"></path></marker></defs><line style="stroke-width:6;marker-end:url(#markerArrow2);" y2="0" y1="0" x1="0" x2="0"></line></svg></div>
+        <div id="arrowWrapper3"><svg height="100%" width="100%"><defs><marker id="markerArrow3" markerWidth="13" markerHeight="13" orient="auto" refX="3" refY="3"><path d="M1,1 L1,5 L4,3 Z"></path></marker></defs><line style="stroke-width:5;marker-end:url(#markerArrow3);" y2="0" y1="0" x1="0" x2="0"></line></svg></div>
+
+        <table id="cbTable"><tbody>
+            <tr><td></td><td>a</td><td>b</td><td>c</td><td>d</td><td>e</td><td>f</td><td>g</td><td>h</td><td><div id="buttonStm" class="white" title="Change side to move"><div></div></div></td></tr>
+            <tr><td>8</td><td colspan="8" rowspan="8" class="cbCell"><div id="chessboard1" class="cb"></div></td><td>8</td></tr>
+            <tr><td>7</td><td>7</td></tr><tr><td>6</td><td>6</td></tr><tr><td>5</td><td>5</td></tr><tr><td>4</td><td>4</td></tr>
+            <tr><td>3</td><td>3</td></tr><tr><td>2</td><td>2</td></tr><tr><td>1</td><td>1</td></tr>
+            <tr><td></td><td>a</td><td>b</td><td>c</td><td>d</td><td>e</td><td>f</td><td>g</td><td>h</td><td><div id="buttonFlip" title="Flip board"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 443 443" width="16" height="16" fill="currentColor"><path d="M254.56,118.55v205.9l68.77,-27.17c2.31,-0.9 4.93,-0.16 6.43,1.81c0.73,0.99 1.11,2.16 1.11,3.32c0,1.17 -0.38,2.36 -1.14,3.36l-103.85,135.08c-1.05,1.35 -2.66,2.15 -4.37,2.15c-1.71,0 -3.33,-0.8 -4.38,-2.15l-103.84,-135.08c-1.53,-1.97 -1.53,-4.69 -0.04,-6.69c1.49,-1.96 4.11,-2.7 6.42,-1.8l68.77,27.16v-205.89l-68.76,27.16c-2.31,0.9 -4.93,0.16 -6.43,-1.8c-0.74,-0.99 -1.11,-2.17 -1.11,-3.32c0,-1.17 0.38,-2.36 1.14,-3.36l103.85,-135.08c1.05,-1.35 2.66,-2.15 4.37,-2.15c1.71,0 3.33,0.8 4.38,2.15l103.83,135.08c1.52,1.97 1.54,4.69 0.04,6.68c-1.48,1.97 -4.11,2.7 -6.42,1.8z" /></svg></div></td></tr>
+        </tbody></table>
+    </div>
+    <div id="materialWrapper"></div>
+    <div id="namesWrapperTop"></div>
+    <div id="namesWrapperBottom"></div>
+    </div></div>
+</div>
+
+</div>
+<div class="col right" id="colRight">
+
+<div class="box" style="height:205px;min-height:79px;" id="wMoves">
+    <div id="movesInfo" class="boxTop"></div>
+    <div id="movesHeader"><div class="san">Move</div><div class="eval">Evaluation</div><div class="reply">Reply</div><div class="depth">Depth</div></div>
+    <div id="moves" class="boxMid"></div>
+</div>
+
+<div class="box" style="height:146px;" id="wHistory">
+    <div class="boxTop">History of moves</div>
+    <div class="boxMid" id="history"></div>
+</div>
+
+<div class="box" style="height:155px;background-color: #697686;" id="wGraph">
+    <div class="boxTop">Evaluation graph</div>
+    <div id="graphWrapper" class="boxGraph"><canvas id="graph">Your browser does not support the HTML5 canvas tag.</canvas></div>
+</div>
+
+<div class="box" style="height:115px;min-height:79px;display:none;" id="wOpening">
+    <div class="boxTop">Opening</div>
+    <div id="openingHeader"><div class="name">ECO code / Name</div><div class="score">Score</div><div class="popularity">Popularity</div><div class="moves">Moves</div></div>
+    <div id="opening" class="boxMid"></div>
+</div>
+
+<div class="box" style="height:115px;min-height:79px;display:none;" id="wStatic">
+    <div id="staticInfo" class="boxTop">Static evaluation</div>
+    <div id="staticHeader"><div class="group">Group</div><div class="name">Evaluation term</div><div class="eval">Value</div></div>
+    <div id="static" class="boxMid"></div>
+</div>
+
+<div class="box" style="height:122px;min-height:122px;min-width:298px;display:none;" id="wEdit">
+    <div class="boxTop">Edit tools</div>
+    <div id="editWrapperOuter" class="boxMid"><div id="editWrapper">
+        <div class="cb">
+        <div style="left: 0px; top: 0px;" class="l S"></div>
+        <div style="left: 40px; top: 0px;" class="d p"></div>
+        <div style="left: 80px; top: 0px;" class="l n"></div>
+        <div style="left: 120px; top: 0px;" class="d b"></div>
+        <div style="left: 160px; top: 0px;" class="l r"></div>
+        <div style="left: 200px; top: 0px;" class="d q"></div>
+        <div style="left: 240px; top: 0px;" class="l k"></div>
+        <div style="left: 0px; top: 40px;" class="d -"></div>
+        <div style="left: 40px; top: 40px;" class="l P"></div>
+        <div style="left: 80px; top: 40px;" class="d N"></div>
+        <div style="left: 120px; top: 40px;" class="l B"></div>
+        <div style="left: 160px; top: 40px;" class="d R"></div>
+        <div style="left: 200px; top: 40px;" class="l Q"></div>
+        <div style="left: 240px; top: 40px;" class="d K"></div>
+        </div>
+    </div></div>
+</div>
+
+
+    <div id="menu" style="display:none;"></div>
+</div>
+
+</div>
+<div id="tooltip" style="display:none;"></div>
+<div id="dragPiece" class="cb"></div>
+<script src="scripts.js"></script>
+</body>
+</html>
