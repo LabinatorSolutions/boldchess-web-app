@@ -1,6 +1,6 @@
 # PeshkaChess
 
-**Simple on-line chess analysis tool
+Simple on-line chess analysis tool
 
 ## What it does ##
 
