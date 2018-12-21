@@ -1203,8 +1203,8 @@ function showEvals() {
     var node3 = document.createElement("SPAN");
     node3.className = "eval";
     var node6 = document.createElement("SPAN");
-    node6.className = "reply";
-    node6.appendChild(document.createTextNode(_curmoves[i].answersan||"?"));
+    node6.className = "pv";
+    node6.appendChild(document.createTextNode(_curmoves[i].pvtext||"?"));
     var node7 = document.createElement("SPAN");
     node7.className = "depth";
     node7.appendChild(document.createTextNode(_curmoves[i].depth|"?"));
@@ -2075,7 +2075,7 @@ function loadEngine() {
         engine.score = score;
         if (matches.length > 5) {
           var pv = matches[5].split(" ");
-          if (info != null && depth > 10 && engine.fen == fen) info(depth, score, pv[0]);
+          if (info != null && engine.fen == fen) info(depth, score, pv);
         }
       }
       if (str.indexOf("bestmove") >= 0 || str.indexOf("mate 0") >= 0 || str == "info depth 0 score cp 0") {
@@ -2112,6 +2112,7 @@ function evalNext() {
       if (!_engine.waiting) return;
       _engine.waiting = false;
       var initialdepth = _engine.depth;
+      var savedpv = [];
       _engine.eval(curpos, function done(str) {
         _engine.waiting = true;
         if (i >= _curmoves.length || _curmoves[i].fen != curpos) return;
@@ -2119,12 +2120,27 @@ function evalNext() {
           _curmoves[i].eval = _curmoves[i].w ? _engine.score : -_engine.score;
           _curmoves[i].depth = _engine.depth;
           var m = str.match(/^bestmove\s(\S+)(?:\sponder\s(\S+))?/);
-          _curmoves[i].answer = (m && m.length > 1 && (m[1].length == 4 || m[1].length == 5)) ? m[1] : null;
-          var nextpos = parseFEN(curpos);
-          _curmoves[i].answersan = _curmoves[i].answer == null ? "-" : sanMove(nextpos, parseBestMove(_curmoves[i].answer), genMoves(nextpos));
+          _curmoves[i].answer = (m && m.length > 1 && m[1] != null && (m[1].length == 4 || m[1].length == 5)) ? m[1] : null;
+          var pvtext = "";
+          if (_curmoves[i].answer != null) {
+            if (savedpv.length < 1 || savedpv[0] != m[1]) savedpv = [m[1]];
+            if (m.length > 2 && m[2] != null && m[2].length != 4 && m[2].length != 5) {
+              if (savedpv.length < 2 || savedpv[1] != m[2]) savedpv = [m[1],m[2]];
+            }
+            var nextpos = parseFEN(curpos);
+            for (var j = 0; j < savedpv.length; j++) {
+              if (pvtext.length > 0) pvtext += " ";
+              var move = parseBestMove(savedpv[j]);
+              pvtext += sanMove(nextpos, move, genMoves(nextpos));
+              if (j + 1 < savedpv.length) nextpos = doMove(nextpos,move.from,move.to,move.p);
+            }
+          }
+          _curmoves[i].pvtext = pvtext.length > 0 ? pvtext : "-";
           showEvals();
         }
         if (!_engine.kill) evalNext();
+      }, function info(depth, score, pv) {
+        savedpv = pv;
       });
       return;
     }
@@ -2214,10 +2230,10 @@ function evalAll() {
       if (_history[_historyindex][0] == fen) addHistoryEval(_historyindex, _engine.score, _engine.depth - 1, parseBestMove(matches[1]));
     }
     if (!_engine.kill) evalNext();
-  }, function info(depth, score, pv0) {
-    if (fen != getCurFEN()) return;
-    applyEval(pv0, score, depth - 1);
-    if (_history[_historyindex][0] == fen) addHistoryEval(_historyindex, score, depth - 1, parseBestMove(pv0));
+  }, function info(depth, score, pv) {
+    if (fen != getCurFEN() || depth <= 10) return;
+    applyEval(pv[0], score, depth - 1);
+    if (_history[_historyindex][0] == fen) addHistoryEval(_historyindex, score, depth - 1, parseBestMove(pv[0]));
   });
 }
 
