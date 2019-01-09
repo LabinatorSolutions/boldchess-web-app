@@ -3205,8 +3205,8 @@ function lczeroEvaluate() {
       if (aa1[3] != aa2[3]) return false;
       return true;
     }
-    if (index >=0) {
-      var a1 = _history[index][0];
+    if (index >= 0) {
+      var a1 = index > _historyindex ? fen : _history[index][0];
       for (var j = index - 2; j >= 0; j-=2) {
         var a2 = _history[j][0];
         if (samepos(a1, a2)) rep = 1;
@@ -3275,8 +3275,8 @@ function lczeroEvaluate() {
       if (y1 == 8) break;
     }
     if (y1 == 8) {
-      if (pp == 'Q') pp == 'R'; else if (pp == 'R') pp == 'B'; else if (pp == 'B') {
-        pp == 'Q';
+      if (pp == 'Q') pp = 'R'; else if (pp == 'R') pp = 'B'; else if (pp == 'B') {
+        pp = 'Q';
         pxd++;
         if (pxd > 1) { pxd = -1; px1++; }
       }
@@ -3287,7 +3287,7 @@ function lczeroEvaluate() {
        if (!castling &&
             ((move.from.x == x1 && move.from.y == (pos.w?7-y1:y1) && move.to.x == x2 && move.to.y == (pos.w?7-y2:y2) && (move.p == null || move.p == 'N'))
              ||
-             (y1 == 8 && move.p == pp && move.from.x == px1 && move.to.x == px1+pxd && move.from.y == (pos.w?6:1) && move.to.y == (pos.w?7:0)))
+             (y1 == 8 && move.p == pp && move.from.x == px1 && move.to.x == px1+pxd && move.from.y == (pos.w?1:6) && move.to.y == (pos.w?0:7)))
          || castling &&
             (move.from.x == x1 && move.from.y == (pos.w?7-y1:y1) && (move.to.x > 3 ? 7 : 0) == x2 && move.to.y == (pos.w?7-y2:y2))
           )
