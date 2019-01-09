@@ -23,6 +23,7 @@ Features:
 * Paint arrows or mark squares on chessboard
 * Look at static evaluation terms by Stockfish and visualise relevant squares
 * Support for touch devices/phones/tablets
+* Look at lczero neural network evaluation
 
 ## How to use ##
 
@@ -44,6 +45,9 @@ Source code is available here:
 - <a href="https://github.com/exoticorn/stockfish-js">exoticorn</a>
 - <a href="https://github.com/nmrugg/stockfish.js">nmrugg</a>
 - <a href="https://github.com/niklasf/stockfish.js">niklasf</a>
+- <a href="https://github.com/LeelaChessZero">The LCZero Authors</a>
+- <a href="https://github.com/frpays/lc0-js">frpays</a>
+- <a href="https://js.tensorflow.org/">tensorflowjs</a>
 
 ### License
 

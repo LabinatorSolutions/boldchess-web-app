@@ -6,6 +6,7 @@ var _arrow = false, _menu = false;
 var _dragElement = null, _dragActive = false, _startX, _startY, _dragCtrl, _dragLMB, _clickFrom, _clickFromElem;
 var _tooltipState = false, _wantUpdateInfo = true;;
 var _wname = "White", _bname = "Black", _color = 0, _bodyScale = 1;
+var _nncache = null;
 
 function setElemText(elem, value) {
   while(elem.firstChild) elem.removeChild(elem.firstChild);
@@ -481,6 +482,7 @@ function command(text) {
     _history = [[getCurFEN()]]; _historyindex = 0;
     historyKeep(); 
     _history2 = null;
+    if (_nncache != null) _nncache.clear();
   } else if (text.toLowerCase() == "clear") {
     setCurFEN("8/8/8/8/8/8/8/8 w - - 0 0");
     showBoard();
@@ -863,9 +865,15 @@ function showBoard(noeval, refreshhistory, keepcontent) {
   repaintGraph();
   repaintSidebars();
   updateInfo();
+  repaintStatic();
+  repaintLczero();
   updateTooltip("");
 }
 
+function findMoveIndexBySan(san) {
+  for (var i = 0; i < _curmoves.length; i++) if (san == _curmoves[i].san) return i;
+  return null;
+}
 function highlightMove(index, state) {
   setArrow(!state);
   if (_dragElement != null) return;
@@ -1042,8 +1050,15 @@ function updateInfo() {
     }
     elem.appendChild(node1);
   }
+}
+
+function repaintStatic() {
+  if (document.getElementById("wStatic").style.display == "none") return;
+
+  var curfen = getCurFEN();
+  var pos = parseFEN(curfen);
+
   // Static evaluation window
-  
   window.setTimeout(function() {
     if (getCurFEN() != curfen) return;
     elem = document.getElementById("static");
@@ -1163,7 +1178,106 @@ function updateInfo() {
     }
     setElemText(document.getElementById('staticInfo'), "Static evaluation (" + (total / evalUnit).toFixed(2)+ ")");
   }, 50);
+}
+
+function repaintLczero() {
+  if (document.getElementById("wLczero").style.display == "none") return;
+
+  var curfen = getCurFEN();
   
+  // Lczero window
+  window.setTimeout(function() {
+    if (getCurFEN() != curfen) return;
+    if (network != null && network.model == null) { window.setTimeout(repaintLczero, 1000); return; }
+    elem = document.getElementById("lczero");
+    while (elem.firstChild) elem.removeChild(elem.firstChild);
+    if (network == null) {
+   
+      var showwait = function() {
+        var elem = document.getElementById("lczero");
+        while (elem.firstChild) elem.removeChild(elem.firstChild);
+        var node0 = document.createElement("DIV");
+        setElemText(node0, "Please wait...");
+        node0.className = "wait";
+        elem.appendChild(node0);
+      }
+      var node0 = document.createElement("DIV");
+      setElemText(node0, "Load weights 32195");
+      node0.className = "loadButton";
+      node0.onclick = function() { showwait(); load_network("weights_32195.dat.gz", null, repaintLczero); }
+
+      var node2 = document.createElement("INPUT");
+      node2.type = "file"
+      node2.style.display = "none";
+      node2.onchange = function(e) { showwait(); load_network(e.target.files[0].name, e.target.files[0], repaintLczero); }
+
+      var node1 = document.createElement("DIV");
+      setElemText(node1, "Load custom...");
+      node1.className = "loadButton";
+      node1.onclick = function() { node2.click(); }
+      
+      elem.appendChild(node2);
+      elem.appendChild(node0);
+      elem.appendChild(node1);
+
+    } else {
+      var result = lczeroEvaluate();
+      if (result != null) {
+        var moveslist = result[0];
+        var value = 290.680623072 * Math.tan(1.548090806 * result[1]);
+        var nodeParent = document.createElement("DIV");
+        if (moveslist.length > 0) moveslist.sort(function(a,b) { return a.policy==b.policy  ? 0 : a.policy<b.policy ? 1 : -1; });
+        var policytotal = 0, policypart = 0;
+        for (var i=0; i<moveslist.length;i++) policytotal+=moveslist[i].policy;
+        for (var i=0; i<moveslist.length;i++) {
+          var ci = -1;
+          for (var j=0; j<_curmoves.length;j++) {
+            if (_curmoves[j].move.from.x == moveslist[i].from.x &&
+                _curmoves[j].move.from.y == moveslist[i].from.y &&
+                _curmoves[j].move.to.x == moveslist[i].to.x &&
+                _curmoves[j].move.to.y == moveslist[i].to.y &&
+                _curmoves[j].move.p == moveslist[i].p) ci = j;
+          }
+          if (ci < 0) continue;
+          var node1 = document.createElement("DIV"); node1.className = "line";
+          var node0 = document.createElement("SPAN"); node0.className = "circle " + (policypart/policytotal<0.8?"ok":policypart/policytotal<0.95?"mi":"bl");
+          policypart+=moveslist[i].policy          
+          var node2 = document.createElement("SPAN"); node2.className = "san"; node2.appendChild(document.createTextNode(_curmoves[ci].san));
+          var node7 = document.createElement("SPAN"); node7.className = "policy"; node7.appendChild(document.createTextNode(((100 * moveslist[i].policy / policytotal).toFixed(2))+"%"));
+          var node3 = document.createElement("SPAN"); node3.className = "eval";
+          var text = (value / 100).toFixed(2);
+          if (text.indexOf(".") >= 0) {
+            var node4 = document.createElement("SPAN");
+            node4.className = "numleft";
+            node4.appendChild(document.createTextNode(text.substring(0,text.indexOf(".")+1)));
+            var node5 = document.createElement("SPAN");
+            node5.className = "numright";
+            node5.appendChild(document.createTextNode(text.substring(text.indexOf(".")+1)));
+            node3.appendChild(node4);
+            node3.appendChild(node5);
+          } else {
+            node3.appendChild(document.createTextNode(text));
+          }
+          node1.appendChild(node0);
+          node1.appendChild(node2);
+          node1.appendChild(node7);
+          node1.appendChild(node3);
+          node1.san = _curmoves[ci].san;
+          node1.index = ci;
+          node1.onmouseover = function() { this.index=findMoveIndexBySan(this.san); if (this.index!=null) highlightMove(this.index, true); };
+          node1.onmouseout = function() { if (this.index!=null) highlightMove(this.index, false); };
+          node1.onmousedown = function(e) { this.index=findMoveIndexBySan(this.san); if (_menu) showHideMenu(false); if (this.index!=null) doMoveHandler(_curmoves[this.index].move); };
+          if (_historyindex + 1 < _history.length &&  _history[_historyindex + 1].length > 3 && _history[_historyindex + 1][3] == _curmoves[ci].san) node1.style.color = "#64c4db"
+          nodeParent.appendChild(node1);
+        }
+        elem.appendChild(nodeParent);
+      } else {
+        var node0 = document.createElement("DIV");
+        setElemText(node0, "Error");
+        elem.appendChild(node0);
+      }
+    }
+  }, 50);
 
 }
 function getCircleClassName(i) {
@@ -2034,12 +2148,16 @@ function onKeyDown(e) {
   else if (c == 'R') showBoard(false, true);
   else if (k == 27) command("revert");
   else if (c == 'F') command("flip");
-  else if (c == 'S') command("sidetomove");
-  else if (c == 'E') showHideWindow("Edit");
+  else if (c == 'T') command("sidetomove");
+  else if (c == 'C') showHideWindow("Chessboard");
+  else if (c == 'M') showHideWindow("Moves");
   else if (c == 'H') showHideWindow("History");
   else if (c == 'G') showHideWindow("Graph");
-  else if (c == 'M') showHideWindow("Moves");
-  else if (c == 'C') showHideWindow("Chessboard");
+  else if (c == 'O') showHideWindow("Opening");
+  else if (c == 'S') showHideWindow("Static");
+  else if (c == 'L') showHideWindow("Lczero");
+  else if (c == 'E') showHideWindow("Edit");
+  
 }
 
 // Evaluation engine
@@ -2369,14 +2487,14 @@ function setupMobileLayout(init) {
   document.body.style.overflowX = "hidden";
   document.getElementById('container').style.width = width + "px";
   document.getElementById('container').style.height = height + "px";
-  
+
   document.getElementById('logo').style.position = horiz ? "absolute" : "";
   document.getElementById('logo').style.top = horiz ? "0" : "";
   document.getElementById('logo').style.left = horiz ? "355px": "";
   document.getElementById('wChessboard').style.width = horiz ? "310px" : "";
   document.getElementById('wChessboard').style.height = (horiz ? height-16 : 300) + "px";
-  document.getElementById('wb').style.top = horiz ? "35px" : "329px";
-  document.getElementById('wb').style.right = horiz ? "324px" : "160px";
+  document.getElementById('wb').style.top = horiz ? "0" : "329px";
+  document.getElementById('wb').style.right = horiz ? "324px" : "162px";
   document.getElementById('wb').style.width = horiz ? "21px" : "";
   document.getElementById('wb').style.height = horiz ? "120px" : "";
   document.getElementById('colLeft').style.minWidth = horiz ? "300px" : "";
@@ -2686,6 +2804,8 @@ function showHideWindow(name, targetState) {
   checkSizes();
   if ((name == "Edit" || _mobile) && isEdit()) showLegalMoves(null);
   if (name == "Graph" && document.onmousemove == graphMouseMove) document.getElementById("graphWrapper").onmouseout();
+  if (name == "Lczero" && newState) repaintLczero();
+  if (name == "Static" && newState) repaintStatic();
 }
 
 function showHideMenu(state, e) {
@@ -2828,7 +2948,7 @@ function reloadMenu() {
   addMenuItem("menuRevert", "Revert changes", "ESC", document.getElementById("buttonRevert").className == "on", function() { command("revert"); showHideMenu(false); });
   addMenuLine();
   addMenuItem("menuFlip", "Flip board", "F", true, function() { command("flip"); showHideMenu(false); });
-  addMenuItem("menuStm", "Change side to move", "S", true, function() { command("sidetomove"); showHideMenu(false); });
+  addMenuItem("menuStm", "Change side to move", "T", true, function() { command("sidetomove"); showHideMenu(false); });
   addMenuLine();
   addMenuItem("menuStart", "Go to game start", "Home", document.getElementById("buttonBack").className == "on", function() { historyMove(-1,null,true); showHideMenu(false); });
   addMenuItem("menuEnd", "Go to game end", "End", document.getElementById("buttonForward").className == "on", function() { historyMove(+1,null,true); showHideMenu(false); });
@@ -3064,6 +3184,120 @@ function setupTouchEvents(elem, funcStart, funcMove, funcEnd) {
   elem.addEventListener("touchmove", onTouch, false);
 }
 
+
+function lczeroEvaluate() {
+  var index = _historyindex;
+  if (_history[_historyindex][0] != getCurFEN()) index++;
+  var fen = getCurFEN();
+  var pos = parseFEN(fen);  
+  var input = [], ckey = "";
+  for (var i = 0; i < 8; i++) {
+    var pos2 = index < 0 ? null : parseFEN(index > _historyindex ? fen : _history[index][0]);
+    if (pos2 != null && !pos.w) pos2 = colorflip(pos2);
+    var s = "PNBRQKpnbrqk.";
+    var rep = 0;
+    var samepos = function (a1,a2) {
+      var aa1 = a1.replace(/^\s+/,'').split(' ');
+      var aa2 = a2.replace(/^\s+/,'').split(' ');
+      if (aa1[0] != aa2[0]) return false;
+      if (aa1[1] != aa2[1]) return false;
+      if (aa1[2] != aa2[2]) return false;
+      if (aa1[3] != aa2[3]) return false;
+      return true;
+    }
+    if (index >=0) {
+      var a1 = _history[index][0];
+      for (var j = index - 2; j >= 0; j-=2) {
+        var a2 = _history[j][0];
+        if (samepos(a1, a2)) rep = 1;
+      }
+    }
+    for (var j = 0; j < s.length; j++) {
+      for (var y = 0; y < 8; y++) for (var x = 0; x < 8; x++) {
+        if (pos2 == null) input.push(0);
+        else input.push(j == s.length - 1 ? rep : (board(pos2, x, 7 - y) == s[j])  ? 1 : 0);
+      }
+    }
+    ckey+= index < 0 ? "" : rep + ":" + (index > _historyindex ? fen : _history[index][0]) + ",";
+    index--;
+  }
+  v = [];
+  v.push(pos == null ? 0 : pos.c[pos.w ? 1 : 3] ? 1 : 0);
+  v.push(pos == null ? 0 : pos.c[pos.w ? 0 : 2] ? 1 : 0);
+  v.push(pos == null ? 0 : pos.c[pos.w ? 3 : 1] ? 1 : 0);
+  v.push(pos == null ? 0 : pos.c[pos.w ? 2 : 0] ? 1 : 0);
+  v.push(pos == null ? 0 : pos.w ? 0 : 1);
+  v.push(pos == null ? 0 : pos.m[1]-1);
+  v.push(0);
+  v.push(1);
+  for (var j = 0; j < v.length; j++) for (var y = 0; y < 8; y++) for (var x = 0; x < 8; x++) input.push(v[j]);
+
+  if (_nncache == null) _nncache = new Map();
+  var output;
+  if (_nncache.has(ckey)) {
+    output = _nncache.get(ckey, output);
+  } else {
+    output = lczero_forward(input);
+    if (output == null) return null;
+    _nncache.set(ckey, output);
+  }
+
+  var winrate = Math.tanh(output[1]);
+  var policy = [];
+  var alpha = Math.max.apply(Math, output[0]);
+  var denom = 0;
+  for (var j = 0; j < output[0].length; j++) {
+    var val = Math.exp(output[0][j] - alpha);
+    policy.push(val);
+    denom += val;
+  }
+  for (var j = 0; j < policy.length; j++) policy[j] /= denom;
+  
+  var moves = genMoves(pos);
+  var ismove = function(x1, y1, x2, y2) {
+    if (x1 == x2 && y1 == y2) return false;
+    if (x1 == x2) return true;
+    if (y1 == y2) return true;
+    if (Math.abs(x1 - x2) == Math.abs(y1 - y2)) return true;
+    if (Math.abs(x1 - x2) == 2 && Math.abs(y1 - y2) == 1) return true;
+    if (Math.abs(x1 - x2) == 1 && Math.abs(y1 - y2) == 2) return true;
+    return false;
+  }
+  var x1 = 0, y1 = 0, x2 = 0, y2 = 0, pp = 'B', px1 = 0, pxd = -1;
+  for (var j = 0; j < output[0].length; j++) {
+    var first = true;
+    while (x1 < 8 && y1 < 8 && x2 < 8 && y2 < 8 && (!ismove(x1,y1,x2,y2) || first)) {
+      first = false;
+      x2++;
+      if (x2 == 8) { x2 = 0; y2++; }
+      if (y2 == 8) { y2 = 0; x1++; }
+      if (x1 == 8) { x1 = 0; y1++; }
+      if (y1 == 8) break;
+    }
+    if (y1 == 8) {
+      if (pp == 'Q') pp == 'R'; else if (pp == 'R') pp == 'B'; else if (pp == 'B') {
+        pp == 'Q';
+        pxd++;
+        if (pxd > 1) { pxd = -1; px1++; }
+      }
+    }
+    for (var i = 0; i < moves.length; i++) {
+       var move = moves[i];
+       var castling = (board(pos, move.from.x, move.from.y).toUpperCase() == 'K' && Math.abs(move.from.x-move.to.x) > 1);
+       if (!castling &&
+            ((move.from.x == x1 && move.from.y == (pos.w?7-y1:y1) && move.to.x == x2 && move.to.y == (pos.w?7-y2:y2) && (move.p == null || move.p == 'N'))
+             ||
+             (y1 == 8 && move.p == pp && move.from.x == px1 && move.to.x == px1+pxd && move.from.y == (pos.w?6:1) && move.to.y == (pos.w?7:0)))
+         || castling &&
+            (move.from.x == x1 && move.from.y == (pos.w?7-y1:y1) && (move.to.x > 3 ? 7 : 0) == x2 && move.to.y == (pos.w?7-y2:y2))
+          )
+       {
+         move.policy = policy[j];
+       }
+    }
+  }
+  return [moves, pos.w?winrate:-winrate];
+}
 
 window.onload = function() {
   document.onmousedown = onMouseDown;

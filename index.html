@@ -96,6 +96,13 @@
     <div id="static" class="boxMid"></div>
 </div>
 
+<div class="box" style="height:115px;min-height:79px;display:none;" id="wLczero">
+    <div id="lczeroInfo" class="boxTop">Lczero - neural network</div>
+    <div id="lczeroHeader"><div class="san">Move</div><div class="policy">Policy</div><div class="eval">Parent value</div></div>
+    <div id="lczero" class="boxMid"></div>
+</div>
+
+
 <div class="box" style="height:122px;min-height:122px;min-width:298px;display:none;" id="wEdit">
     <div class="boxTop">Edit tools</div>
     <div id="editWrapperOuter" class="boxMid"><div id="editWrapper">
@@ -125,6 +132,10 @@
 </div>
 <div id="tooltip" style="display:none;"></div>
 <div id="dragPiece" class="cb"></div>
-<script src="scripts.js"></script>
+<script type='application/javascript' src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@0.14.1/dist/tf.min.js"></script>
+<script type='application/javascript' src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script type='application/javascript' src="https://cdn.rawgit.com/dcodeIO/protobuf.js/6.8.8/dist/protobuf.min.js"></script>
+<script type='application/javascript' src="lc0main.js"></script>
+<script type='application/javascript' src="scripts.js"></script>
 </body>
 </html>
