@@ -1116,7 +1116,7 @@ li {
     font-size: 11px;
     background-color: #3d444c;
     padding: 4px 22px;
-    font-weight:700;
+    font-weight: 700;
     white-space: nowrap;
     overflow: hidden;
     position: absolute;
@@ -1139,7 +1139,25 @@ li {
     left: 0;
     right: 0;
 }
-
+.footer {
+    position: absolute;
+    bottom: 0;
+    left: 4px;
+    height: 12px;
+    line-height: 10px;
+    font-size: 8px;
+    color: rgba(255,255,255,0.25);
+    font-weight: 700;
+    white-space: nowrap;
+}
+.footer a {
+    cursor: pointer;
+    color: rgba(255,255,255,0.42);
+    text-decoration: none;
+}
+.footer a:hover {
+    color: rgba(255,255,255,0.6);
+}
 .boxGraph {
     background-color: #697686;
     position: absolute;
