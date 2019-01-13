@@ -1191,16 +1191,15 @@ function repaintLczero() {
     if (network != null && network.model == null) { window.setTimeout(repaintLczero, 1000); return; }
     elem = document.getElementById("lczero");
     while (elem.firstChild) elem.removeChild(elem.firstChild);
+    var showwait = function() {
+      var elem = document.getElementById("lczero");
+      while (elem.firstChild) elem.removeChild(elem.firstChild);
+      var node0 = document.createElement("DIV");
+      setElemText(node0, "Please wait...");
+      node0.className = "wait";
+      elem.appendChild(node0);
+    }
     if (network == null) {
-   
-      var showwait = function() {
-        var elem = document.getElementById("lczero");
-        while (elem.firstChild) elem.removeChild(elem.firstChild);
-        var node0 = document.createElement("DIV");
-        setElemText(node0, "Please wait...");
-        node0.className = "wait";
-        elem.appendChild(node0);
-      }
       var node0 = document.createElement("DIV");
       setElemText(node0, "Load weights 32195");
       node0.className = "loadButton";
@@ -1221,61 +1220,65 @@ function repaintLczero() {
       elem.appendChild(node1);
 
     } else {
-      var result = lczeroEvaluate();
-      if (result != null) {
-        var moveslist = result[0];
-        var value = 290.680623072 * Math.tan(1.548090806 * result[1]);
-        var nodeParent = document.createElement("DIV");
-        if (moveslist.length > 0) moveslist.sort(function(a,b) { return a.policy==b.policy  ? 0 : a.policy<b.policy ? 1 : -1; });
-        var policytotal = 0, policypart = 0;
-        for (var i=0; i<moveslist.length;i++) policytotal+=moveslist[i].policy;
-        for (var i=0; i<moveslist.length;i++) {
-          var ci = -1;
-          for (var j=0; j<_curmoves.length;j++) {
-            if (_curmoves[j].move.from.x == moveslist[i].from.x &&
-                _curmoves[j].move.from.y == moveslist[i].from.y &&
-                _curmoves[j].move.to.x == moveslist[i].to.x &&
-                _curmoves[j].move.to.y == moveslist[i].to.y &&
-                _curmoves[j].move.p == moveslist[i].p) ci = j;
+      showwait();
+      window.setTimeout(function() {
+        var result = lczeroEvaluate();
+        while (elem.firstChild) elem.removeChild(elem.firstChild);
+        if (result != null) {
+          var moveslist = result[0];
+          var value = 290.680623072 * Math.tan(1.548090806 * result[1]);
+          var nodeParent = document.createElement("DIV");
+          if (moveslist.length > 0) moveslist.sort(function(a,b) { return a.policy==b.policy  ? 0 : a.policy<b.policy ? 1 : -1; });
+          var policytotal = 0, policypart = 0;
+          for (var i=0; i<moveslist.length;i++) policytotal+=moveslist[i].policy;
+          for (var i=0; i<moveslist.length;i++) {
+            var ci = -1;
+            for (var j=0; j<_curmoves.length;j++) {
+              if (_curmoves[j].move.from.x == moveslist[i].from.x &&
+                  _curmoves[j].move.from.y == moveslist[i].from.y &&
+                  _curmoves[j].move.to.x == moveslist[i].to.x &&
+                  _curmoves[j].move.to.y == moveslist[i].to.y &&
+                  _curmoves[j].move.p == moveslist[i].p) ci = j;
+            }
+            if (ci < 0) continue;
+            var node1 = document.createElement("DIV"); node1.className = "line";
+            var node0 = document.createElement("SPAN"); node0.className = "circle " + (policypart/policytotal<0.8?"ok":policypart/policytotal<0.95?"mi":"bl");
+            policypart+=moveslist[i].policy          
+            var node2 = document.createElement("SPAN"); node2.className = "san"; node2.appendChild(document.createTextNode(_curmoves[ci].san));
+            var node7 = document.createElement("SPAN"); node7.className = "policy"; node7.appendChild(document.createTextNode(((100 * moveslist[i].policy / policytotal).toFixed(2))+"%"));
+            var node3 = document.createElement("SPAN"); node3.className = "eval";
+            var text = (value / 100).toFixed(2);
+            if (text.indexOf(".") >= 0) {
+              var node4 = document.createElement("SPAN");
+              node4.className = "numleft";
+              node4.appendChild(document.createTextNode(text.substring(0,text.indexOf(".")+1)));
+              var node5 = document.createElement("SPAN");
+              node5.className = "numright";
+              node5.appendChild(document.createTextNode(text.substring(text.indexOf(".")+1)));
+              node3.appendChild(node4);
+              node3.appendChild(node5);
+            } else {
+              node3.appendChild(document.createTextNode(text));
+            }
+            node1.appendChild(node0);
+            node1.appendChild(node2);
+            node1.appendChild(node7);
+            node1.appendChild(node3);
+            node1.san = _curmoves[ci].san;
+            node1.index = ci;
+            node1.onmouseover = function() { this.index=findMoveIndexBySan(this.san); if (this.index!=null) highlightMove(this.index, true); };
+            node1.onmouseout = function() { if (this.index!=null) highlightMove(this.index, false); };
+            node1.onmousedown = function(e) { this.index=findMoveIndexBySan(this.san); if (_menu) showHideMenu(false); if (this.index!=null) doMoveHandler(_curmoves[this.index].move); };
+            if (_historyindex + 1 < _history.length &&  _history[_historyindex + 1].length > 3 && _history[_historyindex + 1][3] == _curmoves[ci].san) node1.style.color = "#64c4db"
+            nodeParent.appendChild(node1);
           }
-          if (ci < 0) continue;
-          var node1 = document.createElement("DIV"); node1.className = "line";
-          var node0 = document.createElement("SPAN"); node0.className = "circle " + (policypart/policytotal<0.8?"ok":policypart/policytotal<0.95?"mi":"bl");
-          policypart+=moveslist[i].policy          
-          var node2 = document.createElement("SPAN"); node2.className = "san"; node2.appendChild(document.createTextNode(_curmoves[ci].san));
-          var node7 = document.createElement("SPAN"); node7.className = "policy"; node7.appendChild(document.createTextNode(((100 * moveslist[i].policy / policytotal).toFixed(2))+"%"));
-          var node3 = document.createElement("SPAN"); node3.className = "eval";
-          var text = (value / 100).toFixed(2);
-          if (text.indexOf(".") >= 0) {
-            var node4 = document.createElement("SPAN");
-            node4.className = "numleft";
-            node4.appendChild(document.createTextNode(text.substring(0,text.indexOf(".")+1)));
-            var node5 = document.createElement("SPAN");
-            node5.className = "numright";
-            node5.appendChild(document.createTextNode(text.substring(text.indexOf(".")+1)));
-            node3.appendChild(node4);
-            node3.appendChild(node5);
-          } else {
-            node3.appendChild(document.createTextNode(text));
-          }
-          node1.appendChild(node0);
-          node1.appendChild(node2);
-          node1.appendChild(node7);
-          node1.appendChild(node3);
-          node1.san = _curmoves[ci].san;
-          node1.index = ci;
-          node1.onmouseover = function() { this.index=findMoveIndexBySan(this.san); if (this.index!=null) highlightMove(this.index, true); };
-          node1.onmouseout = function() { if (this.index!=null) highlightMove(this.index, false); };
-          node1.onmousedown = function(e) { this.index=findMoveIndexBySan(this.san); if (_menu) showHideMenu(false); if (this.index!=null) doMoveHandler(_curmoves[this.index].move); };
-          if (_historyindex + 1 < _history.length &&  _history[_historyindex + 1].length > 3 && _history[_historyindex + 1][3] == _curmoves[ci].san) node1.style.color = "#64c4db"
-          nodeParent.appendChild(node1);
+          elem.appendChild(nodeParent);
+        } else {
+          var node0 = document.createElement("DIV");
+          setElemText(node0, "Error");
+          elem.appendChild(node0);
         }
-        elem.appendChild(nodeParent);
-      } else {
-        var node0 = document.createElement("DIV");
-        setElemText(node0, "Error");
-        elem.appendChild(node0);
-      }
+      }, 1);
     }
   }, 50);
 
