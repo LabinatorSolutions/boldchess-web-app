@@ -1052,6 +1052,7 @@ function updateInfo() {
   }
 }
 
+var _staticSortByChange = false;
 function repaintStatic() {
   if (document.getElementById("wStatic").style.display == "none") return;
 
@@ -1064,6 +1065,7 @@ function repaintStatic() {
     elem = document.getElementById("static");
     var evalUnit = 208;
     while (elem.firstChild) elem.removeChild(elem.firstChild);
+    var staticEvalListLast = _historyindex > 0 ? getStaticEvalList(parseFEN(_history[_historyindex - 1][0])) : null;
     var staticEvalList = getStaticEvalList(pos), total = 0, ci = 5;
     for (var i = 0; i < staticEvalList.length; i++) {
       if (i > 0 && staticEvalList[i-1].group != staticEvalList[i].group) ci++;
@@ -1075,13 +1077,20 @@ function repaintStatic() {
         if (c1 + c2 + c3 < 100) { c1 = c2 = c3 = 0; ci++; }
       }
       staticEvalList[i].bgcol = "rgb("+c1+","+c2+","+c3+")";
+      staticEvalList[i].rel = staticEvalList[i].item[2] - (staticEvalListLast == null ? 0 : staticEvalListLast[i].item[2]);
     }
-
-    staticEvalList.sort(function(a,b) {return (Math.abs(a.item[2]) < Math.abs(b.item[2])) ? 1 : Math.abs(a.item[2]) > Math.abs(b.item[2]) ? -1 : 0;} );
-    for (var i = 0; i < staticEvalList.length; i++) {
+    var sortArray = [];
+    for (var i = 0; i < staticEvalList.length; i++) sortArray.push({value:_staticSortByChange ? staticEvalList[i].rel : staticEvalList[i].item[2],index:i});
+    sortArray.sort(function(a,b) {return (Math.abs(a.value) < Math.abs(b.value)) ? 1 : Math.abs(a.value) > Math.abs(b.value) ? -1 : 0;} );
+    for (var j = 0; j < sortArray.length; j++) {
+      var i = sortArray[j].index;
       total += staticEvalList[i].item[2];
-      var text = (staticEvalList[i].item[2] / evalUnit).toFixed(2);    
-      if (text == "0.00" || text == "-0.00") continue;
+      var text = (staticEvalList[i].item[2] / evalUnit).toFixed(2);
+      if (text == "-0.00") text = "0.00";
+      var rel = (staticEvalList[i].rel / evalUnit).toFixed(2);
+      if (rel == "-0.00") rel = "0.00";
+      if (!_staticSortByChange && text == "0.00") continue;
+      if (_staticSortByChange && rel == "0.00") continue;
       
       var node0 = document.createElement("SPAN");
       node0.className = "circle";
@@ -1095,9 +1104,9 @@ function repaintStatic() {
       var node6 = document.createElement("SPAN");
       node6.className = "name";
       node6.appendChild(document.createTextNode(staticEvalList[i].elem[0].toUpperCase()+staticEvalList[i].elem.replace(/\_/g," ").substring(1)));
+
       var node3 = document.createElement("SPAN");
       node3.className = "eval";
-      
       if (text.indexOf(".") >= 0) {
         var node4 = document.createElement("SPAN");
         node4.className = "numleft";
@@ -1110,10 +1119,26 @@ function repaintStatic() {
       } else {
         node3.appendChild(document.createTextNode(text));
       }
+      
+      var node7 = document.createElement("SPAN");
+      node7.className = "eval rel";
+      if (rel.indexOf(".") >= 0) {
+        var node8 = document.createElement("SPAN");
+        node8.className = "numleft";
+        node8.appendChild(document.createTextNode(rel.substring(0,rel.indexOf(".")+1)));
+        var node9 = document.createElement("SPAN");
+        node9.className = "numright";
+        node9.appendChild(document.createTextNode(rel.substring(rel.indexOf(".")+1)));
+        node7.appendChild(node8);
+        node7.appendChild(node9);
+      } else {
+        node3.appendChild(document.createTextNode(rel));
+      }      
       node1.appendChild(node0);
       node1.appendChild(node2);
       node1.appendChild(node6);
       node1.appendChild(node3);
+      node1.appendChild(node7);
       node1.name = staticEvalList[i].elem.toLowerCase().replace(/ /g, "_");;
       node1.onclick = function() {
         var data = _staticEvalData, sei = null;
@@ -1201,9 +1226,9 @@ function repaintLczero() {
     }
     if (network == null) {
       var node0 = document.createElement("DIV");
-      setElemText(node0, "Load weights 32195");
+      setElemText(node0, "Load weights 32930");
       node0.className = "loadButton";
-      node0.onclick = function() { showwait(); load_network("weights_32195.dat.gz", null, repaintLczero); }
+      node0.onclick = function() { showwait(); load_network("weights_32930.dat.gz", null, repaintLczero); }
 
       var node2 = document.createElement("INPUT");
       node2.type = "file"
@@ -3100,7 +3125,12 @@ function setupDragElement(elmnt) {
   }
 }
 
+var _staticEvalListCache = [], _staticEvalListCacheSize = 20;
 function getStaticEvalList(pos) {
+  var posfen = generateFEN(pos);
+  for (var si = 0; si < _staticEvalListCache.length; si++)
+    if (_staticEvalListCache[si][0] == posfen) return _staticEvalListCache[si][1];
+    
   var data = _staticEvalData;
   var grouplist = [], midindex = null, endindex = null, maincode = null;
   for (var i = 0; i < data.length; i++) {
@@ -3168,6 +3198,9 @@ function getStaticEvalList(pos) {
     grouplist[i].item.push(mainfunc(grouplist[i].item[0], grouplist[i].item[1]) - mainfunc(0, 0));
   }
   grouplist.push({group:"Tempo",elem:"tempo",item:[mainfunc(0, 0),mainfunc(0, 0),mainfunc(0, 0)],hidden:false,mc:pos.m[1]});
+  
+  _staticEvalListCache.push([posfen, grouplist]);
+  if (_staticEvalListCache.length > _staticEvalListCacheSize) _staticEvalListCache.shift();
   return grouplist;
 }
 
@@ -3317,6 +3350,8 @@ window.onload = function() {
   document.getElementById("buttonBack").onclick = function(event) { historyMove(-1,event); };
   document.getElementById("buttonForward").onclick = function(event) { historyMove(+1,event); };
   document.getElementById("buttonMenu").onclick = function(event) { showHideMenu(true,event); };
+  document.getElementById("buttonStaticSortByValue").onclick = function(event) { _staticSortByChange = false; repaintStatic(); };
+  document.getElementById("buttonStaticSortByChange").onclick = function(event) { _staticSortByChange = true; repaintStatic(); };
   document.getElementById("graphWrapper").onmouseover = function() { if (document.onmousemove == defaultMouseMove) document.onmousemove = graphMouseMove; };
   document.getElementById("graphWrapper").onmousedown = function(event) { if (document.onmousemove == defaultMouseMove) { document.onmousemove = graphMouseMove; graphMouseMove(event); graphMouseDown(event); } };
   document.getElementById("graphWrapper").onmouseout = function() { if (document.onmousemove == graphMouseMove) document.onmousemove = defaultMouseMove; repaintGraph(); updateTooltip(""); };

@@ -9,19 +9,19 @@ and quick analysis locally in your browser available at https://hxim.github.io/P
 
 Features:
 
-* Load your chess position or game using FEN, PGN or move list.
-* Setup pieces manually with your mouse in edit mode.
-* Browse game history with arrows or mouse wheel.
+* Load your chess position or game using FEN, PGN or move list
+* Setup pieces manually with your mouse in edit mode
+* Browse game history with arrows or mouse wheel
 * List all legal moves and show them on chessboard
 * Checkmate or stalemate is detected
 * Analyze position and all legal moves with javascript version of Stockfish from https://github.com/niklasf/stockfish.js
-* Show evaluation graph and visalize mistakes or blunders with different colors
-* Open position or game in new window via URL.
+* Show evaluation graph and visualize mistakes or blunders with different colors
+* Open position or game in new window via URL
 * You can also play chess against computer
-* Detect opening catecory/ECO code
+* Detect opening category/ECO code
 * Select from few popular chessboard colors
 * Paint arrows or mark squares on chessboard
-* Look at static evaluation terms by Stockfish and visualise relevant squares
+* Look at static evaluation terms by Stockfish and visualize relevant squares
 * Support for touch devices/phones/tablets
 * Look at lczero neural network evaluation
 
@@ -29,7 +29,7 @@ Features:
 
 To open your FEN or PGN copy your FEN or PGN to clipboard and paste it in the input box above chessboard. To browse
 game use mouse wheel on chessboard or arrow buttons. To open or hide windows you can use small buttons in the top.
-Availble windows are Chessboard, Moves, History, Graph, Opening, Static evaluation, Edit. Other features are
+Available windows are Chessboard, Moves, History, Graph, Opening, Static evaluation, Edit. Other features are
 present in main menu (under hamburger button). 
 
 ## Source code and on-line URL ##

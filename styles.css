@@ -378,6 +378,12 @@ li {
 #buttonStm.black:hover div {
     background-color: #000000;
 }
+#buttonStaticSortByValue, #buttonStaticSortByChange {
+    cursor: pointer;
+}
+#buttonStaticSortByValue:hover, #buttonStaticSortByChange:hover {
+    color: white;
+}
 
 /* Status bar */
 
@@ -723,6 +729,11 @@ li {
     text-align: center;
     width: 75px;
 }
+#staticHeader .rel {
+    display: inline-block;
+    text-align: center;
+    width: 75px;
+}
 #static .line .group {
     display: inline-block;
     left: 0px;
@@ -737,6 +748,10 @@ li {
 }
 #static .line .eval {
     left: 219px;
+    width: 75px;
+}
+#static .line .eval.rel {
+    left: 294px;
     width: 75px;
 }
 
