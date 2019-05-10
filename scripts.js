@@ -669,7 +669,7 @@ function updateTooltipPos(e) {
   tooltip.style.left = (e.clientX * _bodyScale) + "px";
   tooltip.style.top = (getClientY(e) + 20) + "px";
 }
-function updateTooltip(text, answer, movenumber, cl, e) {
+function updateTooltip(text, answerpv, movenumber, cl, e) {
   var state = text.length > 0;
   var tooltip = document.getElementById("tooltip");
   while (tooltip.firstChild) tooltip.removeChild(tooltip.firstChild);
@@ -693,10 +693,12 @@ function updateTooltip(text, answer, movenumber, cl, e) {
   tooltip.style.display = state ? "" : "none";
   if (e != null) updateTooltipPos(e);
 
-  if (answer != null && (answer.length == 4 || answer.length == 5)) {
-    var move = {from:{x:"abcdefgh".indexOf(answer[0]),y:"87654321".indexOf(answer[1])},
-                to:{x:"abcdefgh".indexOf(answer[2]),y:"87654321".indexOf(answer[3])}};
-    showArrow1(move);
+  if (answerpv != null && answerpv.length > 0 && (answerpv[0].length == 4 || answerpv[0].length == 5)) {
+    for (var i = 0; i < Math.min(answerpv.length, _movesPv ? 5 : 1); i++) {
+      var move = {from:{x:"abcdefgh".indexOf(answerpv[i][0]),y:"87654321".indexOf(answerpv[i][1])},
+                  to:{x:"abcdefgh".indexOf(answerpv[i][2]),y:"87654321".indexOf(answerpv[i][3])}};
+      showArrow1(move, 1 - (i / 5));
+    }
   } else setArrow(_arrow);
 }
 
@@ -732,14 +734,14 @@ function showLegalMoves(from) {
     if (from.x==x && from.y==y) { div.className += " h0"; _clickFromElem = div; }
     else if (isLegal(pos, from, {x:x,y:y})) {
         if (_curmoves.length == 0) continue;
-        var text = "", san = "", answer = null, cl = null;
+        var text = "", san = "", answerpv = null, cl = null;
         for (var j = 0; j < _curmoves.length; j++) {
           if (_curmoves[j].move.from.x == from.x && _curmoves[j].move.from.y == from.y
            && _curmoves[j].move.to.x == x && _curmoves[j].move.to.y == y 
            && (_curmoves[j].move.p == 'Q' || _curmoves[j].move.p == null)) {
             text = getEvalText(_curmoves[j].eval, true);
             san = _curmoves[j].san;
-            answer = _curmoves[j].answer;
+            answerpv = _curmoves[j].answerpv;
             cl = getCircleClassName(j);
             break;
           }
@@ -747,9 +749,9 @@ function showLegalMoves(from) {
         div.className += " h1";
         setElemText(div, text);
         div.tooltip = san + (text.length > 0 ? " " + text : "");
-        div.answer = answer == null ? "" : answer;
+        div.answerpv = answerpv == null ? [] : answerpv;
         div.cl = cl == null ? "circle" : cl;
-        div.onmouseover = function(e) {updateTooltip(this.tooltip, this.answer, null, this.cl, e);};
+        div.onmouseover = function(e) {updateTooltip(this.tooltip, this.answerpv, null, this.cl, e);};
         div.onmouseout = function() {updateTooltip("");};
     }
     updateTooltip("");
@@ -787,15 +789,15 @@ function updateLegalMoves() {
       if (div.tooltip == _curmoves[j].san) {
         var text = getEvalText(_curmoves[j].eval, true);
         var san = _curmoves[j].san;
-        var answer = _curmoves[j].answer;
+        var answerpv = _curmoves[j].answerpv;
         var cl = getCircleClassName(j);
         setElemText(div, text);
         div.tooltip = san + (text.length > 0 ? " " + text : "");
-        div.answer = answer == null ? "" : answer;
+        div.answerpv = answerpv == null ? [] : answerpv;
         div.cl = cl == null ? "circle" : cl;
-        div.onmouseover = function(e) {updateTooltip(this.tooltip, this.answer, null, this.cl, e);};
+        div.onmouseover = function(e) {updateTooltip(this.tooltip, this.answerpv, null, this.cl, e);};
         div.onmouseout = function() {updateTooltip("");};
-        if (_tooltipState && getElemText(document.getElementById("tooltip").firstChild) == _curmoves[j].san) updateTooltip(div.tooltip, div.answer, null, div.cl, null);
+        if (_tooltipState && getElemText(document.getElementById("tooltip").firstChild) == _curmoves[j].san) updateTooltip(div.tooltip, div.answerpv, null, div.cl, null);
         break;
       }
     }
@@ -898,10 +900,10 @@ function highlightMove(index, state) {
     else div.className = c;
     div.onmouseover = null;
   }
-  if (state) updateTooltip("", _curmoves[index].answer);
+  if (state) updateTooltip("", _curmoves[index].answerpv);
   else updateTooltip("");
 }
-function showArrowInternal(move, wrapperId) {
+function showArrowInternal(move, wrapperId, opacity = 1) {
   var elem = document.getElementById(wrapperId);
   if (move == null) { elem.style.display = "none"; return; }
   if (elem.children[0].children == null) return;
@@ -910,9 +912,17 @@ function showArrowInternal(move, wrapperId) {
   line.setAttribute('y1', 20+(_flip?7-move.from.y:move.from.y)*40);
   line.setAttribute('x2', 20+(_flip?7-move.to.x:move.to.x)*40);
   line.setAttribute('y2', 20+(_flip?7-move.to.y:move.to.y)*40);
+  line.style.opacity = opacity.toFixed(2);
   elem.style.display = "block";
+
 }
-function showArrow1(move) { showArrowInternal(move, "arrowWrapper1"); }
+function showArrow1(move, opacity) { 
+  var elem = document.getElementById("arrowWrapper1");
+  var elem0 = elem.children[0];
+  if (opacity == null || opacity == 1) for (var i = elem0.children.length - 1; i >= 2; i--) elem0.removeChild(elem0.children[i]);
+  else elem.children[0].appendChild(elem0.children[1].cloneNode(false));
+  showArrowInternal(move, "arrowWrapper1", opacity);
+}
 function showArrow2(move) { showArrowInternal(move, "arrowWrapper2"); }
 function showArrow3(move) {
   var elem0 = document.getElementById("arrowWrapper3").children[0];
@@ -1062,7 +1072,7 @@ function repaintStatic() {
   // Static evaluation window
   window.setTimeout(function() {
     if (getCurFEN() != curfen) return;
-    elem = document.getElementById("static");
+    var elem = document.getElementById("static");
     var evalUnit = 208;
     while (elem.firstChild) elem.removeChild(elem.firstChild);
     var staticEvalListLast = _historyindex > 0 ? getStaticEvalList(parseFEN(_history[_historyindex - 1][0])) : null;
@@ -1214,7 +1224,7 @@ function repaintLczero() {
   window.setTimeout(function() {
     if (getCurFEN() != curfen) return;
     if (network != null && network.model == null) { window.setTimeout(repaintLczero, 1000); return; }
-    elem = document.getElementById("lczero");
+    var elem = document.getElementById("lczero");
     while (elem.firstChild) elem.removeChild(elem.firstChild);
     var showwait = function() {
       var elem = document.getElementById("lczero");
@@ -1320,8 +1330,10 @@ function getCircleClassName(i) {
   }
   return cl;
 }
+var _movesPv = false;
 function showEvals() {
   setElemText(document.getElementById("moves"), "");
+  setElemText(document.getElementById("buttonMovesPv"), _movesPv ? "PV" : "Reply");
   if (_curmoves.length > 0) {
     var sortfunc = function(a,b) {
       var a0 = a.eval == null ? -2000000 : a.eval * (_curmoves[0].w ? -1 : 1);
@@ -1346,7 +1358,8 @@ function showEvals() {
     node3.className = "eval";
     var node6 = document.createElement("SPAN");
     node6.className = "pv";
-    node6.appendChild(document.createTextNode(_curmoves[i].pvtext||"?"));
+    if (_movesPv) node6.appendChild(document.createTextNode(_curmoves[i].pvtext||"?"));
+    else node6.appendChild(document.createTextNode((_curmoves[i].pvtext||"?").split(' ')[0]));
     var node7 = document.createElement("SPAN");
     node7.className = "depth";
     node7.appendChild(document.createTextNode(_curmoves[i].depth|"?"));
@@ -1754,7 +1767,6 @@ function checkPosition(pos) {
 }
 
 // Move list
-
 function refreshMoves() {
   var pos = parseFEN(getCurFEN());
   _curmoves = [];
@@ -2267,6 +2279,7 @@ function evalNext() {
           _curmoves[i].depth = _engine.depth;
           var m = str.match(/^bestmove\s(\S+)(?:\sponder\s(\S+))?/);
           _curmoves[i].answer = (m && m.length > 1 && m[1] != null && (m[1].length == 4 || m[1].length == 5)) ? m[1] : null;
+          _curmoves[i].answerpv = [];
           var pvtext = "";
           if (_curmoves[i].answer != null) {
             if (savedpv.length < 1 || savedpv[0] != m[1]) savedpv = [m[1]];
@@ -2278,6 +2291,7 @@ function evalNext() {
               if (pvtext.length > 0) pvtext += " ";
               var move = parseBestMove(savedpv[j]);
               pvtext += sanMove(nextpos, move, genMoves(nextpos));
+              _curmoves[i].answerpv.push(savedpv[j]);
               if (j + 1 < savedpv.length) nextpos = doMove(nextpos,move.from,move.to,move.p);
             }
           }
@@ -2496,9 +2510,14 @@ function setupMobileLayout(init) {
     document.getElementById('moves').style.bottom =
     document.getElementById('history').style.bottom =
     document.getElementById('opening').style.bottom =
-    document.getElementById('static').style.bottom = "6px";
+    document.getElementById('static').style.bottom = 
+    document.getElementById('lczero').style.bottom = "6px";
     document.getElementById('buttonGo').style.padding = "3px 4px 5px 4px";
     document.getElementById('buttonGo').style.top = "0";
+    document.getElementById('movesFooter').style.height = document.getElementById('lczeroFooter').style.height = "6px";
+    document.getElementById('movesFooter').style.lineHeight = document.getElementById('lczeroFooter').style.lineHeight = "6px";
+    document.getElementById('movesFooter').style.fontSize = document.getElementById('lczeroFooter').style.fontSize = "5px";
+    document.getElementById('movesFooter').style.fontWeight = document.getElementById('lczeroFooter').style.fontWeight = "500";
   }
   var winWidth = Math.min(window.innerWidth, window.outerWidth);
   var winHeight = Math.min(window.innerHeight, window.outerHeight);
@@ -2749,7 +2768,7 @@ function repaintSidebars() {
     else if (whitemat[i] < blackmat[j]) i++;
     else if (whitemat[i] > blackmat[j]) j++;
   }
-  elem = document.getElementById("materialWrapper");
+  var elem = document.getElementById("materialWrapper");
   while (elem.firstChild) elem.removeChild(elem.firstChild);
   var fmat = function(mat, flip) {
     for (var i = 0; i < mat.length; i++) {
@@ -2845,8 +2864,8 @@ function showHideMenu(state, e) {
   }
   if (state) _menu = !_menu; else _menu = false;
   
-  bElem = document.getElementById("buttonMenu");
-  mElem = document.getElementById("menu");
+  var bElem = document.getElementById("buttonMenu");
+  var mElem = document.getElementById("menu");
   bElem.className = _menu ? "on down" : "on";
   mElem.style.top = (bElem.getBoundingClientRect().bottom - document.getElementById("container").getBoundingClientRect().top) * _bodyScale + "px";
   mElem.style.left = (bElem.getBoundingClientRect().left - document.getElementById("container").getBoundingClientRect().left) * _bodyScale + "px";
@@ -3352,6 +3371,7 @@ window.onload = function() {
   document.getElementById("buttonMenu").onclick = function(event) { showHideMenu(true,event); };
   document.getElementById("buttonStaticSortByValue").onclick = function(event) { _staticSortByChange = false; repaintStatic(); };
   document.getElementById("buttonStaticSortByChange").onclick = function(event) { _staticSortByChange = true; repaintStatic(); };
+  document.getElementById("buttonMovesPv").onclick = function(event) { _movesPv = !_movesPv; showEvals(); };
   document.getElementById("graphWrapper").onmouseover = function() { if (document.onmousemove == defaultMouseMove) document.onmousemove = graphMouseMove; };
   document.getElementById("graphWrapper").onmousedown = function(event) { if (document.onmousemove == defaultMouseMove) { document.onmousemove = graphMouseMove; graphMouseMove(event); graphMouseDown(event); } };
   document.getElementById("graphWrapper").onmouseout = function() { if (document.onmousemove == graphMouseMove) document.onmousemove = defaultMouseMove; repaintGraph(); updateTooltip(""); };
