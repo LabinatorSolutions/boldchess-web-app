@@ -381,7 +381,7 @@ return data; })();
 
 function command(text) {
   if (text == null || text.length == 0) return;
-  var mvdivs = ['<div class="moves">', '<div class="tview2 column">','<div class="extension-item Moves">'];
+  var mvdivs = ['<div class="moves">', '<div class="tview2 tview2-column">','<div class="extension-item Moves">'];
   for (var i = 0; i < mvdivs.length; i++) {
     if (text.indexOf(mvdivs[i]) >= 0) {
       var text2 = text, ntext = '';
