@@ -418,7 +418,7 @@ function command(text) {
               .replace(/<span class="move">\s*([^<\s]*)\s*<\/span>/g,"<move>$1</move>")
       } else {
         text = text.replace(/<interrupt>((?!<\/interrupt>).)*<\/interrupt>/g,"")
-              .replace(/<move[^<>"]*(("[^"]*")[^<>"]*)*>/g,"<move>")
+              .replace(/<(move|m1|m2)[^<>"]*(("[^"]*")[^<>"]*)*>/g,"<move>").replace(/<\/(m1|m2)>/g,"</move>")
               .replace(/<\/?san>|<eval>[^<]*<\/eval>|<glyph[^<]*<\/glyph>|<move>\.\.\.<\/move>/g,"")
               .replace(/\?/g,"x");
       }
