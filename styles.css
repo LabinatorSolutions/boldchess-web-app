@@ -22,7 +22,7 @@ li {
 #container {
     position: relative;
     width: 830px;
-    background-color: #272a2f;
+    background-color: #000000;
     margin: 0 auto;
     padding: 0;
     height: 100vh;
@@ -45,12 +45,12 @@ li {
 
 #logotextmain {
     position: absolute;
+    line-height: 100%;
     top: 16px;
     left: 116px;
     font-size: 25px;
-    text-transform: uppercase;
     color: white;
-    font-weight: 800;
+    font-weight: 300;
 }
 
 #logotextsub {
@@ -58,7 +58,6 @@ li {
     top: 45px;
     left: 116px;
     font-size: 10px;
-    text-transform: uppercase;
     color: white;
     font-weight: 400;
     width: 190px;
@@ -175,7 +174,7 @@ li {
     width: 24px;
     background-repeat: no-repeat;
     background-position: center;
-    background-color: #2e3337
+    background-color: #000000
 }
 
 #materialWrapper > .k { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 45 45'%3E%3Cg fill='%23fff' fill-rule='evenodd' stroke-linejoin='round' stroke-linecap='round' stroke-width='1.5'%3E%3Cg stroke='%23fff' stroke-linejoin='miter'%3E%3Cpath d='m22.5 11.63v-5.63' stroke='%23fff'/%3E%3Cpath d='m22.5 25c0 0 4.5-7.5 3-10.5 0 0-1-2.5-3-2.5-2 0-3 2.5-3 2.5-1.5 3 3 10.5 3 10.5' fill='%23fff' stroke-linecap='butt'/%3E%3C/g%3E%3Cg stroke='%23fff'%3E%3Cpath d='m11.5 37c5.5 3.5 15.5 3.5 21 0v-7c0 0 9-4.5 6-10.5-4-6.5-13.5-3.5-16 4v3.5-3.5c-3.5-7.5-13-10.5-16-4-3 6 5 10 5 10v7.5z' fill='%23fff'/%3E%3Cpath d='m20 8h5' stroke-linejoin='miter'/%3E%3C/g%3E%3Cg stroke='%23fff'%3E%3Cpath d='m32 29.5c0 0 8.5-4 6.03-9.65-3.88-5.85-13.03-1.85-15.53 4.65l.01 2.1-.01-2.1c-2.5-6.5-12.594-10.5-15.503-4.65-2.497 5.65 4.853 9 4.853 9'/%3E%3Cpath d='m11.5 30c5.5-3 15.5-3 21 0m-21 3.5c5.5-3 15.5-3 21 0m-21 3.5c5.5-3 15.5-3 21 0'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");}
@@ -506,7 +505,7 @@ li {
     left: 0;
     right: 0;
     border-top: solid 1px black;
-    background-color: #2e3337;
+    background-color: #000000;
     white-space: nowrap;
     overflow: hidden;
     min-width: 281px;
@@ -624,7 +623,7 @@ li {
     left: 0;
     right: 0;
     border-top: solid 1px black;
-    background-color: #2e3337;
+    background-color: #000000;
     white-space: nowrap;
     overflow: hidden;
 }
@@ -710,7 +709,7 @@ li {
     left: 0;
     right: 0;
     border-top: solid 1px black;
-    background-color: #2e3337;
+    background-color: #000000;
     white-space: nowrap;
     overflow: hidden;
 }
@@ -767,7 +766,7 @@ li {
     left: 0;
     right: 0;
     border-top: solid 1px black;
-    background-color: #2e3337;
+    background-color: #000000;
     white-space: nowrap;
     overflow: hidden;
 }
@@ -1019,7 +1018,6 @@ li {
 #chessboard1.c4 > .h3:before { border: 4px solid rgba(255,220,40,0.85); box-shadow: inset 0px 0px 4px rgba(255,255,0,0.8); }
 #boxBoard.c4 #arrowWrapper3 svg line { stroke: rgba(255,220,40,0.85); }
 #boxBoard.c4 #arrowWrapper3 svg defs marker { fill: rgba(255,220,40,0.85); }
-
 #icolor.c4 { background-color: #561102; }
 #icolor.c4 > div > div.l { background-color: #b69376; }
 #icolor.c4 > div > div.d { background-color: #6e3b0e; }
@@ -1034,7 +1032,6 @@ li {
 #icolor.c5 { background-color: #13121d; }
 #icolor.c5 > div > div.l { background-color: #beae76; }
 #icolor.c5 > div > div.d { background-color: #957847; }
-
 
 #buttonColorPrev {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16' fill='%238e8f91'%3E%3Cpath d='M15 7H3.414l4.293-4.293a1 1 0 0 0-1.414-1.414l-6 6a1 1 0 0 0 0 1.414l6 6a1 1 0 0 0 1.414-1.414L3.414 9H15a1 1 0 0 0 0-2z'%3E%3C/path%3E%3C/svg%3E");
@@ -1117,7 +1114,7 @@ li {
     position: relative;
     resize: both;
     overflow: hidden;
-    background-color: #2e3337;
+    background-color: #000000;
     z-index: 4;
     min-width: 108px;
     min-height: 64px;
@@ -1261,5 +1258,3 @@ li {
     left: 0;
     z-index: 6;
 }
-
-
