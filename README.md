@@ -3,7 +3,7 @@
 BoldChess-GUI is a responsive web GUI for the Stockfish chess engine with analysis, evaluation, and graphs. It also comes with Leela Chess Zero (LCZero) neural network evaluation. This project is forked initially from [PeshkaChess](https://github.com/hxim/PeshkaChess) and modified to be used on [BoldChess.com](https://boldchess.com/).
 
 
-# Live Demo
+## Live Demo
 
 https://labinatorsolutions.github.io/BoldChess-GUI/
 
