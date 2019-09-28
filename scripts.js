@@ -961,13 +961,13 @@ function updateInfo() {
   var curfen = getCurFEN();
   var pos = parseFEN(curfen);
   var curpos = pos.m[1];
-  var positionInfoText = "Position: "+(_historyindex+1)+" of "+_history.length+" - Last move: ";
+  var positionInfoText = "Position: "+(_historyindex+1)+" of "+_history.length+" - Last Move: ";
   if (_history[_historyindex].length > 3 && _history[_historyindex][3] != null) {
     var pos2 = parseFEN(_history[_historyindex][0]);
     positionInfoText += (pos2.w ? (pos2.m[1]-1) + "... " : pos2.m[1] + ". ") + _history[_historyindex][3];    
   }
   else positionInfoText += "-";
-  var movesInfoText = (pos.w ? "White" : "Black")+" to play ("+_curmoves.length+" legal move"+(_curmoves.length==1?"":"s")+")";
+  var movesInfoText = (pos.w ? "White" : "Black")+" To Play ("+_curmoves.length+" Legal Move"+(_curmoves.length==1?"":"s")+")";
   setElemText(document.getElementById('positionInfo'), positionInfoText);
   setElemText(document.getElementById('movesInfo'), movesInfoText);
 
@@ -1239,7 +1239,7 @@ function repaintLczero() {
     }
     if (network == null) {
       var node0 = document.createElement("DIV");
-      setElemText(node0, "Load weights 32930");
+      setElemText(node0, "Load Built-In Data");
       node0.className = "loadButton";
       node0.onclick = function() { showwait(); load_network("weights_32930.dat.gz", null, repaintLczero); }
 
@@ -1249,7 +1249,7 @@ function repaintLczero() {
       node2.onchange = function(e) { showwait(); load_network(e.target.files[0].name, e.target.files[0], repaintLczero); }
 
       var node1 = document.createElement("DIV");
-      setElemText(node1, "Load custom...");
+      setElemText(node1, "Load Custom Data");
       node1.className = "loadButton";
       node1.onclick = function() { node2.click(); }
       
