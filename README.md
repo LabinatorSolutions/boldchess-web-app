@@ -1,54 +1,76 @@
-# PeshkaChess
+# BoldChess-GUI
 
-Simple on-line chess analysis tool
+BoldChess-GUI is a responsive web GUI for the Stockfish chess engine with analysis, evaluation, and graphs. It also comes with Leela Chess Zero (LCZero) neural network evaluation. This project is originally forked from [PeshkaChess](https://github.com/hxim/PeshkaChess) to be used on [BoldChess.com](https://boldchess.com/).
 
-## What it does ##
 
-PeshkaChess is simple chess position and game analysis tool for quick viewing chess games or position
-and quick analysis locally in your browser available at https://hxim.github.io/PeshkaChess/index.html.
+## Features
 
-Features:
+- Ability to load your chess position or game using FEN, PGN or a move list.
+- Ability to setup your pieces manually in edit mode.
+- Ability to browse game history with arrows or mouse wheel.
+- Ability to list all legal moves and show them on the chessboard.
+- Ability to analyze positions and all legal moves with the javascript version of the Stockfish chess engine.
+- Ability to show an evaluation graph while visualizing blunders in different colors.
+- Ability to open a position or game in new window via a given URL.
+- Ability to play against the computer (Stockfish Chess Engine) and set its difficulty level.
+- Ability to see an evaluation by the Leela Chess Zero (LCZero) neural network.
+- Ability to detect an opening category or ECO code.
+- Ability to choose the styling of the chessboard.
+- Ability to print arrows or mark squares on the chessboard.
+- Relevant squares on the chessboard are visualized according to the static evaluation terms of the Stockfish chess engine.
+- Support for PCs, tablets, smartphones, and touch devices.
 
-* Load your chess position or game using FEN, PGN or move list
-* Setup pieces manually with your mouse in edit mode
-* Browse game history with arrows or mouse wheel
-* List all legal moves and show them on chessboard
-* Checkmate or stalemate is detected
-* Analyze position and all legal moves with javascript version of Stockfish from https://github.com/niklasf/stockfish.js
-* Show evaluation graph and visualize mistakes or blunders with different colors
-* Open position or game in new window via URL
-* You can also play chess against computer
-* Detect opening category/ECO code
-* Select from few popular chessboard colors
-* Paint arrows or mark squares on chessboard
-* Look at static evaluation terms by Stockfish and visualize relevant squares
-* Support for touch devices/phones/tablets
-* Look at lczero neural network evaluation
 
-## How to use ##
+## Available Windows
 
-To open your FEN or PGN copy your FEN or PGN to clipboard and paste it in the input box above chessboard. To browse
-game use mouse wheel on chessboard or arrow buttons. To open or hide windows you can use small buttons in the top.
-Available windows are Chessboard, Moves, History, Graph, Opening, Static evaluation, Edit. Other features are
-present in main menu (under hamburger button). 
+- Chessboard
+- Moves
+- History
+- Graph
+- Openings
+- Static Evaluation
+- Edit Board
 
-## Source code and on-line URL ##
 
-Source code is available here:
+## GUI Instructions
 
-- <a href="https://github.com/hxim/PeshkaChess">Source code</a>
-- <a href="https://hxim.github.io/PeshkaChess/index.html">On-line version</a>
+- To open your FEN or PGN, copy your FEN or PGN to clipboard and paste it in the input box above the chessboard.
+- To browse the game, use mouse wheel on the chessboard or the arrow buttons.
+- To open or hide windows, click on the small icons found at the top of the GUI.
+- To play against the engine or set its difficulty level, click on the hamburger menu.
+- To change the styling of the board, flip the board, or open it in a new window, click on the hamburger menu. 
 
-### Thanks
 
-- <a href="https://github.com/official-stockfish/Stockfish">The Stockfish team</a>
-- <a href="https://github.com/exoticorn/stockfish-js">exoticorn</a>
-- <a href="https://github.com/nmrugg/stockfish.js">nmrugg</a>
-- <a href="https://github.com/niklasf/stockfish.js">niklasf</a>
-- <a href="https://github.com/LeelaChessZero">The LCZero Authors</a>
-- <a href="https://github.com/frpays/lc0-js">frpays</a>
-- <a href="https://js.tensorflow.org/">tensorflowjs</a>
+## Installation
+
+1. Unzip the compressed file.
+2. Upload the unzipped folder to your web server then view its path from your web browser.
+
+
+## Local Installation
+
+1. Install a localhost stack like [XAMPP](https://www.apachefriends.org/index.html).
+2. Unzip the compressed file.
+3. Copy the unzipped folder to the directory assigned by your localhost (e.g. htdocs) then view its path from your web browser.
+
+
+## Contribution
+
+- We welcome all developers to contribute to this repository by adding features or fixing bugs. It will always be free and open source.
+
 
 ### License
 
-GPLv3 (see <a href="https://raw.githubusercontent.com/hxim/PeshkaChess/master/License.txt">license.txt</a>)
+- GNU GPLv3: https://www.gnu.org/licenses/gpl-3.0-standalone.html
+
+
+## Credits
+
+- PeshkaChess: https://github.com/hxim/PeshkaChess
+- Stockfish: https://github.com/mcostalba/Stockfish
+- Stockfish.js (nmrugg): https://github.com/nmrugg/stockfish.js
+- Stockfish.js (niklasf):https://github.com/niklasf/stockfish.js
+- LeelaChessZero: https://github.com/LeelaChessZero 
+- LC0-JS: https://github.com/frpays/lc0-js
+- TensorFlow: https://github.com/tensorflow/tensorflow
+- Labinator: https://labinator.com/
