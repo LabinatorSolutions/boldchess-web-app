@@ -1,6 +1,6 @@
 # BoldChess-GUI
 
-BoldChess-GUI is a responsive web GUI for the Stockfish chess engine with analysis, evaluation, and graphs. It also comes with Leela Chess Zero (LCZero) neural network evaluation. This project is originally forked from [PeshkaChess](https://github.com/hxim/PeshkaChess) to be used on [BoldChess.com](https://boldchess.com/).
+BoldChess-GUI is a responsive web GUI for the Stockfish chess engine with analysis, evaluation, and graphs. It also comes with Leela Chess Zero (LCZero) neural network evaluation. This project is forked from [PeshkaChess](https://github.com/hxim/PeshkaChess) to be used on [BoldChess.com](https://boldchess.com/).
 
 
 ## Features
@@ -24,10 +24,10 @@ BoldChess-GUI is a responsive web GUI for the Stockfish chess engine with analys
 ## Available Windows
 
 - Chessboard
-- Moves
-- History
+- List of Moves
+- Game History
 - Graph
-- Openings
+- Chess Openings
 - Static Evaluation
 - Edit Board
 
@@ -41,7 +41,7 @@ BoldChess-GUI is a responsive web GUI for the Stockfish chess engine with analys
 - To change the styling of the board, flip the board, or open it in a new window, click on the hamburger menu. 
 
 
-## Installation
+## Online Installation
 
 1. Unzip the compressed file.
 2. Upload the unzipped folder to your web server then view its path from your web browser.
@@ -66,11 +66,12 @@ BoldChess-GUI is a responsive web GUI for the Stockfish chess engine with analys
 
 ## Credits
 
-- PeshkaChess: https://github.com/hxim/PeshkaChess
-- Stockfish: https://github.com/mcostalba/Stockfish
-- Stockfish.js (nmrugg): https://github.com/nmrugg/stockfish.js
-- Stockfish.js (niklasf):https://github.com/niklasf/stockfish.js
-- LeelaChessZero: https://github.com/LeelaChessZero 
-- LC0-JS: https://github.com/frpays/lc0-js
-- TensorFlow: https://github.com/tensorflow/tensorflow
-- Labinator: https://labinator.com/
+- [PeshkaChess](https://github.com/hxim/PeshkaChess)
+- [Stockfish](https://github.com/mcostalba/Stockfish)
+- [Stockfish.js (nmrugg)](https://github.com/nmrugg/stockfish.js)
+- [Stockfish.js (niklasf)](https://github.com/niklasf/stockfish.js)
+- [LeelaChessZero](https://github.com/LeelaChessZero)
+- [LC0-JS](https://github.com/frpays/lc0-js)
+- [TensorFlow](https://github.com/tensorflow/tensorflow)
+- [BoldChess](https://boldchess.com/)
+- [Labinator](https://labinator.com/)
