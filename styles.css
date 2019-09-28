@@ -62,14 +62,6 @@ li {
     font-weight: 400;
     width: 190px;
 }
-#logotextsub2 {
-    position: absolute;
-    bottom: 4px;
-    right: 12px;
-    font-size: 10px;
-    font-weight: 400;
-    font-style: italic;
-}
 
 /* Chessboard */
 
