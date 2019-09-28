@@ -2499,10 +2499,6 @@ function setupMobileLayout(init) {
     document.getElementById('logotextmain').style.left = "75px";
     document.getElementById('logotextsub').style.top = "37px";
     document.getElementById('logotextsub').style.left = "75px";
-    document.getElementById('logotextsub2').style.top = "30px";
-    document.getElementById('logotextsub2').style.left = "260px";
-    document.getElementById('logotextsub2').style.width = "90px";
-    document.getElementById('logotextsub2').style.transform = "scale(0.75)";
     document.getElementById('toolbar').style.transform = "scale(2.3)";
     document.getElementById('toolbar').style.transformOrigin = "top left";
     document.getElementById('toolbar').style.top = "-2px";
