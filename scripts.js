@@ -19,18 +19,41 @@ document.addEventListener("DOMContentLoaded", function(e)
 
 		if (mode == "play")
 		{
-			_play = 10;
+			_play = 0;
 			showHideMenu(true);
+
+			showHideWindow("Chessboard", true);
+			showHideWindow("History", true);
+			showHideWindow("Moves", false);
+			showHideWindow("Graph", true);
+			showHideWindow("Static", true);
+			showHideWindow("Opening", false);
+			showHideWindow("Lczero", false);
+			showHideWindow("Edit", false);
 		}
 
-		else if (mode == "editor")
+		else if (mode == "edit")
 		{
+			showHideWindow("Chessboard", true);
+			showHideWindow("History", true);
+			showHideWindow("Moves", true);
+			showHideWindow("Graph", false);
+			showHideWindow("Static", true);
+			showHideWindow("Opening", false);
+			showHideWindow("Lczero", false);
 			showHideWindow("Edit", true);
 		}
 
 		else if(mode == "lczero")
 		{
+			showHideWindow("Chessboard", true);
+			showHideWindow("History", true);
+			showHideWindow("Moves", false);
+			showHideWindow("Graph", true);
+			showHideWindow("Static", true);
+			showHideWindow("Opening", false);
 			showHideWindow("Lczero", true);
+			showHideWindow("Edit", false);
 		}
 	}
 });
