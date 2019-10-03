@@ -21,24 +21,54 @@ document.addEventListener("DOMContentLoaded", function(e)
 		{
 			_play = 0;
 			showBoard(false);
+			showHideMenu(true);
 			doComputerMove();
-			showHideMenu(false);
 			historySave();
+
+			showHideWindow("Chessboard", true);
+			showHideWindow("History", true);
+			showHideWindow("Moves", false);
+			showHideWindow("Graph", true);
+			showHideWindow("Static", true);
+			showHideWindow("Opening", true);
+			showHideWindow("Lczero", false);
+			showHideWindow("Edit", false);
 		}
 
 		else if (mode == "editor")
 		{
+			showHideWindow("Chessboard", true);
+			showHideWindow("History", true);
+			showHideWindow("Moves", true);
+			showHideWindow("Graph", true);
+			showHideWindow("Static", true);
+			showHideWindow("Opening", false);
+			showHideWindow("Lczero", false);
 			showHideWindow("Edit", true);
 		}
 
 		else if(mode == "lczero")
 		{
+			showHideWindow("Chessboard", true);
+			showHideWindow("History", true);
+			showHideWindow("Moves", true);
+			showHideWindow("Graph", true);
+			showHideWindow("Static", true);
+			showHideWindow("Opening", false);
 			showHideWindow("Lczero", true);
+			showHideWindow("Edit", false);
 		}
 
 		else if(mode == "opening")
 		{
+			showHideWindow("Chessboard", true);
+			showHideWindow("History", true);
+			showHideWindow("Moves", true);
+			showHideWindow("Graph", true);
+			showHideWindow("Static", true);
 			showHideWindow("Opening", true);
+			showHideWindow("Lczero", false);
+			showHideWindow("Edit", false);
 		}
 	}
 });
