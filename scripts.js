@@ -8,6 +8,31 @@ var _tooltipState = false, _wantUpdateInfo = true;;
 var _wname = "White", _bname = "Black", _color = 0, _bodyScale = 1;
 var _nncache = null;
 
+document.addEventListener("DOMContentLoaded", function(e)
+{
+	var url = new URL(document.URL);
+	var search_params = new URLSearchParams(url.search);
+
+	if (search_params.has('mode'))
+	{
+		var mode = search_params.get('mode');
+
+		if (mode == "editor")
+		{
+			showHideWindow("Edit", true);
+		}
+
+		else if (mode == "play")
+		{
+			_play = 0;
+			showBoard(false);
+			doComputerMove();
+			showHideMenu(false);
+			historySave();
+		}
+	}
+});
+
 function setElemText(elem, value) {
   while(elem.firstChild) elem.removeChild(elem.firstChild);
   elem.appendChild(document.createTextNode(value));
@@ -252,7 +277,7 @@ var _open = [["B00","King's Pawn","1.e4",53,4964], ["A40","Queen's Pawn Game","1
 ["D84","Gruenfeld: Gruenfeld Gambit Accepted","1.d4 Nf6 2.c4 g6 3.Nc3 d5 4.Bf4 Bg7 5.e3 O-O 6.cxd5 Nxd5 7.Nxd5 Qxd5 8.Bxc7",55,1], ["C38","KGA: 3.Nf3 g5 4.Bc4 Bg7","1.e4 e5 2.f4 exf4 3.Nf3 g5 4.Bc4 Bg7",46,1],
 ["E78","King's Indian: Four Pawns Attack, 7.Nf3","1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.e4 d6 5.f4 O-O 6.Be2 c5 7.Nf3",58,1], ["A63","Benoni: Fianchetto, 9...Nbd7","1.d4 Nf6 2.c4 c5 3.d5 e6 4.Nc3 exd5 5.cxd5 d6 6.Nf3 g6 7.g3 Bg7 8.Bg2 O-O 9.O-O Nbd7",46,1],
 ["E23","Nimzo-Indian: Spielmann, 4...c5 5.dxc5 Nc6","1.d4 Nf6 2.c4 e6 3.Nc3 Bb4 4.Qb3 c5 5.dxc5 Nc6",56,1], ["E79","King's Indian: Four Pawns Attack, Main Line","1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.e4 d6 5.f4 O-O 6.Be2 c5 7.Nf3 cxd4 8.Nxd4 Nc6 9.Be3",59,1],
-["B85","Sicilian: Scheveningen, Classical, 7…Qc7 8.f4 Nc6","1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 e6 6.Be2 a6 7.O-O Qc7 8.f4 Nc6",57,1],
+["B85","Sicilian: Scheveningen, Classical, 7ï¿½Qc7 8.f4 Nc6","1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 e6 6.Be2 a6 7.O-O Qc7 8.f4 Nc6",57,1],
 ["E89","King's Indian: Saemisch, Orthodox Main Line","1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.e4 d6 5.f3 O-O 6.Be3 e5 7.d5 c6 8.Nge2 cxd5",53,1],
 ["D99","Gruenfeld: Russian, Smyslov, Main Line","1.d4 Nf6 2.c4 g6 3.Nc3 d5 4.Nf3 Bg7 5.Qb3 dxc4 6.Qxc4 O-O 7.e4 Bg4 8.Be3 Nfd7 9.Qb3",57,1], ["A00","Clemenz Opening","1.h3",45,1], ["A00","Kadas Opening","1.h4",46,1],
 ["A00","Amar/Paris Opening","1.Nh3",43,0], ["A00","Barnes Opening","1.f3",43,0], ["A00","Ware Opening","1.a4",48,0], ["E03","Catalan: Open, Alekhine Variation","1.d4 Nf6 2.c4 e6 3.g3 d5 4.Bg2 dxc4 5.Qa4+ Nbd7 6.Qxc4 a6 7.Qc2",54,0],
