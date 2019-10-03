@@ -19,32 +19,18 @@ document.addEventListener("DOMContentLoaded", function(e)
 
 		if (mode == "play")
 		{
-			showHideWindow("Graph", false);
-			showHideWindow("Static", true);
-			showHideWindow("Lczero", false);
-			showHideWindow("Edit", false);
-
-			_play = 0;
-			showBoard(false);
+			_play = 10;
 			showHideMenu(true);
-			doComputerMove();
-			historySave();
 		}
 
 		else if (mode == "editor")
 		{
-			showHideWindow("Graph", true);
-			showHideWindow("Static", true);
-			showHideWindow("Lczero", false);
 			showHideWindow("Edit", true);
 		}
 
 		else if(mode == "lczero")
 		{
-			showHideWindow("Graph", true);
-			showHideWindow("Static", true);
 			showHideWindow("Lczero", true);
-			showHideWindow("Edit", false);
 		}
 	}
 });
