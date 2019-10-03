@@ -17,18 +17,28 @@ document.addEventListener("DOMContentLoaded", function(e)
 	{
 		var mode = search_params.get('mode');
 
-		if (mode == "editor")
-		{
-			showHideWindow("Edit", true);
-		}
-
-		else if (mode == "play")
+		if (mode == "play")
 		{
 			_play = 0;
 			showBoard(false);
 			doComputerMove();
 			showHideMenu(false);
 			historySave();
+		}
+
+		else if (mode == "editor")
+		{
+			showHideWindow("Edit", true);
+		}
+
+		else if(mode == "lczero")
+		{
+			showHideWindow("Lczero", true);
+		}
+
+		else if(mode == "opening")
+		{
+			showHideWindow("Opening", true);
 		}
 	}
 });
