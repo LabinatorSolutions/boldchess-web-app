@@ -8,52 +8,24 @@ var _tooltipState = false, _wantUpdateInfo = true;;
 var _wname = "White", _bname = "Black", _color = 0, _bodyScale = 1;
 var _nncache = null;
 
-document.addEventListener("DOMContentLoaded", function(e)
-{
+document.addEventListener("DOMContentLoaded", function(e) {
 	var url = new URL(document.URL);
 	var search_params = new URLSearchParams(url.search);
 
-	if (search_params.has('mode') == true)
-	{
+	if (search_params.has('mode') == true) {
 		var mode = search_params.get('mode');
 
-		if (mode == "play")
-		{
-			_play = 0;
+		if (mode == "play") {
 			showHideMenu(true);
-
-			showHideWindow("Chessboard", true);
-			showHideWindow("History", true);
-			showHideWindow("Moves", false);
-			showHideWindow("Graph", true);
 			showHideWindow("Static", true);
-			showHideWindow("Opening", false);
-			showHideWindow("Lczero", false);
-			showHideWindow("Edit", false);
 		}
 
-		else if (mode == "edit")
-		{
-			showHideWindow("Chessboard", true);
-			showHideWindow("History", true);
-			showHideWindow("Moves", true);
-			showHideWindow("Graph", false);
-			showHideWindow("Static", true);
-			showHideWindow("Opening", false);
-			showHideWindow("Lczero", false);
+		else if (mode == "edit") {
 			showHideWindow("Edit", true);
 		}
 
-		else if(mode == "lczero")
-		{
-			showHideWindow("Chessboard", true);
-			showHideWindow("History", true);
-			showHideWindow("Moves", false);
-			showHideWindow("Graph", true);
-			showHideWindow("Static", true);
-			showHideWindow("Opening", false);
+		else if(mode == "lczero") {
 			showHideWindow("Lczero", true);
-			showHideWindow("Edit", false);
 		}
 	}
 });
