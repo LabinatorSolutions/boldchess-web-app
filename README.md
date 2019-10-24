@@ -1,4 +1,4 @@
-# Stockfish-Chess-Analysis-Board : Stockfish-Powered Chess Web-Based Analysis Board
+# Chess Web-Based Analysis Board Powered By Stockfish
 
 It is a responsive web GUI for the Stockfish chess engine with analysis, evaluation, and graphs. It also comes with Leela Chess Zero (LCZero) neural network evaluation.
 
