@@ -1,5 +1,11 @@
 # Chess Web-Based Analysis Board Powered By Stockfish
 
+![GUI Type](https://img.shields.io/badge/Type-Web_GUI-orange)
+![JavaScript](https://img.shields.io/badge/Language-JavaScript-yellow)
+![Stockfish 10 Chess Engine](https://img.shields.io/badge/Stockfish_Chess_Engine-10-43AC6A)
+![Mobile Support](https://img.shields.io/badge/Touch_Based_Device_Support-Yes-purple)
+![Known Bugs](https://img.shields.io/badge/Known_Bugs-0-green)
+
 It is a responsive web GUI for the Stockfish chess engine with analysis, evaluation, and graphs. It also comes with Leela Chess Zero (LCZero) neural network evaluation.
 
 This project is forked initially from [PeshkaChess](https://github.com/hxim/PeshkaChess) and modified to be used on [BoldChess.com](https://boldchess.com/).
