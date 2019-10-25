@@ -16,7 +16,9 @@ document.addEventListener("DOMContentLoaded", function(e) {
 		var mode = search_params.get('mode');
 
 		if (mode == "play") {
-			showHideMenu(true);
+			_play = 10;
+			doComputerMove();
+			historySave();
 			showHideWindow("Static", true);
 		}
 
