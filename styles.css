@@ -1228,14 +1228,13 @@ li {
 .wbButton {
     width: 13px;
     height: 13px;
-    padding: 2px;
+    margin: 3px;
     opacity: 0.25;
     background-color: transparent;
     cursor: pointer;
     background-repeat: no-repeat;
     background-position: center;
     display: inline-block;
-    margin-left: 2px;
 }
 .wbButton:hover, .wbButton.selected:hover {
     opacity: 1;
