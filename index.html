@@ -22,7 +22,6 @@
     <div id="fen" style="display:none;">rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1</div>
     <div id="container">
         <div class="col left" id="colLeft">
-
             <div id="logo">
                 <a href="https://boldchess.com/" rel=”noopener” target="_blank">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="64" height="64">
@@ -92,10 +91,8 @@
                         </svg>
                     </div>
                 </div>
-
             </div>
             <div id="wb"></div>
-
             <div class="box" style="height:437px;min-width: 108px;min-height: 161px" id="wChessboard">
                 <div id="positionInfo" class="boxTop"></div>
                 <div id="searchWrapper" class="boxMid">
@@ -111,7 +108,6 @@
                 <div id="boxBoardOuter">
                     <div id="boxBoard">
                         <div id="boardWrapper">
-
                             <div id="arrowWrapper1">
                                 <svg height="100%" width="100%">
                                     <defs>
@@ -142,7 +138,6 @@
                                     <line style="stroke-width:5;marker-end:url(#markerArrow3);" y2="0" y1="0" x1="0" x2="0"></line>
                                 </svg>
                             </div>
-
                             <table id="cbTable">
                                 <tbody>
                                     <tr>
@@ -223,10 +218,8 @@
                     </div>
                 </div>
             </div>
-
         </div>
         <div class="col right" id="colRight">
-
             <div class="box" style="height:205px;min-height:79px;" id="wMoves">
                 <div id="movesInfo" class="boxTop"></div>
                 <div id="movesHeader">
@@ -237,21 +230,17 @@
                 </div>
                 <div id="moves" class="boxMid"></div>
                 <div id="movesFooter" class="footer">Powered by <a href="https://github.com/niklasf/stockfish.js/">Stockfish.js</a> and <a href="https://github.com/official-stockfish/Stockfish/">Stockfish Chess Engine</a></div>
-
             </div>
-
             <div class="box" style="height:146px;" id="wHistory">
                 <div class="boxTop">History Of Moves</div>
                 <div class="boxMid" id="history"></div>
             </div>
-
             <div class="box" style="height:155px;background-color: #697686;" id="wGraph">
                 <div class="boxTop">Evaluation Graph</div>
                 <div id="graphWrapper" class="boxGraph">
                     <canvas id="graph">Your browser does not support the HTML5 canvas tag.</canvas>
                 </div>
             </div>
-
             <div class="box" style="height:115px;min-height:79px;display:none;" id="wOpening">
                 <div class="boxTop">Opening</div>
                 <div id="openingHeader">
@@ -262,7 +251,6 @@
                 </div>
                 <div id="opening" class="boxMid"></div>
             </div>
-
             <div class="box" style="height:115px;min-height:79px;display:none;" id="wStatic">
                 <div id="staticInfo" class="boxTop">Static Evaluation</div>
                 <div id="staticHeader">
@@ -273,7 +261,6 @@
                 </div>
                 <div id="static" class="boxMid"></div>
             </div>
-
             <div class="box" style="height:115px;min-height:79px;display:none;" id="wLczero">
                 <div id="lczeroInfo" class="boxTop">LcZero - Neural Network</div>
                 <div id="lczeroHeader">
@@ -284,7 +271,6 @@
                 <div id="lczero" class="boxMid"></div>
                 <div id="lczeroFooter" class="footer">Powered by <a href="https://github.com/frpays/lc0-js/">LC0-js</a>, <a href="https://github.com/LeelaChessZero/">LeelaChessZero</a> and <a href="https://www.tensorflow.org/js/">TensorFlow.js</a></div>
             </div>
-
             <div class="box" style="height:122px;min-height:122px;min-width:298px;display:none;" id="wEdit">
                 <div class="boxTop">Edit tools</div>
                 <div id="editWrapperOuter" class="boxMid">
@@ -308,14 +294,11 @@
                     </div>
                 </div>
             </div>
-
             <div id="menu" style="display:none;"></div>
         </div>
-
     </div>
     <div id="tooltip" style="display:none;"></div>
     <div id="dragPiece" class="cb"></div>
-
     <script type='application/javascript' src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@0.14.1/dist/tf.min.js"></script>
     <script type='application/javascript' src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
     <script type='application/javascript' src="https://cdn.rawgit.com/dcodeIO/protobuf.js/6.8.8/dist/protobuf.min.js"></script>
