@@ -31,7 +31,7 @@ document.addEventListener("DOMContentLoaded", function(e) {
         var mode = search_params.get('mode');
 
         if (mode == "play") {
-            _play = 15;
+            _play = 10;
             doComputerMove();
         }
     }
