@@ -84,6 +84,8 @@ https://labinatorsolutions.github.io/stockfish-chess-analysis-board/
 
 7. Ability to force the engine to make a move, whether it has finished analysis or not.
 
+8. Ability to play against the computer with the Black pieces. Right now, you can only play against the engine with the White pieces.
+
 
 ## Contribution
 
