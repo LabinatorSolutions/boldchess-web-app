@@ -4,7 +4,7 @@
 ![JavaScript](https://img.shields.io/badge/Language-JavaScript-yellow)
 ![Stockfish 10 Chess Engine](https://img.shields.io/badge/Stockfish_Chess_Engine-10-43AC6A)
 ![Mobile Support](https://img.shields.io/badge/Touch_Based_Device_Support-Yes-purple)
-![Known Bugs](https://img.shields.io/badge/Known_Bugs-0-green)
+![Known Bugs](https://img.shields.io/badge/Known_Bugs-1-green)
 
 It is a responsive web GUI for the Stockfish chess engine with analysis, evaluation, and graphs. It also comes with Leela Chess Zero (LCZero) neural network evaluation.
 
@@ -68,23 +68,31 @@ https://labinatorsolutions.github.io/stockfish-chess-analysis-board/
 3. Copy the unzipped folder to the directory assigned by your localhost (e.g., htdocs) then view its path from your web browser.
 
 
-## List Of Suggested Improvements
+## List Of Known Bugs
 
-1. Addition of chess clocks or game modes.
+- Google Console is reporting that the elements/buttons are too close together on mobile devices
 
-2. Ability to show analysis while still playing against the engine. Right now, when playing against the engine, the player can not view the evaluation or check the engine's score, for example. He/She has to stop the engine first, check all the values then resume playing again.
 
-3. There is no upper bound for the depth level. It would be much better to have a max value for the depth (or the difficulty level).
+## List Of Important Improvements
 
-4. Addition of playing style feature. It allows the player to choose what style Stockfish will play at (passive, solid, active, aggressive, suicidal).
+1. Ability to play against the computer with the Black pieces. Right now, you can only play against the engine with the White pieces.
 
-5. Addition of an opening book so that the engine does not spend a very long time on the first few moves when playing against level 20, for example. The app already has an opening explorer, but the engine is not using an opening book. A more professional approach would be to allow the user to choose whether he needs the engine to use an opening book or not.
+2. Addition of chess clocks or game modes.
 
-6. As a related feature to point (5) is to allow the user to choose the variety of book moves that the engine may adapt. That is, how frequently the engine will change his opening - provided it is using an opening book, of course.
+3. Ability to show analysis while still playing against the engine. Right now, when playing against the engine, the player can not view the evaluation or check the engine's score, for example.
 
-7. Ability to force the engine to make a move, whether it has finished analysis or not.
+4. There is no upper bound for the depth level. It would be much better to have a max value for the depth (or the difficulty level).
 
-8. Ability to play against the computer with the Black pieces. Right now, you can only play against the engine with the White pieces.
+
+## List Of Extra Improvements
+
+1. Addition of playing style feature. It allows the player to choose what style Stockfish will play at (passive, solid, active, aggressive, suicidal).
+
+2. Addition of an opening book so that the engine does not spend a very long time on the first few moves when playing against level 20, for example. The app already has an opening explorer, but the engine is not using an opening book. A more professional approach would be to allow the user to choose whether he needs the engine to use an opening book or not.
+
+3. As a related feature to point (5) is to allow the user to choose the variety of book moves that the engine may adapt. That is, how frequently the engine will change his opening - provided it is using an opening book, of course.
+
+4. Ability to force the engine to make a move, whether it has finished analysis or not.
 
 
 ## Contribution
