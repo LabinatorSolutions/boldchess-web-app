@@ -31,14 +31,8 @@ document.addEventListener("DOMContentLoaded", function(e) {
         var mode = search_params.get('mode');
 
         if (mode == "play") {
-            _play = 10;
+            _play = 15;
             doComputerMove();
-            historySave();
-            showHideWindow("Static", true);
-        } else if (mode == "edit") {
-            showHideWindow("Edit", true);
-        } else if (mode == "lczero") {
-            showHideWindow("Lczero", true);
         }
     }
 });
