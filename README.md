@@ -4,11 +4,16 @@
 ![JavaScript](https://img.shields.io/badge/Language-JavaScript-yellow)
 ![Stockfish 10 Chess Engine](https://img.shields.io/badge/Stockfish_Chess_Engine-10-43AC6A)
 ![Mobile Support](https://img.shields.io/badge/Touch_Based_Device_Support-Yes-purple)
-![Known Bugs](https://img.shields.io/badge/Known_Bugs-1-green)
+![Known Bugs](https://img.shields.io/badge/Known_Bugs-2-green)
 
 It is a responsive web GUI for the Stockfish chess engine with analysis, evaluation, and graphs. It also comes with Leela Chess Zero (LCZero) neural network evaluation.
 
 This project is forked initially from [PeshkaChess](https://github.com/hxim/PeshkaChess) and modified to be used on [BoldChess.com](https://boldchess.com/).
+
+
+## Mission
+
+Our mission from this project is to develop a modern responsive free and open source web-based chess GUI and analysis tool for the Stockfish chess engine.
 
 
 ## Live Demo
@@ -57,47 +62,29 @@ https://labinatorsolutions.github.io/stockfish-chess-analysis-board/
 
 ## Online Installation
 
-1. Unzip the compressed file.
-2. Upload the unzipped folder to your web server then view its path from your web browser.
+- Download or clone this repository.
+- Upload the unzipped folder of this repository to your web server then view it from your web browser.
 
 
 ## Local Installation
 
-1. Install a localhost stack like [XAMPP](https://www.apachefriends.org/index.html).
-2. Unzip the compressed file.
-3. Copy the unzipped folder to the directory assigned by your localhost (e.g., htdocs) then view its path from your web browser.
+- Download or clone this repository.
+- Install a web server locally to test effectively the GUI. A fast approach is download and install [XAMPP](https://www.apachefriends.org/index.html).
+- Copy the folder of the repository to the (htdocs) directory then view it locally from your web browser.
 
 
-## List Of Known Bugs
+## List Of Important Improvements & Issues
 
-- Google Console is reporting that the elements/buttons are too close together on mobile devices
-
-
-## List Of Important Improvements
-
-1. Ability to play against the computer with the Black pieces. Right now, you can only play against the engine with the White pieces.
-
-2. Addition of chess clocks or game modes.
-
-3. Ability to show analysis while still playing against the engine. Right now, when playing against the engine, the player can not view the evaluation or check the engine's score, for example.
-
-4. There is no upper bound for the depth level. It would be much better to have a max value for the depth (or the difficulty level).
-
-
-## List Of Extra Improvements
-
-1. Addition of playing style feature. It allows the player to choose what style Stockfish will play at (passive, solid, active, aggressive, suicidal).
-
-2. Addition of an opening book so that the engine does not spend a very long time on the first few moves when playing against level 20, for example. The app already has an opening explorer, but the engine is not using an opening book. A more professional approach would be to allow the user to choose whether he needs the engine to use an opening book or not.
-
-3. As a related feature to point (5) is to allow the user to choose the variety of book moves that the engine may adapt. That is, how frequently the engine will change his opening - provided it is using an opening book, of course.
-
-4. Ability to force the engine to make a move, whether it has finished analysis or not.
+https://github.com/LabinatorSolutions/stockfish-chess-analysis-board/issues
 
 
 ## Contribution
 
 - We welcome all developers to contribute to this repository by adding features or fixing bugs. The source codes will always be free and open source.
+
+**List Of Current Contributors:**
+
+- https://github.com/LabinatorSolutions/stockfish-chess-analysis-board/graphs/contributors
 
 
 ## License
