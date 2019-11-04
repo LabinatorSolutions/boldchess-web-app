@@ -22,6 +22,7 @@ var _wname = "White",
     _bodyScale = 1;
 var _nncache = null;
 var _gameMode = 1;
+var _isPlayerWhite = true;
 
 document.addEventListener("DOMContentLoaded", function(e) {
     var url = new URL(document.URL);
@@ -4460,7 +4461,10 @@ function onKeyDown(e) {
     else if (c == 'S') showHideWindow("Static");
     else if (c == 'L') showHideWindow("Lczero");
     else if (c == 'E') showHideWindow("Edit");
-
+    else if (c == '1') menuAnalysisMode();
+    else if (c == '2') menuPlayEngineWhite();
+    else if (c == '3') menuPlayEngineBlack();
+    else if (c == '4') menuTwoPlayerMode();
 }
 
 // Evaluation engine
@@ -4709,7 +4713,11 @@ function evalAll() {
 function doComputerMove() {
     if (_play == null) return;
     var fen = getCurFEN();
-    if (_play == (fen.indexOf(" b ") > 0)) return;
+
+    if (_isPlayerWhite == true && fen.indexOf(" w ") > 0) return;
+
+    if (_isPlayerWhite == false && fen.indexOf(" b ") > 0) return;
+
     if (_engine != null && !_engine.waiting) {
         if (_engine) _engine.kill = true;
         window.setTimeout(function() {
@@ -4764,8 +4772,8 @@ function getGraphPointData(i) {
         black = _history[i][1].black;
         e = _history[i][1].score / 100;
         if (black) e = -e;
-        if ((e || 0) > 6) e = 6;
-        else if ((e || 0) < -6) e = -6;
+        if ((e || 0) > 10) e = 10;
+        else if ((e || 0) < -10) e = -10;
     }
     return e;
 }
@@ -5353,38 +5361,12 @@ function reloadMenu() {
         parent.appendChild(div);
     }
 
-    addMenuItem("menuAnalysisMode", "Mode 1: Analyze Board", null, _gameMode != 1, function() {
+    addMenuItem("menuAnalysisMode", "Mode 1: Analyze Board", 1, _gameMode != 1, function(e) { menuAnalysisMode() });
+    addMenuItem("menuPlayEngine", "Mode 2: Player (White) vs. Engine (Black)", 2, _gameMode != 2, function(e) { menuPlayEngineWhite() });
+    addMenuItem("menuPlayEngine", "Mode 3: Engine (White) vs. Player (Black)", 3, _gameMode != 3, function(e) { menuPlayEngineBlack() });
+    addMenuItem("menuTwoPlayerMode", "Mode 4: Player vs. Player", 4, _gameMode != 4, function(e) { menuTwoPlayerMode() });
 
-        _gameMode = 1;
-        _play = null;
-        _engine.kill = false;
-        showBoard(false);
-        showHideMenu(false);
-        historySave();
-
-    });
-
-    addMenuItem("menuPlayEngine", "Mode 2: Play Against Engine", null, _gameMode != 2, function(e) {
-
-        _gameMode = 2;
-        _play = e.ctrlKey;
-        showBoard(false);
-        showHideMenu(false);
-        doComputerMove();
-        historySave();
-
-    });
-
-    addMenuItem("menuTwoPlayerMode", "Mode 3: Play Against Local Player", null, _gameMode != 3, function(e) {
-
-        _gameMode = 3;
-        _engine.kill = true;
-        _play = null;
-        showBoard(false);
-        showHideMenu(false);
-        historySave();
-
-    });
+    addMenuLine();
 
     addMenuItemEngine("menuEngine", _play != null ? "Engine level" : "Engine depth");
 
@@ -5425,6 +5407,46 @@ function reloadMenu() {
         command("window");
         showHideMenu(false);
     });
+}
+
+// Menu Functions
+
+function menuAnalysisMode() {
+    _gameMode = 1;
+    _play = null;
+    _engine.kill = false;
+    showBoard(false);
+    showHideMenu(false);
+    historySave();
+}
+
+function menuPlayEngineWhite() {
+    _gameMode = 2;
+    _isPlayerWhite = true;
+    _play = 0;
+    showBoard(true);
+    showHideMenu(false);
+    doComputerMove();
+    historySave();
+}
+
+function menuPlayEngineBlack() {
+    _gameMode = 3;
+    _isPlayerWhite = false;
+    _play = 1;
+    showBoard(true);
+    showHideMenu(false);
+    doComputerMove();
+    historySave();
+}
+
+function menuTwoPlayerMode() {
+    _gameMode = 4;
+    _engine.kill = true;
+    _play = null;
+    showBoard(false);
+    showHideMenu(false);
+    historySave();
 }
 
 // URL paramenters
