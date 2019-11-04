@@ -5280,7 +5280,7 @@ function reloadMenu() {
         var span2 = document.createElement('span');
         span2.id = "buttonEnginePlus";
         span2.onclick = function() {
-            if (_engine != null && _engine.ready) command("depth " + Math.min(128, _engine.depth + 1));
+            if (_engine != null && _engine.ready) command("depth " + Math.min(50, _engine.depth + 1));
             showBoard(false, true);
             setEngineValue(document.getElementById("buttonEngineValue"));
         }
