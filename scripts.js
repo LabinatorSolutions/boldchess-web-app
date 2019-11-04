@@ -32,8 +32,7 @@ document.addEventListener("DOMContentLoaded", function(e) {
         var mode = search_params.get('mode');
 
         if (mode == "play") {
-            _play = 10;
-            doComputerMove();
+            menuPlayEngineWhite();
         }
     }
 });
@@ -2303,7 +2302,7 @@ function command(text) {
     } else if (text.toLowerCase().indexOf("depth ") == 0) {
         if (_engine != null && _engine.ready) {
             _engine.depth = Math.min(128, Math.max(0, parseInt(text.toLowerCase().replace("depth ", ""))));
-            if (isNaN(_engine.depth)) _engine.depth = 10;
+            if (isNaN(_engine.depth)) _engine.depth = 15;
         }
         showBoard();
         historySave();
@@ -2363,7 +2362,7 @@ function command(text) {
         var url = [location.protocol, '//', location.host, location.pathname].join('');
         var params = [];
         if (_color > 0) params.push("col" + _color);
-        if (_engine != null && _engine.ready && _engine.depth != 10) params.push("depth " + _engine.depth);
+        if (_engine != null && _engine.ready && _engine.depth != 15) params.push("depth " + _engine.depth);
         if (lparamsstr != "c m h g") params.push("layout " + (lparamsstr.length == 0 ? "-" : lparamsstr));
         if (encoded.length > 0) params.push("~" + encoded);
         else if (getCurFEN() != START) params.push(getCurFEN());
@@ -4438,7 +4437,7 @@ function onKeyDown(e) {
     if (e.ctrlKey) return;
     var c = String.fromCharCode(e.keyCode || e.which).replace(" ", "-");
     if (k == 96 || k == 106) {
-        if (_engine != null && _engine.ready) command("depth " + (_engine.depth != 0 ? "0" : "10"));
+        if (_engine != null && _engine.ready) command("depth " + (_engine.depth != 0 ? "0" : "15"));
     } else if (k == 107) {
         if (_engine != null && _engine.ready) command("depth " + Math.min(128, _engine.depth + 1));
     } else if (k == 109) {
@@ -4479,7 +4478,7 @@ function loadEngine() {
         ready: false,
         kill: false,
         waiting: true,
-        depth: 10,
+        depth: 15,
         lastnodes: 0
     };
     var wasmSupported = typeof WebAssembly === 'object' && WebAssembly.validate(Uint8Array.of(0x0, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00));
@@ -5289,7 +5288,7 @@ function reloadMenu() {
         var span3 = document.createElement('span');
         span3.id = "buttonEngineValue";
         span3.onclick = function() {
-            if (_engine != null && _engine.ready) command("depth " + (_engine.depth != 0 ? "0" : "10"));
+            if (_engine != null && _engine.ready) command("depth " + (_engine.depth != 0 ? "0" : "15"));
             showBoard(false, true);
             setEngineValue(document.getElementById("buttonEngineValue"));
         }
