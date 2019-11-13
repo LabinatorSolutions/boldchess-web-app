@@ -23,9 +23,9 @@ Our mission from this project is to develop a modern responsive free and open so
 https://boldchess.com/analysis/
 
 
-## Live Demo On GitHub.com
+## Live Demo On GitHub
 
-https://github.com/LabinatorSolutions/boldchess-web-app/
+https://labinatorsolutions.github.io/boldchess-web-app/
 
 
 ## Features
