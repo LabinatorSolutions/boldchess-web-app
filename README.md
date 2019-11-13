@@ -10,7 +10,7 @@ The official chess web-based app of the [BoldChess.com](https://boldchess.com/) 
 
 It is a responsive web GUI for the Stockfish chess engine with analysis, evaluation, and graphs. It also comes with Leela Chess Zero (LCZero) neural network evaluation.
 
-It has originally been cloned from [PeshkaChess](https://github.com/hxim/PeshkaChess) and modified for [BoldChess.com](https://boldchess.com/).
+Note: This app is originally based on [PeshkaChess](https://github.com/hxim/PeshkaChess) and modified for [BoldChess.com](https://boldchess.com/).
 
 
 ## Mission
@@ -87,16 +87,16 @@ https://github.com/LabinatorSolutions/boldchess-web-app/issues
 
 ## Contribution
 
-- We welcome all developers to contribute to this repository by adding features or fixing bugs. The source codes will always be free and open source.
+We welcome all developers to contribute to this repository by adding features or fixing bugs. The source codes will always be free and open source.
 
 **List Of Current Contributors:**
 
-- https://github.com/LabinatorSolutions/boldchess-web-app/graphs/contributors
+https://github.com/LabinatorSolutions/boldchess-web-app/graphs/contributors
 
 
 ## License
 
-- GNU GPLv3: https://www.gnu.org/licenses/gpl-3.0-standalone.html
+GNU GPLv3: https://www.gnu.org/licenses/gpl-3.0-standalone.html
 
 
 ## Credits
