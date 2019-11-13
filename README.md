@@ -15,7 +15,7 @@ It has originally been cloned from [PeshkaChess](https://github.com/hxim/PeshkaC
 
 ## Mission
 
-Our mission from this project is to develop a modern responsive free and open source web-based chess GUI and analysis tool for the Stockfish chess engine.
+Our mission from this project is to develop a modern responsive free and open source web-based chess app powered by the Stockfish chess engine.
 
 
 ## Live Demo On BoldChess.com
