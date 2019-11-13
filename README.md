@@ -1,4 +1,4 @@
-# Chess Web-Based Analysis Board Powered By Stockfish
+# BoldChess Web App
 
 ![GUI Type](https://img.shields.io/badge/Type-Web_GUI-orange)
 ![JavaScript](https://img.shields.io/badge/Language-JavaScript-yellow)
@@ -6,9 +6,9 @@
 ![Mobile Support](https://img.shields.io/badge/Touch_Based_Device_Support-Yes-purple)
 ![Known Bugs](https://img.shields.io/badge/Known_Bugs-0-green)
 
-It is a responsive web GUI for the Stockfish chess engine with analysis, evaluation, and graphs. It also comes with Leela Chess Zero (LCZero) neural network evaluation.
+The official chess web-based app of the [BoldChess.com](https://boldchess.com/) website.
 
-This project is forked initially from [PeshkaChess](https://github.com/hxim/PeshkaChess) and modified to be used on [BoldChess.com](https://boldchess.com/).
+It is a responsive web GUI for the Stockfish chess engine with analysis, evaluation, and graphs. It also comes with Leela Chess Zero (LCZero) neural network evaluation. It has originally been cloned from [PeshkaChess](https://github.com/hxim/PeshkaChess) and modified for [BoldChess.com](https://boldchess.com/).
 
 
 ## Mission
@@ -75,7 +75,7 @@ https://labinatorsolutions.github.io/stockfish-chess-analysis-board/
 
 ## List Of Important Improvements & Issues
 
-https://github.com/LabinatorSolutions/stockfish-chess-analysis-board/issues
+https://github.com/LabinatorSolutions/boldchess-web-app/issues
 
 
 ## Contribution
@@ -84,7 +84,7 @@ https://github.com/LabinatorSolutions/stockfish-chess-analysis-board/issues
 
 **List Of Current Contributors:**
 
-- https://github.com/LabinatorSolutions/stockfish-chess-analysis-board/graphs/contributors
+- https://github.com/LabinatorSolutions/boldchess-web-app/graphs/contributors
 
 
 ## License
