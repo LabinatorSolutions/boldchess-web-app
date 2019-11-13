@@ -16,9 +16,14 @@ It is a responsive web GUI for the Stockfish chess engine with analysis, evaluat
 Our mission from this project is to develop a modern responsive free and open source web-based chess GUI and analysis tool for the Stockfish chess engine.
 
 
-## Live Demo
+## Live Demo On BoldChess.com
 
-https://labinatorsolutions.github.io/stockfish-chess-analysis-board/
+https://boldchess.com/analysis/
+
+
+## Live Demo On GitHub.com
+
+https://github.com/LabinatorSolutions/boldchess-web-app/
 
 
 ## Features
