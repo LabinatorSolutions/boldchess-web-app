@@ -8,7 +8,9 @@
 
 The official chess web-based app of the [BoldChess.com](https://boldchess.com/) website.
 
-It is a responsive web GUI for the Stockfish chess engine with analysis, evaluation, and graphs. It also comes with Leela Chess Zero (LCZero) neural network evaluation. It has originally been cloned from [PeshkaChess](https://github.com/hxim/PeshkaChess) and modified for [BoldChess.com](https://boldchess.com/).
+It is a responsive web GUI for the Stockfish chess engine with analysis, evaluation, and graphs. It also comes with Leela Chess Zero (LCZero) neural network evaluation.
+
+It has originally been cloned from [PeshkaChess](https://github.com/hxim/PeshkaChess) and modified for [BoldChess.com](https://boldchess.com/).
 
 
 ## Mission
