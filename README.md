@@ -21,7 +21,7 @@ Our mission from this project is to develop a modern responsive free and open so
 
 ## Live Demo On BoldChess.com
 
-https://app.boldchess.com/
+[https://app.boldchess.com/](https://app.boldchess.com/)
 
 ---
 
@@ -93,7 +93,7 @@ https://app.boldchess.com/
 
 ## List Of Important Improvements & Issues
 
-https://github.com/LabinatorSolutions/boldchess-web-app/issues
+[https://github.com/LabinatorSolutions/boldchess-web-app/issues](https://github.com/LabinatorSolutions/boldchess-web-app/issues)
 
 ---
 
@@ -103,13 +103,13 @@ We welcome all developers to contribute to this repository by adding features or
 
 **List Of Current Contributors:**
 
-https://github.com/LabinatorSolutions/boldchess-web-app/graphs/contributors
+[https://github.com/LabinatorSolutions/boldchess-web-app/graphs/contributors](https://github.com/LabinatorSolutions/boldchess-web-app/graphs/contributors)
 
 ---
 
 ## License
 
-GNU GPLv3: https://www.gnu.org/licenses/gpl-3.0-standalone.html
+GNU GPLv3: [https://www.gnu.org/licenses/gpl-3.0-standalone.html](https://www.gnu.org/licenses/gpl-3.0-standalone.html)
 
 ---
 
