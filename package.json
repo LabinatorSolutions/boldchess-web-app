@@ -1,0 +1,21 @@
+{
+    "name": "boldchess-app",
+    "version": "1.0.0",
+    "description": "A chess game application",
+    "main": "server.js",
+    "scripts": {
+    "start": "node server.js",
+    "build": "echo 'No build required'"
+    },
+    "keywords": [
+        "chess",
+        "game",
+        "nodejs",
+        "express"
+    ],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "express": "^4.18.3"
+    }
+}
