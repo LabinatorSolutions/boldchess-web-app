@@ -1,7 +1,7 @@
 # BoldChess Web App
 
 ![GUI Type](https://img.shields.io/badge/Type-Web_GUI-orange)
-![JavaScript](https://img.shields.io/badge/Language-JavaScript-Yes-yellow)
+![JavaScript](https://img.shields.io/badge/Language-JavaScript-yellow)
 ![Node.js](https://img.shields.io/badge/Node.js-Yes-026e00)
 ![Express.js](https://img.shields.io/badge/Express.js-Yes-ebd81c)
 ![Stockfish Chess Engine](https://img.shields.io/badge/Stockfish_Chess_Engine-Yes-43AC6A)
