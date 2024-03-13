@@ -1,12 +1,13 @@
 # BoldChess Web App
 
-![GUI Type](https://img.shields.io/badge/Type-Web_GUI-orange)
-![JavaScript](https://img.shields.io/badge/Language-JavaScript-yellow)
-![Node.js](https://img.shields.io/badge/Node.js-Yes-026e00)
-![Express.js](https://img.shields.io/badge/Express.js-Yes-ebd81c)
-![Stockfish Chess Engine](https://img.shields.io/badge/Stockfish_Chess_Engine-Yes-43AC6A)
-![Mobile Support](https://img.shields.io/badge/Touch_Based_Device_Support-Yes-purple)
-![Known Bugs](https://img.shields.io/badge/Known_Bugs-0-green)
+![Web GUI](https://img.shields.io/badge/Web_GUI-Responsive-brightgreen)
+![JavaScript](https://img.shields.io/badge/Language-JavaScript-f0db4f)
+![Node.js Version](https://img.shields.io/badge/Node.js-v14.17.0-339933)
+![Express.js](https://img.shields.io/badge/Express.js-4.18.1-000000)
+![Stockfish Chess Engine](https://img.shields.io/badge/Stockfish_Version-10-4682B4)
+![Mobile Ready](https://img.shields.io/badge/Mobile_Ready-Yes-ff69b4)
+![Issues](https://img.shields.io/github/issues-search/LabinatorSolutions/boldchess-web-app?label=Known%20Bugs&query=is%3Aissue+is%3Aopen+label%3Abug)
+![License](https://img.shields.io/badge/License-AGPL_v3-663366)
 
 The official chess web-based app of the [BoldChess.com](https://boldchess.com/) website.
 It is a responsive web GUI for the Stockfish chess engine with analysis, evaluation, and graphs. It also comes with Leela Chess Zero (LCZero) neural network evaluation.
@@ -63,7 +64,7 @@ Our mission from this project is to develop a modern responsive free and open so
 - To browse the game, use the mouse wheel on the chessboard or the arrow buttons.
 - To open or hide windows, click on the small icons found at the top of the GUI.
 - To play against the engine or set its difficulty level, click on the hamburger menu.
-- To change the styling of the board, flip the board, or open it in a new window, click on the hamburger menu. 
+- To change the styling of the board, flip the board, or open it in a new window, click on the hamburger menu.
 
 ---
 
@@ -91,6 +92,16 @@ Our mission from this project is to develop a modern responsive free and open so
 
 ---
 
+## Server and Deployment
+
+The application is designed to be easily deployable on any standard Node.js environment.
+
+**Running the Server**: The main entry point of the application is server.js. This server serves the static files located in the public directory and does not require a build process for deployment. This design choice simplifies deployment and development processes.
+
+**No Build Required**: Reflecting the application's simplicity and the direct use of vanilla JavaScript, the 'build' script in package.json is intentionally left minimal with echo 'No build required'. This is due to the application's architecture, focusing on serving static assets without the need for complex build processes or server-side rendering.
+
+---
+
 ## List Of Important Improvements & Issues
 
 [https://github.com/LabinatorSolutions/boldchess-web-app/issues](https://github.com/LabinatorSolutions/boldchess-web-app/issues)
@@ -109,7 +120,7 @@ We welcome all developers to contribute to this repository by adding features or
 
 ## License
 
-GNU GPLv3: [https://www.gnu.org/licenses/gpl-3.0-standalone.html](https://www.gnu.org/licenses/gpl-3.0-standalone.html)
+GNU AFFERO GENERAL PUBLIC LICENSE (AGPLv3): [https://www.gnu.org/licenses/agpl-3.0.html](https://www.gnu.org/licenses/agpl-3.0.html)
 
 ---
 
