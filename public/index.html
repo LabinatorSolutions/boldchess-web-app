@@ -3,18 +3,27 @@
 
 <head>
     <meta charset="utf-8">
-    <link rel="stylesheet" href="styles.css" />
-    <link rel="icon" type="image/svg" sizes="32x32" href="BoldChess-Logo.svg">
-    <link rel="icon" type="image/svg" sizes="96x96" href="BoldChess-Logo.svg">
-    <title>Professional Chess App With Stockfish Chess Engine - BoldChess.com</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="description" content="Expert free chess app with full opening book and analysis board powered by Stockfish 10. Professional GUI for all your chess needs.">
+    <meta name="author" content="BoldChess.com">
+    <link rel="canonical" href="https://app.boldchess.com">
+    <link rel="preload" href="styles.css" as="style">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/svg+xml" sizes="96x96" href="BoldChess-Logo.svg">
+    <title>Expert Free Chess App | Stockfish 10 GUI - BoldChess.com</title>
     <script>
-        var _mobile = false;
-        if (navigator.userAgent.match(/Android/i) || navigator.userAgent.match(/webOS/i) || navigator.userAgent.match(/iPhone/i) || navigator.userAgent.match(/iPad/i) || navigator.userAgent.match(/iPod/i) || navigator.userAgent.match(/BlackBerry/i) || navigator.userAgent.match(/Windows Phone/i) || window.location.href.match(/([?&]mobile=1(&|#|$))/i)) {
-            if (!window.location.href.match(/([?&]mobile=0(&|#|$))/i)) {
-                document.write('<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, maximum-scale=1"/>');
-                _mobile = true;
+        let _mobile = false;
+        document.addEventListener("DOMContentLoaded", function() {
+            try {
+                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|Windows Phone/i.test(navigator.userAgent) || window.location.href.includes("mobile=1");
+                if (isMobile && !window.location.href.includes("mobile=0")) {
+                    document.querySelector("meta[name='viewport']").setAttribute("content", "width=device-width, height=device-height, initial-scale=1, maximum-scale=1");
+                    _mobile = true;
+                }
+            } catch (error) {
+                console.error('Error during initialization:', error);
             }
-        }
+        });
     </script>
 </head>
 
@@ -269,7 +278,6 @@
                     <div class="eval">Parent value</div>
                 </div>
                 <div id="lczero" class="boxMid"></div>
-                <div id="lczeroFooter" class="footer">Powered by <a href="https://github.com/frpays/lc0-js/">LC0-js</a>, <a href="https://github.com/LeelaChessZero/">LeelaChessZero</a> and <a href="https://www.tensorflow.org/js/">TensorFlow.js</a></div>
             </div>
             <div class="box" style="height:122px;min-height:122px;min-width:298px;display:none;" id="wEdit">
                 <div class="boxTop">Edit tools</div>
@@ -299,9 +307,9 @@
     </div>
     <div id="tooltip" style="display:none;"></div>
     <div id="dragPiece" class="cb"></div>
-    <script type='application/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/tensorflow/4.19.0/tf.min.js" defer></script>
-    <script type='application/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js" defer></script>
-    <script type='application/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/protobufjs/7.3.0/protobuf.js" defer></script>
+    <script type='application/javascript' src="./external-js/tf-4.19.0.min.js" defer></script>
+    <script type='application/javascript' src="./external-js/pako-2.1.0.min.js" defer></script>
+    <script type='application/javascript' src="./external-js/protobuf-7.3.0.js" defer></script>
     <script type='application/javascript' src="lc0main.js" defer></script>
     <script type='application/javascript' src="scripts.js" defer></script>
 </body>
