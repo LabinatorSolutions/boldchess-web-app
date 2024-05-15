@@ -22,9 +22,9 @@ Our mission from this project is to develop a modern responsive free and open so
 
 ## Improved Version On BoldChess.com with Stockfish 16.1
 
-[https://app.boldchess.com/](https://app.boldchess.com/)
+> Live URL: [app.boldchess.com](https://app.boldchess.com/)
 
-**Note**: The above is the premium version that we are using on BoldChess.com and maintained by our team. If you like to join our team and contribute on the latest version for BoldChess, contact us at: [https://BoldChess.com/contact](BoldChess.com/Contact). The version here on Github uses the old version of Stockfish (v10).
+**Note**: The above is the premium version that we are using on BoldChess.com and maintained by our team. If you like to join our team and contribute on the latest version for BoldChess, contact us at: [boldchess.com/contact](https://boldchess.com/contact).
 
 ---
 
