@@ -2,8 +2,8 @@
 
 ![Web GUI](https://img.shields.io/badge/Web_GUI-Responsive-526ba2)
 ![JavaScript](https://img.shields.io/badge/Language-JavaScript-f0db4f)
-![Node.js Version](https://img.shields.io/badge/Node.js-v21.7.1-339933)
-![Express.js](https://img.shields.io/badge/Express.js-4.18.3-259dff)
+![Node.js Version](https://img.shields.io/badge/Node.js-v22.1.0-339933)
+![Express.js](https://img.shields.io/badge/Express.js-4.19.2-259dff)
 ![Stockfish Chess Engine](https://img.shields.io/badge/Stockfish_Version-10-358853)
 ![Mobile Ready](https://img.shields.io/badge/Mobile_Ready-Yes-985b68)
 ![Issues](https://img.shields.io/github/issues-search/LabinatorSolutions/boldchess-web-app?label=Known%20Bugs&query=is%3Aissue+is%3Aopen+label%3Abug)
