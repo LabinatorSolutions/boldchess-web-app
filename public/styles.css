@@ -22,6 +22,53 @@ li {
     margin-bottom: .1em;
 }
 
+#fen {
+    display: none;
+}
+
+#logo svg .shp0 {
+    fill: url(#grd1);
+}
+
+#logo svg .shp1 {
+    fill: url(#grd2);
+}
+
+#logo svg .shp2 {
+    fill: #ffffff;
+}
+
+#logo svg .shp3 {
+    fill: #000000;
+    stroke: #000000;
+    stroke-linecap: round;
+    stroke-width: 21.9;
+}
+
+#logo {
+    height: 69px;
+    margin-top: 12px;
+    position: relative;
+}
+
+#logotextmain {
+    position: absolute;
+    line-height: 100%;
+    left: 75px;
+    font-size: 25px;
+    color: white;
+    font-weight: 300;
+}
+
+#logotextsub {
+    position: absolute;
+    left: 75px;
+    font-size: 10px;
+    color: white;
+    font-weight: 400;
+    width: 190px;
+}
+
 #container {
     position: relative;
     width: 830px;
@@ -37,33 +84,36 @@ li {
     clear: both;
 }
 
+/* Windows */
 
-#logo {
-    height: 69px;
-    padding-top: 12px;
-    padding-left: 36px;
-    padding-bottom: 8px;
-    position: relative;
+#wMoves {
+    height: 155px;
+    min-height: 79px;
 }
 
-#logotextmain {
-    position: absolute;
-    line-height: 100%;
-    top: 16px;
-    left: 116px;
-    font-size: 25px;
-    color: white;
-    font-weight: 300;
+#wHistory {
+    height: 115px;
 }
 
-#logotextsub {
-    position: absolute;
-    top: 45px;
-    left: 116px;
-    font-size: 10px;
-    color: white;
-    font-weight: 400;
-    width: 190px;
+#wGraph {
+    height: 162px;
+    background-color: #697686ff;
+}
+
+#wOpening {
+    height: 115px;
+    min-height: 79px;
+}
+
+#wStatic {
+    height: 115px;
+    min-height: 79px;
+}
+
+#wEdit {
+    height: 122px;
+    min-height: 122px;
+    min-width: 298px;
 }
 
 /* Chessboard */
@@ -394,8 +444,6 @@ li {
     text-align: left;
 }
 
-
-
 /* Input box */
 
 #searchWrapper {
@@ -463,11 +511,14 @@ li {
 .toolbar {
     position: absolute;
     top: 62px;
-    left: 114px;
+    left: 24px;
+    margin-top: 14px;
+    margin-bottom: 14px;
     overflow: hidden;
     height: 28px;
     font-size: 0px;
     line-height: 0px;
+    transform: scale(1.5);
 }
 
 #buttonBack,
@@ -1371,7 +1422,7 @@ li {
 }
 
 #cbTable.c3 td.cbCell {
-    background-color: #769656;
+    background-color: #7b9b5e;
 }
 
 #boxBoard.c3 {
@@ -1384,8 +1435,8 @@ li {
 }
 
 #chessboard1.c3>.d {
-    background-color: #769656;
-    background: #769656;
+    background-color: #7b9b5e;
+    background: #7b9b5e;
 }
 
 #icolor.c3 {
@@ -1397,108 +1448,75 @@ li {
 }
 
 #icolor.c3>div>div.d {
-    background-color: #769656;
+    background-color: #7b9b5e;
 }
 
 #cbTable.c4 {
-    color: #ffffff;
+    color: #989795;
 }
 
 #cbTable.c4 td.cbCell {
-    box-shadow: 0 0 20px black;
-    background-color: #6e3b0e;
+    background-color: #985b68;
 }
 
 #boxBoard.c4 {
-    background: url('data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEBLAEsAAD/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAAoACgDASIAAhEBAxEB/8QAGQABAQEBAQEAAAAAAAAAAAAABAADAgEI/8QAMBAAAQMCAwQHCQAAAAAAAAAAAQACEQMEEiGxMUFRcRMUIkNhcsEyM1KBgpHR4fH/xAAZAQADAQEBAAAAAAAAAAAAAAAAAQQDBQb/xAAeEQACAgICAwAAAAAAAAAAAAAAAQIDETIhMSJBUf/aAAwDAQACEQMRAD8A+X7X3ThO5b2ziMQOYj9I9rOB3Jb0va+k6riz9nuEa25Ly3aADHNPqCTRB+M6otuMw7gUurMUo2idVNY/IaBXTjhIB7sKXly2WzGfR+ilvVjAmCtMmuPgdFvbS5/CGyuLcRQeSfBb2LA552iGxCJvscRVuOywTv8AVIrginSO0QjUS0YGcP6k1nRRb5fypZbDCVowEEd2NFLi9qFtwKeEwaJM8gpUVp4FkI0gW1QAQcRnNLsGltN1TcMh9ipSLNRx7NaIPXA0iA0GZ5Le7ytm+U6qUp3sg+h7gB0vO1tMgfMKUpb1vgGf/9k=');
+    background-color: #312e2b;
 }
 
 #chessboard1.c4>.l {
-    background: url('data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEBLAEsAAD/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAAoACgDASIAAhEBAxEB/8QAGQABAQEBAQEAAAAAAAAAAAAAAAMEAgEG/8QALBAAAQMCAwYFBQAAAAAAAAAAAQACEQMhEjFBEyJRYZGhBCOBscFCcYKSsv/EABcBAQEBAQAAAAAAAAAAAAAAAAABBgL/xAAVEQEBAAAAAAAAAAAAAAAAAAAAAf/aAAwDAQACEQMRAD8A+mpN8qALCYP4qzB50/aP2KlQIa0gZ39lUTttbx6byzzQHiRDahi2ELJQs8SPqkX5rVUdjYDE5nssoaRWFzEyOhVgVGw5mowknsi8MwAbEMOSIq4jDkcz8K+EbQnSbdVEkinlxWiJuNY/pRE82tA4XlQfG0J5COhVnRYWE6KJvVHNouPVIOKwLSZEnD8ou65DqkDTCO8ouh3UO6YuLq4eAABnPyURQQeSBI4SpNO+0m8jjzREgSJmYdI9kREV/9k=');
+    background-color: #bdcdd6;
+    background: #bdcdd6;
 }
 
 #chessboard1.c4>.d {
-    background: url('data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBwkJBgkJCgkHCAYICBYJCAcHCA8ICQcWFB0iFiARHxMYHSggGCYlGx8TITEhJSkrLi4uFx8zODMsNygtLisBCgoKDQoNFQ8PFSsZExkrNysrKysrLSsrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrK//AABEIACgAKAMBIgACEQEDEQH/xAAYAAEBAQEBAAAAAAAAAAAAAAAAAQMCBv/EACgQAAIABAUDBAMAAAAAAAAAAAABAgMRMSEiQWFxMlHRQpHBwhMjM//EABcBAQEBAQAAAAAAAAAAAAAAAAEAAgX/xAAXEQEAAwAAAAAAAAAAAAAAAAAAARFB/9oADAMBAAIRAxEAPwDxkn136hXMtiSXjFyR6bM4zr40g9XeiOaZFyJeuupF0LmjBM9e+LKRvF8lNh1J6orB2Vr6ISf6RceA3a7wqZLqW8zvVqopbdoSlnWmFArLZoEzazPvoCxP9nsDSpZVPyR3svgsa6d14ABLBhGtiv7AAmceExXpQADCl//Z');
-}
-
-#chessboard1.c4>div {
-    color: rgba(0, 0, 0, 0.8);
-}
-
-#chessboard1.c4>.h1:before {
-    border: 4px solid rgba(0, 0, 0, 0.8);
-    box-shadow: inset 0px 0px 4px rgba(0, 0, 0, 0.8);
-}
-
-#chessboard1.c4>.h0:before {
-    border: 4px solid rgba(0, 0, 128, 1);
-    box-shadow: inset 0px 0px 4px rgba(0, 0, 128, 1);
-}
-
-#chessboard1.c4>.h3:before {
-    border: 4px solid rgba(255, 220, 40, 0.85);
-    box-shadow: inset 0px 0px 4px rgba(255, 255, 0, 0.8);
-}
-
-#boxBoard.c4 #arrowWrapper3 svg line {
-    stroke: rgba(255, 220, 40, 0.85);
-}
-
-#boxBoard.c4 #arrowWrapper3 svg defs marker {
-    fill: rgba(255, 220, 40, 0.85);
+    background-color: #985b68;
+    background: #985b68;
 }
 
 #icolor.c4 {
-    background-color: #561102;
+    background-color: #312e2b;
 }
 
 #icolor.c4>div>div.l {
-    background-color: #b69376;
+    background-color: #bdcdd6;
 }
 
 #icolor.c4>div>div.d {
-    background-color: #6e3b0e;
+    background-color: #985b68;
 }
 
 #cbTable.c5 {
-    color: #ffffff;
+    color: #989795;
 }
 
 #cbTable.c5 td.cbCell {
-    background-color: #957847;
+    background-color: #708090;
 }
 
 #boxBoard.c5 {
-    background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAMAAAC7IEhfAAAAAXNSR0IB2cksfwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAMNQTFRFEBAYHhgrEBAZCQkOPDBWDw8WDw8XDg4VDg4WCAgNEBAUEREaEBAgEBAdDQ0UEBAQCQkPCQkLDw8aCAgMCgoPDw8VEhIbOi5UDw8dDw8UEBAXEBAeEREcGxUoEBAaEREiEBARDw8PIRsuDw8YMCRKCAgOExMcCAgIDQ0SDw8hCQkSEBAcCQkMIx0wFxEkBwcREREXCAgPDg4SEBAbRjpgBwcLDAwTEQ4dIhwvCQkJNipQJB4xQDRaCQkTGhQnDAwWDQ0Vm7fB2wAAAcNJREFUeJy1lGl7qjAQhYcEAlyQVRYVRdy3LmqrtXb7/7+qJ7nc9mO5z1POBwjMG5KcmYGolmFYlkWEi2HgkXMhxHZblmW/zzmnb/0IInJ/z6W63a7v53lOZNv287Oa3ul04ljX9VZAKAiyLNOlLMs0Tc4x0rQ0TT8+YolpmsZYc3C1WnGO4WSCTYzHvu8/PGhShjz9fD4XAt8ajVoAD4dDGKpd/JHyPI+oqirPOx6Pmw0CUcQYc5zmoBKI19cwDDmHhSphphkEARGTvsCJJGkHHI+LomBM/1Kv19vtcDdNzNvt9vu9qqiGINJOtFwu5WlpOMQxb28Xi4VyIo5ns5lKoeu2ACJTdbmg9h3ner1K85lh4Au2PZRTgaRpcxAmKSsHA4T7fYyenqbTqefh6Hd3WLWOtwCiAIkcxxFCFWAURdut6muUZ1litNn8J+i6rupU+a9QKEkb4ANMYAwpfHnB+q2AkK6jrycTRKrqfD6b5uVyyTIVZrJDkiT5W2bNwPV6TaT6E5t4fFRhLH1zo94BHI3gBFL4++C/xGmaI5v3dDoJgb56e9NqMYbNv783ByHVi3n+/UPAqCjQwvUjwMHg98FP2jNQSKAcUbIAAAAASUVORK5CYII=');
+    background-color: #312e2b;
 }
 
 #chessboard1.c5>.l {
-    background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoBAMAAAB+0KVeAAAAAXNSR0IB2cksfwAAAAlwSFlzAAALEwAACxMBAJqcGAAAABtQTFRF1cmLxrV4o5Jk1b+DnIlduKdxtqZzrJZmjH9bBwHGNAAAAMZJREFUeJyVkU0KgzAQRidIu3aQeoDgAQxDL1ACPUH2uvEKXqHH7vxoLG0K5ltI5g3ExxcAh5wWgOQjuSQoQ2hoIQqywo6QxkrobKRl4v1+ZwFGjt8yyPDwvgJm+cSnnj1ohDLE/ZRIoroVUCLKkHg9wZEfuNmpbPY8Dy3XGaVYytUVoIph26hiv/B8q4HbTfubcO5/oB9Y7KhfRSugxbXcUj8j0kd5X5ACy2mf7BHMoQKat747uC7/pwBFbo3xuVr1L5M/C98qm2gohek/sgAAAABJRU5ErkJggg==');
+    background-color: #bdcdd6;
+    background: #bdcdd6;
 }
 
 #chessboard1.c5>.d {
-    background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoBAMAAAB+0KVeAAAAAXNSR0IB2cksfwAAAAlwSFlzAAALEwAACxMBAJqcGAAAABVQTFRFnYJIupZfcVsyso5XZlArel86SDgeWOvzxQAAAL1JREFUeJyVksERg0AIRVEbWMYGDEnuGjrIkA6SFtJ/CVlYiAc5rBwceM7gm4+AoIU4c31YlTqmEOcHMa/2bmLg7SQsbWTSxbEzgSLyJK+btOkEDPmi3Vg9eMMc1u6qXQHWAq9eiLsyjJeWUw7dzmT/nv2wbaFlQNSvR3QJdLHZFEdC2KsH+qa4CdsNU0gqtsdv3QnouQx1KS0AHNEdIXuKRT3W+KG6YfM2iGXiuFECq9v9I/J6i0X/bfK98Afgx1nzwOT8HAAAAABJRU5ErkJggg==');
-}
-
-#chessboard1.c5>div {
-    color: rgba(0, 0, 0, 0.8);
-}
-
-#chessboard1.c5>.h1:before {
-    border: 4px solid rgba(0, 0, 0, 0.8);
-    box-shadow: inset 0px 0px 4px rgba(0, 0, 0, 0.8);
+    background-color: #708090;
+    background: #708090;
 }
 
 #icolor.c5 {
-    background-color: #13121d;
+    background-color: #312e2b;
 }
 
 #icolor.c5>div>div.l {
-    background-color: #beae76;
+    background-color: #bdcdd6;
 }
 
 #icolor.c5>div>div.d {
-    background-color: #957847;
+    background-color: #708090;
 }
 
 #buttonColorPrev {
@@ -1610,8 +1628,6 @@ li {
 .box {
     border: solid black 1px;
     border-radius: 3px;
-    margin-bottom: 8px;
-    margin-top: 8px;
     position: relative;
     resize: both;
     overflow: hidden;
@@ -1742,16 +1758,21 @@ li {
 }
 
 #wb {
-    position: absolute;
+    display: flex;
+    position: static;
+    justify-content: center;
     top: 8px;
     right: 320px;
     font-size: 0;
     line-height: 0;
+    margin-bottom: 10px;
+    margin-top: 10px;
+    transform: scale(2);
 }
 
 .wbButton {
-    width: 13px;
-    height: 13px;
+    width: 16px;
+    height: 16px;
     margin: 3px;
     opacity: 0.25;
     background-color: transparent;
@@ -1775,4 +1796,32 @@ li {
     top: 0;
     left: 0;
     z-index: 6;
+}
+
+@media (min-width: 801px) {
+    .col.right {
+        margin-top: 85px;
+    }
+
+    #logo {
+        margin-bottom: 46px;
+    }
+
+    #logotextmain {
+        top: 16px;
+    }
+
+    #logotextsub {
+        top: 45px;
+    }
+}
+
+@media (max-width: 800px) {
+    .col.right {
+        margin-top: 0px;
+    }
+
+    #logo {
+        margin-bottom: 10px;
+    }
 }

@@ -10,7 +10,7 @@
 ![License](https://img.shields.io/badge/License-AGPL_v3-663366)
 
 The official chess web-based app of the [BoldChess.com](https://boldchess.com/) website.
-It is a responsive web GUI for the Stockfish chess engine with analysis, evaluation, and graphs. It also comes with Leela Chess Zero (LCZero) neural network evaluation.
+It is a responsive web GUI for the Stockfish chess engine with analysis, evaluation, and graphs.
 
 ---
 
@@ -20,9 +20,11 @@ Our mission from this project is to develop a modern responsive free and open so
 
 ---
 
-## Live Demo On BoldChess.com
+## Advanced & Improved Live Version On BoldChess.com with Stockfish 16.1
 
 [https://app.boldchess.com/](https://app.boldchess.com/)
+
+**Note**: The above is the premium version that we are using on BoldChess.com and maintained by our team. If you like to join our team and contribute on the latest version for BoldChess, contact us at: [https://BoldChess.com/contact](BoldChess.com/Contact)
 
 ---
 
@@ -36,7 +38,6 @@ Our mission from this project is to develop a modern responsive free and open so
 - Ability to display an evaluation graph while visualizing blunders in different colors.
 - Ability to open a position or game in a new window via a given URL.
 - Ability to play against the computer (Stockfish Chess Engine) and set its difficulty level.
-- Ability to see an evaluation by the Leela Chess Zero (LCZero) neural network.
 - Ability to detect an opening category or ECO code.
 - Ability to choose the styling of the chessboard.
 - Ability to print arrows or mark squares on the chessboard.
@@ -110,7 +111,7 @@ The application is designed to be easily deployable on any standard Node.js envi
 
 ## Contribution
 
-We welcome all developers to contribute to this repository by adding features or fixing bugs. The source codes will always be free and open source.
+We welcome all developers to contribute to this repository by adding features or fixing bugs.
 
 **List Of Current Contributors:**
 
@@ -129,8 +130,6 @@ GNU AFFERO GENERAL PUBLIC LICENSE (AGPLv3): [https://www.gnu.org/licenses/agpl-3
 - [Stockfish](https://github.com/mcostalba/Stockfish)
 - [Stockfish.js (nmrugg)](https://github.com/nmrugg/stockfish.js)
 - [Stockfish.js (niklasf)](https://github.com/niklasf/stockfish.js)
-- [LeelaChessZero](https://github.com/LeelaChessZero)
-- [LC0-JS](https://github.com/frpays/lc0-js)
 - [TensorFlow](https://github.com/tensorflow/tensorflow)
 - [PeshkaChess](https://github.com/hxim/PeshkaChess)
 - [BoldChess](https://boldchess.com/)
