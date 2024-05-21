@@ -4405,7 +4405,7 @@ function loadEngine() {
     let wasmSupported = typeof WebAssembly === 'object' && WebAssembly.validate(Uint8Array.of(0x0, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00));
     if (typeof(Worker) === "undefined") return engine;
     try {
-        var worker = new Worker(wasmSupported ? './engine/stockfish.wasm.js' : './engine/stockfish.js');
+        var worker = new Worker('./engine/stockfish-nnue-16.js');
     } catch (err) {
         return engine;
     }

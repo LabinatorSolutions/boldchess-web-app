@@ -4,82 +4,80 @@
 ![JavaScript](https://img.shields.io/badge/Language-JavaScript-f0db4f)
 ![Node.js Version](https://img.shields.io/badge/Node.js-v22.1.0-339933)
 ![Express.js](https://img.shields.io/badge/Express.js-4.19.2-259dff)
-![Stockfish Chess Engine](https://img.shields.io/badge/Stockfish_Version-10-358853)
+![Stockfish Chess Engine](https://img.shields.io/badge/Stockfish_Version-16-358853)
 ![Mobile Ready](https://img.shields.io/badge/Mobile_Ready-Yes-985b68)
 ![Issues](https://img.shields.io/github/issues-search/LabinatorSolutions/boldchess-web-app?label=Known%20Bugs&query=is%3Aissue+is%3Aopen+label%3Abug)
 ![License](https://img.shields.io/badge/License-AGPL_v3-663366)
 
-The official chess web-based app of the [BoldChess.com](https://boldchess.com/) website.
-It is a responsive web GUI for the Stockfish chess engine with analysis, evaluation, and graphs.
+The official chess web-based app of [BoldChess.com](https://boldchess.com/).
+It is a responsive web GUI for the Stockfish chess engine, offering analysis, evaluation, and graphical features.
 
 ---
 
 ## Mission
 
-Our mission from this project is to develop a modern responsive free and open source web-based chess app powered by the Stockfish chess engine.
+Our mission is to develop a modern, responsive, free, and open-source web-based chess app powered by the Stockfish chess engine.
 
 ---
 
-## Improved Version On BoldChess.com with Stockfish 16.1
+## Live Version
 
-> Live URL: [app.boldchess.com](https://app.boldchess.com/)
-
-**Note**: The above is the premium version that we are using on BoldChess.com and maintained by our team. If you like to join our team and contribute on the latest version for BoldChess, contact us at: [boldchess.com/contact](https://boldchess.com/contact).
+- **Live URL**: [app.boldchess.com](https://app.boldchess.com/)
 
 ---
 
 ## Features
 
-- Ability to load your chess position or game using FEN, PGN, or a move list.
-- Ability to set up your pieces manually in edit mode.
-- Ability to browse game history with arrows or mouse wheel.
-- Ability to list all legal moves and show them on the chessboard.
-- Ability to analyze positions and all legal moves with the javascript version of the Stockfish chess engine.
-- Ability to display an evaluation graph while visualizing blunders in different colors.
-- Ability to open a position or game in a new window via a given URL.
-- Ability to play against the computer (Stockfish Chess Engine) and set its difficulty level.
-- Ability to detect an opening category or ECO code.
-- Ability to choose the styling of the chessboard.
-- Ability to print arrows or mark squares on the chessboard.
-- Relevant squares on the chessboard are visualized according to the static evaluation terms of the Stockfish chess engine.
-- Dark interface with pitch black background that is battery-saving for OLED screens and highly intuitive.
+- Load your chess position or game using FEN, PGN, or a move list.
+- Set up pieces manually in edit mode.
+- Browse game history with arrows or mouse wheel.
+- List and show all legal moves on the chessboard.
+- Analyze positions and legal moves using the JavaScript version of Stockfish.
+- Display an evaluation graph with visual indicators for blunders.
+- Open a position or game in a new window via a URL.
+- Play against the computer (Stockfish) and set its difficulty level.
+- Detect opening categories or ECO codes.
+- Customize the styling of the chessboard.
+- Print arrows or mark squares on the chessboard.
+- Visualize relevant squares based on Stockfish's static evaluation terms.
+- Dark interface with a pitch-black background for OLED screens, enhancing battery life and user experience.
 - Support for PCs, tablets, smartphones, and touch devices.
 
 ---
 
 ## Available Windows
 
-- Chessboard
-- List of Moves
-- Game History
-- Graph
 - Chess Openings
-- Static Evaluation
+- Chessboard
 - Edit Board
+- Game History
+- Evaluation Graph
+- List of Moves
+- Static Evaluation
 
 ---
 
 ## GUI Instructions
 
-- To open your FEN or PGN, copy your FEN or PGN to clipboard and paste it in the input box above the chessboard.
+- To open your FEN or PGN, copy it to the clipboard and paste it into the input box above the chessboard.
 - To browse the game, use the mouse wheel on the chessboard or the arrow buttons.
-- To open or hide windows, click on the small icons found at the top of the GUI.
+- To open or hide windows, click on the small icons at the top of the GUI.
 - To play against the engine or set its difficulty level, click on the hamburger menu.
-- To change the styling of the board, flip the board, or open it in a new window, click on the hamburger menu.
+- To change the board styling, flip the board, or open it in a new window, click on the hamburger menu.
 
 ---
 
 ## Installation
 
 1. **Prerequisites**:
-   - Ensure Node.js is installed on your machine. If not, download and install it from [Node.js official website](https://nodejs.org/).
+   - Ensure Node.js is installed. If not, download and install it from the [Node.js official website](https://nodejs.org/).
 
 2. **Repository Setup**:
    - Clone the repository to your local machine.
    - Navigate to the project directory.
 
 3. **Dependency Installation**:
-   - Install the project dependencies by running:
+   - Install the project dependencies:
      ```bash
      npm install
      ```
@@ -89,39 +87,39 @@ Our mission from this project is to develop a modern responsive free and open so
      ```bash
      npm run start
      ```
-   - Access the application by opening `http://localhost:3000` in a web browser.
+   - Access the application at `http://localhost:3000` in a web browser.
 
 ---
 
 ## Server and Deployment
 
-The application is designed to be easily deployable on any standard Node.js environment.
+The application is designed for easy deployment in any standard Node.js environment.
 
-**Running the Server**: The main entry point of the application is server.js. This server serves the static files located in the public directory and does not require a build process for deployment. This design choice simplifies deployment and development processes.
+**Running the Server**: The main entry point is `server.js`, which serves the static files in the `public` directory, eliminating the need for a build process. This simplifies deployment and development.
 
-**No Build Required**: Reflecting the application's simplicity and the direct use of vanilla JavaScript, the 'build' script in package.json is intentionally left minimal with echo 'No build required'. This is due to the application's architecture, focusing on serving static assets without the need for complex build processes or server-side rendering.
+**No Build Required**: Reflecting the application's simplicity and the direct use of vanilla JavaScript, the 'build' script in `package.json` is intentionally minimal: `echo 'No build required'`. This is due to the architecture's focus on serving static assets without complex build processes or server-side rendering.
 
 ---
 
-## List Of Important Improvements & Issues
+## Important Improvements & Issues
 
-[https://github.com/LabinatorSolutions/boldchess-web-app/issues](https://github.com/LabinatorSolutions/boldchess-web-app/issues)
+For a list of important improvements and known issues, visit our [GitHub Issues page](https://github.com/LabinatorSolutions/boldchess-web-app/issues).
 
 ---
 
 ## Contribution
 
-We welcome all developers to contribute to this repository by adding features or fixing bugs.
+We welcome all developers to contribute by adding features or fixing bugs.
 
-**List Of Current Contributors:**
+**Current Contributors**:
 
-[https://github.com/LabinatorSolutions/boldchess-web-app/graphs/contributors](https://github.com/LabinatorSolutions/boldchess-web-app/graphs/contributors)
+Visit the [Contributors page](https://github.com/LabinatorSolutions/boldchess-web-app/graphs/contributors) to see the list of contributors.
 
 ---
 
 ## License
 
-GNU AFFERO GENERAL PUBLIC LICENSE (AGPLv3): [https://www.gnu.org/licenses/agpl-3.0.html](https://www.gnu.org/licenses/agpl-3.0.html)
+This project is licensed under the GNU AFFERO GENERAL PUBLIC LICENSE (AGPLv3). For more details, see the [AGPLv3 License](https://www.gnu.org/licenses/agpl-3.0.html).
 
 ---
 
@@ -129,7 +127,6 @@ GNU AFFERO GENERAL PUBLIC LICENSE (AGPLv3): [https://www.gnu.org/licenses/agpl-3
 
 - [Stockfish](https://github.com/mcostalba/Stockfish)
 - [Stockfish.js (nmrugg)](https://github.com/nmrugg/stockfish.js)
-- [Stockfish.js (niklasf)](https://github.com/niklasf/stockfish.js)
 - [TensorFlow](https://github.com/tensorflow/tensorflow)
 - [PeshkaChess](https://github.com/hxim/PeshkaChess)
 - [BoldChess](https://boldchess.com/)
