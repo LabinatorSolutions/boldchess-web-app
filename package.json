@@ -1,21 +1,43 @@
 {
-    "name": "boldchess-app",
-    "version": "1.0.0",
-    "description": "A chess game application",
-    "main": "server.js",
-    "scripts": {
+  "name": "boldchess-android-app",
+  "version": "1.0.0",
+  "description": "The official chess web app of BoldChess.com",
+  "main": "server.js",
+  "scripts": {
     "start": "node server.js",
-    "build": "echo 'No build required'"
-    },
-    "keywords": [
-        "chess",
-        "game",
-        "nodejs",
-        "express"
-    ],
-    "author": "",
-    "license": "ISC",
-    "dependencies": {
-        "express": "^4.19.2"
-    }
+    "build": "echo 'No build required'",
+    "test": "echo 'No test specified' && exit 0",
+    "lint": "eslint .",
+    "format": "prettier --write ."
+  },
+  "keywords": [
+    "chess",
+    "game",
+    "nodejs",
+    "express"
+  ],
+  "author": "BoldChess Team",
+  "license": "AGPLv3",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/LabinatorSolutions/boldchess-web-app"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "helmet": "^7.1.0",
+    "morgan": "^1.10.0",
+    "compression": "^1.7.4",
+    "express-rate-limit": "^7.2.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "cheerio": "^1.0.0-rc.12",
+    "express-session": "^1.18.0"
+  },
+  "devDependencies": {
+    "eslint": "^9.3.0",
+    "prettier": "^3.2.5"
+  },
+  "engines": {
+    "node": ">=22.2.0"
+  }
 }
