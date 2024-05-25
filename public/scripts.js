@@ -27,7 +27,7 @@ let _isPlayerWhite = true;
 
 // Set Local Engine Depth Variables
 let max_depth = 30;
-let default_depth = 16;
+let default_depth = 18;
 
 document.addEventListener("DOMContentLoaded", function(e) {
     try {
@@ -4587,7 +4587,7 @@ function parseBestMove(m) {
 function updateSkillLevelBasedOnDepth(depth) {
     let skillLevel;
     if (depth >= 1 && depth <= 10) {
-        skillLevel = depth - 5;
+        skillLevel = depth;
     } else {
         switch (depth) {
             case 11:
