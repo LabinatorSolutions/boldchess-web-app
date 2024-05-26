@@ -39,6 +39,8 @@ document.addEventListener("DOMContentLoaded", function(e) {
 
             if (mode === "play") {
                 menuPlayEngineWhite();
+            } else if (mode === "edit") {
+                showHideWindow("Edit");
             }
         }
     } catch (error) {
@@ -5232,6 +5234,7 @@ function reloadMenu() {
         div.appendChild(span4);
         parent.appendChild(div);
     }
+
     let addMenuItemColor = function(className, text) {
         let div = document.createElement('div');
         div.className = "menuItem " + className;
@@ -5298,11 +5301,8 @@ function reloadMenu() {
     addMenuItem("menuTwoPlayerMode", "Mode 4: Player vs. Player", 4, _gameMode != 4, function(e) {
         menuTwoPlayerMode()
     });
-
     addMenuLine();
-
     addMenuItemEngine("menuEngine", _play != null ? "Engine level" : "Engine depth");
-
     addMenuLine();
     addMenuItem("menuKeep", "Keep changes", null, document.getElementById("buttonRevert").className == "on", function() {
         command("keep");
