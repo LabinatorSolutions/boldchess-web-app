@@ -1,85 +1,18 @@
-// Set Global Variables
-let START = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-let _engine, _curmoves = [];
-let _history = [
-        [START]
-    ],
-    _history2 = null,
-    _historyindex = 0;
-let _flip = false,
-    _edit = false,
-    _info = false,
-    _play = null;
-let _arrow = false,
-    _menu = false;
-let _dragElement = null,
-    _dragActive = false,
-    _startX, _startY, _dragCtrl, _dragLMB, _clickFrom, _clickFromElem;
-let _tooltipState = false,
-    _wantUpdateInfo = true;
-let _wname = "White",
-    _bname = "Black",
-    _color = 0,
-    _bodyScale = 1;
-let _nncache = null;
-let _gameMode = 1;
-let _isPlayerWhite = true;
+// ============================
+// Global Cosntants
+// ============================
 
-// Set Local Engine Depth Variables
-let max_depth = 30;
-let default_depth = 18;
+// Engine Depth Constants
+const MIN_DEPTH = 1;
+const MAX_DEPTH = 30;
+const DEFAULT_DEPTH = 18;
 
-document.addEventListener("DOMContentLoaded", function(e) {
-    try {
-        const url = new URL(document.location.href);
-        const search_params = new URLSearchParams(url.search);
+// Default Starting FEN
+const START = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
-        if (search_params.has('mode')) {
-            const mode = search_params.get('mode');
-
-            if (mode === "play") {
-                menuPlayEngineWhite();
-            } else if (mode === "edit") {
-                showHideWindow("Edit");
-            }
-        }
-    } catch (error) {
-        console.error("Failed to initialize the application:", error);
-    }
-});
-
-function setElemText(elem, value) {
-    while (elem.firstChild) elem.removeChild(elem.firstChild);
-    elem.appendChild(document.createTextNode(value));
-}
-
-function getElemText(elem) {
-    return elem.textContent;
-}
-
-function setCurFEN(fen) {
-    setElemText(document.getElementById('fen'), fen);
-}
-
-function getCurFEN() {
-    return getElemText(document.getElementById('fen'));
-}
-
-function togglePromotionPiece() {
-    let promotionItem = document.querySelector(".menuItem.menuPromote span:first-child");
-    let currentText = promotionItem.innerText;
-    let newText = currentText.includes("Queen") ? "Pawn Promotion: Knight" : "Pawn Promotion: Queen";
-    promotionItem.innerText = newText;
-    localStorage.setItem('promotionPiece', newText.includes("Queen") ? 'Q' : 'N');
-}
-
-function getPromotionPiece() {
-    return localStorage.getItem('promotionPiece') || 'Q';
-}
-
-
-// Opening Book
-let _open = [
+// Opening Names
+const MAX_OPENING_NAMES = 512;
+const OPENING_NAMES = [
     ["A00", "Amar/Paris Opening", "1.Nh3", 43, 0],
     ["A00", "Anderssen Opening", "1.a3", 49, 4],
     ["A00", "Barnes Opening", "1.f3", 43, 0],
@@ -593,6 +526,2659 @@ let _open = [
     ["E98", "King's Indian: Mar del Plata, 9.Ne1", "1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.e4 d6 5.Nf3 O-O 6.Be2 e5 7.O-O Nc6 8.d5 Ne7 9.Ne1", 57, 19],
     ["E99", "King's Indian: Mar del Plata, 10.f3 f5", "1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.e4 d6 5.Nf3 O-O 6.Be2 e5 7.O-O Nc6 8.d5 Ne7 9.Ne1 Nd7 10.f3 f5", 56, 2]
 ]
+
+// ============================
+// Global Variables
+// ============================
+
+let _engine, _curmoves = [];
+let _history = [
+        [START]
+    ],
+    _history2 = null,
+    _historyindex = 0;
+let _flip = false,
+    _edit = false,
+    _info = false,
+    _play = null;
+let _arrow = false,
+    _menu = false;
+let _dragElement = null,
+    _dragActive = false,
+    _startX, _startY, _dragCtrl, _dragLMB, _clickFrom, _clickFromElem;
+let _tooltipState = false,
+    _wantUpdateInfo = true;
+let _wname = 'White',
+    _bname = 'Black',
+    _color = 0,
+    _bodyScale = 1;
+let _nncache = null,
+    _gameMode = 1,
+    _isPlayerWhite = true;
+let _staticSortByChange = false,
+    _movesPv = false;
+let _lastMouseDataPos = null;
+let _staticEvalListCache = [],
+    _staticEvalListCacheSize = 20;
+
+// ============================
+// Initialization
+// ============================
+
+document.addEventListener('DOMContentLoaded', function(e) {
+    try {
+        const url = new URL(document.location.href);
+        const search_params = new URLSearchParams(url.search);
+
+        if (search_params.has('mode')) {
+            const mode = search_params.get('mode');
+
+            if (mode === 'play') {
+                menuPlayEngineWhite();
+            } else if (mode === 'edit') {
+                showHideWindow('Edit');
+            }
+        }
+    } catch (error) {
+        console.error('Failed to initialize the application:', error);
+    }
+});
+
+window.onload = function() {
+    document.onmousedown = onMouseDown;
+    document.onmouseup = onMouseUp;
+    document.onmousemove = defaultMouseMove;
+    document.onkeydown = onKeyDown;
+    document.getElementById('chessboard1').oncontextmenu =
+        document.getElementById('chessboard1').parentNode.oncontextmenu =
+        document.getElementById('editWrapper').oncontextmenu = function() {
+            return false;
+        };
+    document.getElementById('chessboard1').parentNode.onwheel =
+        document.getElementById('editWrapper').onwheel = onWheel;
+    document.getElementById('buttonStm').onclick = function() {
+        command('sidetomove');
+    };
+    document.getElementById('buttonFlip').onclick = function() {
+        doFlip();
+    };
+    document.getElementById('buttonBack').onclick = function(event) {
+        historyMove(-1, event);
+    };
+    document.getElementById('buttonForward').onclick = function(event) {
+        historyMove(+1, event);
+    };
+    document.getElementById('buttonMenu').onclick = function(event) {
+        showHideMenu(true, event);
+    };
+    document.getElementById('buttonStaticSortByValue').onclick = function(event) {
+        _staticSortByChange = false;
+        repaintStatic();
+    };
+    document.getElementById('buttonStaticSortByChange').onclick = function(event) {
+        _staticSortByChange = true;
+        repaintStatic();
+    };
+    document.getElementById('buttonMovesPv').onclick = function(event) {
+        _movesPv = !_movesPv;
+        showEvals();
+    };
+    document.getElementById('graphWrapper').onmouseover = function() {
+        if (document.onmousemove == defaultMouseMove) document.onmousemove = graphMouseMove;
+    };
+    document.getElementById('graphWrapper').onmousedown = function(event) {
+        if (document.onmousemove == defaultMouseMove) {
+            document.onmousemove = graphMouseMove;
+            graphMouseMove(event);
+            graphMouseDown(event);
+        }
+    };
+    document.getElementById('graphWrapper').onmouseout = function() {
+        if (document.onmousemove == graphMouseMove) document.onmousemove = defaultMouseMove;
+        repaintGraph();
+        updateTooltip('');
+    };
+    document.getElementById('graphWrapper').onwheel = function(event) {
+        onWheel(event);
+        showGraphTooltip(_historyindex, event);
+    };
+
+    document.getElementById('arrowWrapper1').style.top = document.getElementById('arrowWrapper2').style.top = document.getElementById('arrowWrapper3').style.top = document.getElementById('chessboard1').getBoundingClientRect().top - document.getElementById('boardWrapper').getBoundingClientRect().top + 'px';
+    document.getElementById('arrowWrapper1').style.left = document.getElementById('arrowWrapper2').style.left = document.getElementById('arrowWrapper3').style.left = document.getElementById('chessboard1').getBoundingClientRect().left - document.getElementById('boardWrapper').getBoundingClientRect().left + 'px';
+    document.getElementById('arrowWrapper1').style.width = document.getElementById('arrowWrapper2').style.width = document.getElementById('arrowWrapper3').style.width = document.getElementById('arrowWrapper1').style.height = document.getElementById('arrowWrapper2').style.height = document.getElementById('arrowWrapper3').style.height = (40 * 8) + 'px';
+
+    if (_mobile) setupMobileLayout(true);
+    setupTouchEvents(document.getElementById('chessboard1'), onMouseDown, onMouseMove, onMouseUp);
+    setupTouchEvents(document.getElementById('editWrapper'), onMouseDown, onMouseMove, onMouseUp);
+    checkSizes();
+    window.setInterval(checkSizes, 500);
+    setupBoxes();
+    setupInput();
+    _engine = loadEngine();
+    showBoard();
+    for (let i = 0; i < 26; i++) command(getParameterByName(String.fromCharCode('a'.charCodeAt(0) + i)));
+};
+
+// ============================
+// Helper Functions
+// ============================
+
+function setElemText(elem, value) {
+    while (elem.firstChild) elem.removeChild(elem.firstChild);
+    elem.appendChild(document.createTextNode(value));
+}
+
+function getElemText(elem) {
+    return elem.textContent;
+}
+
+function setCurFEN(fen) {
+    setElemText(document.getElementById('fen'), fen);
+}
+
+function getCurFEN() {
+    return getElemText(document.getElementById('fen'));
+}
+
+// ============================
+// Promotion Piece Functions
+// ============================
+
+function togglePromotionPiece() {
+    let promotionItem = document.querySelector('.menuItem.menuPromote span:first-child');
+    let currentText = promotionItem.innerText;
+    let newText = currentText.includes('Queen') ? 'Pawn Promotion: Knight' : 'Pawn Promotion: Queen';
+    promotionItem.innerText = newText;
+    localStorage.setItem('promotionPiece', newText.includes('Queen') ? 'Q' : 'N');
+}
+
+function getPromotionPiece() {
+    return localStorage.getItem('promotionPiece') || 'Q';
+}
+
+// ============================
+// Search Functions
+// ============================
+
+function command(text) {
+    if (text == null || text.length == 0) return;
+    let mvdivs = ['<div class="moves">', '<div class="tview2 tview2-column">', '<div class="extension-item Moves">'];
+    for (let i = 0; i < mvdivs.length; i++) {
+        if (text.indexOf(mvdivs[i]) >= 0) {
+            let text2 = text,
+                ntext = '';
+            text2 = text2.replace(/<span class="user_link[^>]*>([^<]*)<\/span>/g, "<a class=\"user_link\">$1</a>");
+            let nmt = '<a class="user_link';
+            if (text2.indexOf(nmt) > 0) {
+                text2 = text2.substr(text2.indexOf(nmt) + nmt.length);
+                text2 = text2.substr(text2.indexOf(">") + 1);
+                ntext += "[White \"" + text2.substr(0, text2.indexOf("</a>")).replace(/<span[^>]*>[^<]*<\/span>/g, "").replace(/&nbsp;/g, " ").trim() + "\"]\n";
+                text2 = text2.substr(text2.indexOf("</a>") + 4);
+            }
+            if (text2.indexOf(nmt) > 0) {
+                text2 = text2.substr(text2.indexOf(nmt) + nmt.length);
+                text2 = text2.substr(text2.indexOf(">") + 1);
+                ntext += "[Black \"" + text2.substr(0, text2.indexOf("</a>")).replace(/<span[^>]*>[^<]*<\/span>/g, "").replace(/&nbsp;/g, " ").trim() + "\"]\n";
+                text2 = text2.substr(text2.indexOf("</a>") + 4);
+            }
+            text2 = text;
+            nmt = '<div class="playerInfo';
+            for (let j = 0; j < 2; j++)
+                if (text2.indexOf(nmt) > 0) {
+                    text2 = text2.substr(text2.indexOf(nmt));
+                    let black = text2.indexOf("black") < text2.indexOf(">");
+                    text2 = text2.substr(nmt.length);
+                    let h = '<h2 class="name">';
+                    let nm = "[" + (black ? "Black" : "White") + " \"" + text2.substring(text2.indexOf(h) + h.length, text2.indexOf('</h2>')).trim() + "\"]\n";
+                    if (j == 1 && !black) ntext = nm + ntext;
+                    else ntext += nm;
+                }
+            text = text.substring(text.indexOf(mvdivs[i]));
+            if (i == 2) text = text.replace(/<div class='notationTableInlineElement((?!<\/div>).)*<\/div>/g, '');
+            text = text.substring(mvdivs[i].length, text.indexOf('</div>'));
+            if (i == 2) {
+                text = text.replace(/<dt>\s*(<span[^>]*>)?\s*([^<\s]*)\s*(<\/span>)?\s*<\/dt>/g, '<index>$2</index>')
+                    .replace(/<span class='move'>\s*([^<\s]*)\s*<\/span>/g, '<move>$1</move>')
+            } else {
+                text = text.replace(/<interrupt>((?!<\/interrupt>).)*<\/interrupt>/g, '')
+                    .replace(/<(move|m1|m2)[^<>']*(('[^']*')[^<>']*)*>/g, '<move>').replace(/<\/(m1|m2)>/g, '</move>')
+                    .replace(/<\/?san>|<eval>[^<]*<\/eval>|<glyph[^<]*<\/glyph>|<move>\.\.\.<\/move>/g, '')
+                    .replace(/\?/g, 'x');
+            }
+            text = ntext + text
+                .replace(/{|}/g, '')
+                .replace(/(<index[^>]*>)/g, '{').replace(/<\/index>/g, '.}')
+                .replace(/<move>/g, '{').replace(/<\/move>/g, ' }')
+                .replace(/(^|})[^{]*($|{)/g, '');
+        }
+    }
+    if (text.split('/').length == 8 && text.split('.').length == 1) {
+        pos = parseFEN(text);
+        setCurFEN(generateFEN(pos));
+        _history = [
+            [getCurFEN()]
+        ];
+        _historyindex = 0;
+        historyMove(0);
+    } else if (text.split('.').length > 1) {
+        let whitename = null,
+            blackname = null;
+        let wi = text.indexOf('[White \''),
+            bi = text.indexOf('[Black \'');
+        if (wi >= 0 && bi > wi) {
+            let wil = text.substr(wi + 8).indexOf('\']'),
+                bil = text.substr(bi + 8).indexOf('\']');
+            if (wil > 0 && wil < 128) whitename = text.substr(wi + 8, wil);
+            if (bil > 0 && bil < 128) blackname = text.substr(bi + 8, bil);
+        }
+
+        text = text.replace(/\u2605/g, '').replace(/\u0445/g, 'x');
+        text = ' ' + text.replace(/\./g, ' ').replace(/(\[FEN [^\]]+\])+?/g, function($0, $1) {
+            return $1.replace(/\[|\]|'/g, '').replace(/\s/g, '.');
+        });
+        text = text.replace(/\[Event /g, '* [Event ').replace(/\s(\[[^\]]+\])+?/g, '').replace(/(\{[^\}]+\})+?/g, '');
+        let r = /(\([^\(\)]+\))+?/g;
+        while (r.test(text)) text = text.replace(r, '');
+        text = text.replace(/0-0-0/g, 'O-O-O').replace(/0-0/g, 'O-O').replace(/(1\-0|0\-1|1\/2\-1\/2)/g, ' * ')
+            .replace(/\s\d+/g, ' ').replace(/\$\d+/g, '').replace(/\?/g, '');
+        let moves = text.replace(/\s/g, ' ').replace(/ +/g, ' ').trim().split(' ');
+        let pos = parseFEN(START);
+        let oldhistory = JSON.parse(JSON.stringify(_history));
+        _history = [
+            [START]
+        ];
+        _historyindex = 0;
+        gm = 0;
+        for (let i = 0; i < moves.length; i++) {
+            if (moves[i].length == 0) continue;
+            if ('*'.indexOf(moves[i][0]) == 0) {
+                if (i < moves.length - 1) {
+                    pos = parseFEN(START);
+                    historyAdd(generateFEN(pos), oldhistory);
+                    gm++;
+                }
+                continue;
+            } else if (moves[i].indexOf('FEN.') == 0) {
+                pos = parseFEN(moves[i].substring(4).replace(/\./g, ' '));
+                if (_history[_historyindex][0] == START) _historyindex--;
+                historyAdd(generateFEN(pos), oldhistory);
+                continue;
+            }
+            if (moves[i] == '--') {
+                pos.w = !pos.w;
+                historyAdd(generateFEN(pos), oldhistory);
+                continue;
+            }
+            let move = parseMove(pos, moves[i]);
+            if (move == null) {
+                alert('incorrect move: ' + moves[i] + ' ' + gm);
+                break;
+            }
+            let san = sanMove(pos, move, genMoves(pos));
+            pos = doMove(pos, move.from, move.to, move.p);
+            historyAdd(generateFEN(pos), oldhistory, move, san);
+        }
+        setCurFEN(generateFEN(pos));
+        historyKeep(whitename, blackname);
+    } else if (text.toLowerCase() == 'reset') {
+        setCurFEN(START);
+        _history = [
+            [getCurFEN()]
+        ];
+        _historyindex = 0;
+        historyKeep();
+        _history2 = null;
+        if (_nncache != null) _nncache.clear();
+    } else if (text.toLowerCase() == 'clear') {
+        setCurFEN('8/8/8/8/8/8/8/8 w - - 0 0');
+        showBoard();
+        historySave();
+    } else if (text.toLowerCase() == 'colorflip') {
+        setCurFEN(generateFEN(colorflip(parseFEN(getCurFEN()))));
+        showBoard();
+        historySave();
+    } else if (text.toLowerCase() == 'sidetomove') {
+        setCurFEN(getCurFEN().replace(' w ', ' ! ').replace(' b ', ' w ').replace(' ! ', ' b '));
+        showBoard();
+        historySave();
+    } else if (text.toLowerCase().indexOf('depth ') == 0) {
+        if (_engine != null && _engine.ready) {
+            _engine.depth = Math.min(MAX_DEPTH, Math.max(0, parseInt(text.toLowerCase().replace('depth ', ''))));
+            if (isNaN(_engine.depth)) _engine.depth = DEFAULT_DEPTH;
+        }
+        showBoard();
+        historySave();
+    } else if (text.toLowerCase() == 'flip') {
+        doFlip();
+    } else if (text.toLowerCase() == 'window') {
+        let encoded = '';
+        if (_history[0][0] == START) {
+            let gi = '';
+            for (let i = 1; i < _history.length; i++) {
+                let pos = parseFEN(_history[i - 1][0]);
+                let moves = genMoves(pos);
+                let mindex = -1;
+                for (let j = 0; j < moves.length; j++) {
+                    let move = moves[j];
+                    let pos2 = doMove(pos, move.from, move.to, move.p);
+                    if (generateFEN(pos2) == _history[i][0]) mindex = j;
+                }
+                if (mindex < 0) {
+                    gi = '';
+                    break;
+                }
+                let symbols = (moves.length + 1).toString(2).length,
+                    v = '';
+                for (let j = 0; j < symbols; j++) v += '0';
+                let n = (mindex + 1).toString(2);
+                n = v.substr(n.length) + n;
+                gi += n;
+                if (i == _history.length - 1) gi += v;
+            }
+            let cur = '';
+            for (let i = 0; i < gi.length; i++) {
+                cur += gi[i];
+                if (i == gi.length - 1)
+                    while (cur.length < 6) cur += '0';
+                if (cur.length == 6) {
+                    encoded += 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_' [parseInt(cur, 2)];
+                    cur = '';
+                }
+            }
+        }
+        let wb = document.getElementById('wb').children;
+        let lparams = [];
+        for (let i = 0; i < wb.length; i++) {
+            if (wb[i].tagName != 'DIV') continue;
+            let winId = wb[i].id.substring(2);
+            let elem = document.getElementById('w' + winId);
+            if (elem.style.display == 'none') continue;
+            if (elem.style.position == 'absolute' && !_mobile) {
+                lparams.push((winId[0] + elem.style.width + ',' + elem.style.height + ',' + elem.style.left + ',' + elem.style.top).replace(/px/g, ''));
+            } else if ((elem.style.width != elem.originalWidth || elem.style.height != elem.originalHeight) && !_mobile) {
+                lparams.push((winId[0] + elem.style.width + ',' + elem.style.height).replace(/(\.[0-9]+)?px/g, ''));
+            } else lparams.push(winId[0]);
+        }
+        let lparamsstr = lparams.join(' ').toLowerCase();
+        let url = [location.protocol, '//', location.host, location.pathname].join('');
+        let params = [];
+        if (_color > 0) params.push('col' + _color);
+        if (_engine != null && _engine.ready && _engine.depth != DEFAULT_DEPTH) params.push('depth ' + _engine.depth);
+        if (lparamsstr != 'c m h g') params.push('layout ' + (lparamsstr.length == 0 ? '-' : lparamsstr));
+        if (encoded.length > 0) params.push('~' + encoded);
+        else if (getCurFEN() != START) params.push(getCurFEN());
+        for (let i = 0; i < params.length; i++) {
+            url += (i == 0 ? '?' : '&') + String.fromCharCode('a'.charCodeAt(0) + i) + '=' + params[i];
+        }
+        window.open(url, '_blank');
+
+    } else if (text[0] == '~') {
+        let pos = parseFEN(START);
+        let oldhistory = JSON.parse(JSON.stringify(_history));
+        _history = [
+            [START]
+        ];
+        _historyindex = 0;
+        let gi = '';
+        for (let i = 1; i < text.length; i++) {
+            let n = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'.indexOf(text[i]).toString(2);
+            gi += '000000'.substr(n.length) + n;
+        }
+        let i = 0;
+        while (i < gi.length) {
+            let moves = genMoves(pos);
+            let symbols = (moves.length + 1).toString(2).length,
+                cur = '';
+            for (let j = 0; j < symbols; j++) {
+                cur += (i < gi.length ? gi[i] : '0');
+                i++;
+            }
+            let n = parseInt(cur, 2);
+            if (n == 0 || n >= moves.length + 1) break;
+            let move = moves[n - 1],
+                san = sanMove(pos, move, moves);
+            pos = doMove(pos, move.from, move.to, move.p);
+            historyAdd(generateFEN(pos), oldhistory, move, san);
+        }
+        setCurFEN(generateFEN(pos));
+        historyKeep();
+    } else if (text.toLowerCase() == 'revert') {
+        if (_history2 != null) {
+            _historyindex = _history2[0];
+            _history = _history2[1];
+            _history2 = null;
+            setCurFEN(_history[_historyindex][0]);
+            refreshButtonRevert();
+            historyMove(0);
+        }
+    } else if (text.toLowerCase() == 'keep') {
+        historyKeep(_wname, _bname);
+    } else if (text.length == 4 && text.toLowerCase().indexOf('col') == 0) {
+        setBoardColor(Math.max(0, text.charCodeAt(3) - '0'.charCodeAt(0)));
+    } else if (text.toLowerCase().indexOf('layout ') == 0) {
+        let a = text.toUpperCase().split(' ');
+        a.splice(0, 1);
+        let wb = document.getElementById('wb').children;
+        for (let i = 0; i < wb.length; i++) {
+            if (wb[i].tagName != 'DIV') continue;
+            let winId = wb[i].id.substring(2);
+            let cur = a.find(function(x) {
+                return x[0] == winId[0];
+            });
+            if (cur != null && !_mobile) {
+                cur = cur.substring(1);
+                let b = cur.length == 0 ? [] : cur.split(',');
+                let elem = document.getElementById('w' + winId);
+                if (elem.firstElementChild.ondblclick != null) elem.firstElementChild.ondblclick();
+                if (b.length >= 2) {
+                    elem.style.width = b[0] + 'px';
+                    elem.style.height = b[1] + 'px';
+                }
+                if (b.length >= 4) {
+                    elem.style.left = b[2] + 'px';
+                    elem.style.top = b[3] + 'px';
+                    elem.style.position = 'absolute';
+                }
+                showHideWindow(winId, true);
+            } else if (cur != null && _mobile) showHideWindow(winId, true);
+            else if (!_mobile) showHideWindow(winId, false);
+        }
+    } else {
+        for (let i = 0; i < _curmoves.length; i++)
+            if (_curmoves[i].san == text) {
+                doMoveHandler(_curmoves[i].move);
+                break;
+            }
+    }
+}
+
+function dosearch() {
+    let text = document.getElementById('searchInput').value;
+    document.getElementById('searchInput').value = getCurFEN();
+    command(text);
+    document.getElementById('searchInput').value = getCurFEN();
+    document.getElementById('searchInput').blur();
+}
+
+function showHideButtonGo(state) {
+    if (!document.getElementById('searchInput').focus) state = false;
+    if (state && document.getElementById('searchInput').value == getCurFEN()) state = false;
+    document.getElementById('buttonGo').style.display = state ? '' : 'none';
+}
+
+function setupInput() {
+    document.getElementById('buttonGo').onclick = function() {
+        dosearch();
+    };
+    document.getElementById('buttonGo').onmousedown = function(event) {
+        event.preventDefault();
+    };
+    let input = document.getElementById('searchInput');
+    input.onmousedown = function() {
+        this.focuswithmouse = 1;
+    };
+    input.onmouseup = function() {
+        if (this.focuswithmouse == 2 && input.selectionStart == input.selectionEnd) this.select();
+        this.focuswithmouse = 0;
+    }
+    input.onfocus = function() {
+        if (this.focuswithmouse == 1) this.focuswithmouse = 2;
+        else {
+            input.select();
+            this.focuswithmouse = 0;
+        }
+        showHideButtonGo(true);
+        document.onkeydown = null;
+    };
+    input.onblur = function() {
+        input.selectionStart = input.selectionEnd;
+        showHideButtonGo(false);
+        document.onkeydown = onKeyDown;
+        this.focuswithmouse = 0;
+    };
+    input.onpaste = function() {
+        window.setTimeout(function() {
+            showHideButtonGo(true);
+        }, 1);
+    };
+    input.onkeydown = function(e) {
+        if (e.key === 'Escape') {
+            e.preventDefault(); // Prevents default handling of the Escape key
+            // Using setTimeout with 0 delay to queue the function at the end of the call stack
+            window.setTimeout(() => {
+                showHideButtonGo(true);
+            }, 0);
+        }
+    };
+    input.onkeyup = function(e) {
+        if (e.key === 'Escape') {
+            input.value = getCurFEN(); // Reset input value to the current FEN
+            this.select(); // Select the content of the input
+            showHideButtonGo(true); // Update the visibility state of the button
+        }
+    };
+    document.getElementById('simpleSearch').onsubmit = function() {
+        dosearch();
+        return false;
+    };
+}
+
+// ============================
+// Tooltip Functions
+// ============================
+
+function getClientY(e) {
+    if (!_mobile) return e.clientY;
+    let scrollOffset = (window.pageYOffset || document.documentElement.scrollTop) - (document.documentElement.clientTop || 0);
+    return (e.clientY + scrollOffset) * _bodyScale;
+}
+
+function updateTooltipPos(e) {
+    let tooltip = document.getElementById('tooltip');
+    tooltip.style.left = (e.clientX * _bodyScale) + 'px';
+    tooltip.style.top = (getClientY(e) + 20) + 'px';
+}
+
+function updateTooltip(text, answerpv, movenumber, cl, e) {
+    let state = text.length > 0;
+    let tooltip = document.getElementById('tooltip');
+    while (tooltip.firstChild) tooltip.removeChild(tooltip.firstChild);
+    let span1 = document.createElement('span');
+    setElemText(span1, state ? text : '')
+    if (movenumber != null) {
+        let span2 = document.createElement('span');
+        span2.style.color = '#64c4db';
+        setElemText(span2, movenumber + ' ')
+        tooltip.appendChild(span2);
+    }
+    if (cl != null && cl != 'circle') {
+        let span3 = document.createElement('span');
+        span3.className = cl;
+        tooltip.appendChild(span3);
+        span1.style.paddingLeft = '12px';
+    }
+    tooltip.appendChild(span1);
+
+    _tooltipState = state;
+    tooltip.style.display = state ? '' : 'none';
+    if (e != null) updateTooltipPos(e);
+
+    if (answerpv != null && answerpv.length > 0 && (answerpv[0].length == 4 || answerpv[0].length == 5)) {
+        for (let i = 0; i < Math.min(answerpv.length, _movesPv ? 5 : 1); i++) {
+            let move = {
+                from: {
+                    x: 'abcdefgh'.indexOf(answerpv[i][0]),
+                    y: '87654321'.indexOf(answerpv[i][1])
+                },
+                to: {
+                    x: 'abcdefgh'.indexOf(answerpv[i][2]),
+                    y: '87654321'.indexOf(answerpv[i][3])
+                }
+            };
+            showArrow1(move, 1 - (i / 5));
+        }
+    } else setArrow(_arrow);
+}
+
+// ============================
+// Chessboard and Arrows
+// ============================
+
+function getEvalText(e, s) {
+    if (e == null) return s ? '' : '?';
+    let matein = Math.abs(Math.abs(e) - 1000000);
+    if (Math.abs(e) > 900000) {
+        return s ? (e > 0 ? '+M' : '-M') + matein : (e > 0 ? 'white mate in ' : 'black mate in ') + matein;
+    }
+    return (e / 100).toFixed(2);
+}
+
+function showLegalMoves(from) {
+    setArrow(from == null);
+    let pos = parseFEN(getCurFEN());
+    let elem = document.getElementById('chessboard1');
+    for (let i = 0; i < elem.children.length; i++) {
+        let div = elem.children[i];
+        if (div.tagName != 'DIV') continue;
+        if (div.style.zIndex > 0) continue;
+        let x = parseInt(div.style.left.replace('px', '')) / 40;
+        let y = parseInt(div.style.top.replace('px', '')) / 40;
+        if (_flip) {
+            x = 7 - x;
+            y = 7 - y;
+        }
+        let c = div.className.split(' ')[0] + ' ' + div.className.split(' ')[1];
+        if (div.className.indexOf(' h2') >= 0) c += ' h2';
+        div.className = c;
+        div.onmouseover = null;
+        setElemText(div, '');
+        if (from == null || from.x < 0 || from.y < 0) continue;
+        if (from.x == x && from.y == y) {
+            div.className += ' h0';
+            _clickFromElem = div;
+        } else if (isLegal(pos, from, {
+                x: x,
+                y: y
+            })) {
+            if (_curmoves.length == 0) continue;
+            let text = '',
+                san = '',
+                answerpv = null,
+                cl = null;
+            for (let j = 0; j < _curmoves.length; j++) {
+                if (_curmoves[j].move.from.x == from.x && _curmoves[j].move.from.y == from.y &&
+                    _curmoves[j].move.to.x == x && _curmoves[j].move.to.y == y &&
+                    (_curmoves[j].move.p == 'Q' || _curmoves[j].move.p == null)) {
+                    text = getEvalText(_curmoves[j].eval, true);
+                    san = _curmoves[j].san;
+                    answerpv = _curmoves[j].answerpv;
+                    cl = getCircleClassName(j);
+                    break;
+                }
+            }
+            div.className += ' h1';
+            setElemText(div, text);
+            div.tooltip = san + (text.length > 0 ? ' ' + text : '');
+            div.answerpv = answerpv == null ? [] : answerpv;
+            div.cl = cl == null ? 'circle' : cl;
+            div.onmouseover = function(e) {
+                updateTooltip(this.tooltip, this.answerpv, null, this.cl, e);
+            };
+            div.onmouseout = function() {
+                updateTooltip('');
+            };
+        }
+        updateTooltip('');
+    }
+
+    elem = document.getElementById('editWrapper').children[0];
+    for (let i = 0; i < elem.children.length; i++) {
+        let div = elem.children[i];
+        if (div.tagName != 'DIV') continue;
+        if (div.style.zIndex > 0) continue;
+        let x = -parseInt(div.style.left.replace('px', '')) / 40 - 1;
+        let y = -parseInt(div.style.top.replace('px', '')) / 40 - 1;
+        let c = div.className.split(' ')[0] + ' ' + div.className.split(' ')[1];
+        div.className = c;
+        setElemText(div, '');
+        if (from == null || from.x >= 0 || from.y >= 0) continue;
+        if (from.x == x && from.y == y) {
+            div.className += ' h0';
+            _clickFromElem = div;
+        }
+    }
+    showArrow3(null);
+
+    _clickFrom = from;
+}
+
+function updateLegalMoves() {
+    let pos = parseFEN(getCurFEN());
+    let elem = document.getElementById('chessboard1');
+    for (let i = 0; i < elem.children.length; i++) {
+        let div = elem.children[i];
+        if (div.tagName != 'DIV' || div.style.zIndex > 0 || div.className.indexOf(' h1') < 0 || div.cl != 'circle') continue;
+        let x = parseInt(div.style.left.replace('px', '')) / 40;
+        let y = parseInt(div.style.top.replace('px', '')) / 40;
+        if (_flip) {
+            x = 7 - x;
+            y = 7 - y;
+        }
+        let c = div.className.split(' ')[0] + ' ' + div.className.split(' ')[1];
+        if (div.className.indexOf(' h2') >= 0) c += ' h2';
+        for (let j = 0; j < _curmoves.length; j++) {
+            if (div.tooltip == _curmoves[j].san) {
+                let text = getEvalText(_curmoves[j].eval, true);
+                let san = _curmoves[j].san;
+                let answerpv = _curmoves[j].answerpv;
+                let cl = getCircleClassName(j);
+                setElemText(div, text);
+                div.tooltip = san + (text.length > 0 ? ' ' + text : '');
+                div.answerpv = answerpv == null ? [] : answerpv;
+                div.cl = cl == null ? 'circle' : cl;
+                div.onmouseover = function(e) {
+                    updateTooltip(this.tooltip, this.answerpv, null, this.cl, e);
+                };
+                div.onmouseout = function() {
+                    updateTooltip('');
+                };
+                if (_tooltipState && getElemText(document.getElementById('tooltip').firstChild) == _curmoves[j].san) updateTooltip(div.tooltip, div.answerpv, null, div.cl, null);
+                break;
+            }
+        }
+    }
+}
+
+function setArrow(state) {
+    _arrow = state;
+    if (_arrow && _curmoves.length > 0 && _curmoves[0].eval != null) showArrow1(_curmoves[0].move);
+    else showArrow1();
+}
+
+function repaintLastMoveArrow() {
+    let lastmove = (getCurFEN() == _history[_historyindex][0] && _history[_historyindex].length > 2) ? _history[_historyindex][2] : null;
+    if (lastmove != null) {
+        let elem = document.getElementById('arrowWrapper2');
+        if (elem.children[0].children != null)
+            elem.children[0].children[0].children[0].children[0].style.fill = elem.children[0].children[1].style.stroke = getGraphPointColor(_historyindex);
+    }
+    showArrow2(lastmove);
+}
+
+function showArrowInternal(move, wrapperId, opacity = 1) {
+    let elem = document.getElementById(wrapperId);
+    if (move == null) {
+        elem.style.display = 'none';
+        return;
+    }
+    if (elem.children[0].children == null) return;
+    let line = elem.children[0].children[1];
+    line.setAttribute('x1', 20 + (_flip ? 7 - move.from.x : move.from.x) * 40);
+    line.setAttribute('y1', 20 + (_flip ? 7 - move.from.y : move.from.y) * 40);
+    line.setAttribute('x2', 20 + (_flip ? 7 - move.to.x : move.to.x) * 40);
+    line.setAttribute('y2', 20 + (_flip ? 7 - move.to.y : move.to.y) * 40);
+    line.style.opacity = opacity.toFixed(2);
+    elem.style.display = 'block';
+}
+
+function showArrow1(move, opacity) {
+    let elem = document.getElementById('arrowWrapper1');
+    let elem0 = elem.children[0];
+    if (opacity == null || opacity == 1)
+        for (let i = elem0.children.length - 1; i >= 2; i--) elem0.removeChild(elem0.children[i]);
+    else elem.children[0].appendChild(elem0.children[1].cloneNode(false));
+    showArrowInternal(move, 'arrowWrapper1', opacity);
+}
+
+function showArrow2(move) {
+    showArrowInternal(move, 'arrowWrapper2');
+}
+
+function showArrow3(move) {
+    let elem0 = document.getElementById('arrowWrapper3').children[0];
+    if (elem0.children == null) return;
+    if (move == null) {
+        for (let i = elem0.children.length - 1; i >= 2; i--) elem0.removeChild(elem0.children[i]);
+    } else if (move.from.x == move.to.x && move.from.y == move.to.y || !bounds(move.from.x, move.from.y) || !bounds(move.to.x, move.to.y)) {
+        elem0.children[1].style.display = 'none';
+    } else {
+        elem0.children[1].style.display = '';
+    }
+    showArrowInternal(move, 'arrowWrapper3');
+}
+
+function finalArrow3() {
+    let elem = document.getElementById('arrowWrapper3');
+    let list = elem.children[0].children,
+        remElem = null;
+    if (list == null) return;
+    if (list[1].style.display == 'none') return;
+    for (let i = 2; i < list.length; i++) {
+        if (list[i].getAttribute('x1') == list[1].getAttribute('x1') &&
+            list[i].getAttribute('y1') == list[1].getAttribute('y1') &&
+            list[i].getAttribute('x2') == list[1].getAttribute('x2') &&
+            list[i].getAttribute('y2') == list[1].getAttribute('y2')) remElem = list[i];
+    }
+    if (remElem == null) {
+        elem.children[0].appendChild(list[1].cloneNode(false));
+    } else {
+        elem.children[0].removeChild(remElem);
+    }
+    list[1].style.display = 'none';
+}
+
+function updateInfo() {
+    let curfen = getCurFEN();
+    let pos = parseFEN(curfen);
+    let curpos = pos.m[1];
+    let positionInfoText = 'Position: ' + (_historyindex + 1) + ' of ' + _history.length + ' - Last Move: ';
+    if (_history[_historyindex].length > 3 && _history[_historyindex][3] != null) {
+        let pos2 = parseFEN(_history[_historyindex][0]);
+        positionInfoText += (pos2.w ? (pos2.m[1] - 1) + '... ' : pos2.m[1] + '. ') + _history[_historyindex][3];
+    } else positionInfoText += '-';
+    let movesInfoText = (pos.w ? 'White' : 'Black') + ' To Play (' + _curmoves.length + ' Legal Move' + (_curmoves.length == 1 ? '' : 's') + ')';
+    setElemText(document.getElementById('positionInfo'), positionInfoText);
+    setElemText(document.getElementById('movesInfo'), movesInfoText);
+
+    // History window
+    let elem = document.getElementById('history'),
+        movesText = '';
+    while (elem.firstChild) elem.removeChild(elem.firstChild);
+    let div = document.createElement('div');
+    let lastmn = null,
+        mn = null;
+    for (let i = 0; i < _history.length; i++) {
+        if (mn != lastmn) {
+            let span1 = document.createElement('span');
+            setElemText(span1, mn + '. ');
+            span1.style.color = '#64c4db';
+            div.appendChild(span1);
+            if (i <= _historyindex) movesText += mn + '.';
+            lastmn = mn;
+        }
+        mn = parseMoveNumber(_history[i][0]);
+        let san = '\u2605';
+        if (_history[i].length > 3 && _history[i][3] != null) san = _history[i][3];
+        let span2 = document.createElement('span');
+        setElemText(span2, san);
+        span2.className = 'movelink' + (i == _historyindex ? ' selected' : '');
+        span2.targetindex = i;
+        let c = getGraphPointColor(i);
+        if (c != '#008800') span2.style.borderBottomColor = c;
+        span2.onclick = function() {
+            let i = this.targetindex;
+            if (i < _history.length && i >= 0 && i != _historyindex) {
+                historyMove(i - _historyindex);
+            }
+        }
+        div.appendChild(span2);
+        div.appendChild(document.createTextNode(' '));
+        if (i > 0 && i <= _historyindex) movesText += san + ' ';
+    }
+    elem.appendChild(div);
+
+    // Opening window
+    elem = document.getElementById('opening');
+    while (elem.firstChild) elem.removeChild(elem.firstChild);
+    let list = [],
+        lengthMatch = 0,
+        indexMatch = -1;
+    for (let i = 0; i < OPENING_NAMES.length; i++) {
+        if (movesText.indexOf(OPENING_NAMES[i][2]) == 0 && OPENING_NAMES[i][2].length > lengthMatch) {
+            indexMatch = i;
+            lengthMatch = OPENING_NAMES[i][2].length;
+        }
+    }
+    if (indexMatch >= 0) {
+        list.push({
+            name: OPENING_NAMES[indexMatch][0] + ' ' + OPENING_NAMES[indexMatch][1],
+            score: OPENING_NAMES[indexMatch][3] + '%',
+            popularity: (OPENING_NAMES[indexMatch][4] / 100).toFixed(2) + '%',
+            moves: OPENING_NAMES[indexMatch][2]
+        });
+    }
+    for (let i = 0; i < OPENING_NAMES.length; i++) {
+        if ((movesText.length > 0 || _history[0][0] == START) && OPENING_NAMES[i][2].indexOf(movesText) == 0 && list.length < MAX_OPENING_NAMES) {
+            list.push({
+                name: OPENING_NAMES[i][0] + ' ' + OPENING_NAMES[i][1],
+                score: OPENING_NAMES[i][3] + '%',
+                popularity: (OPENING_NAMES[i][4] / 100).toFixed(2) + '%',
+                moves: OPENING_NAMES[i][2]
+            });
+        }
+    }
+    for (let i = 0; i < list.length; i++) {
+        let node1 = document.createElement('DIV');
+        node1.className = 'line';
+        let node2 = document.createElement('SPAN');
+        node2.className = 'name';
+        node2.appendChild(document.createTextNode(list[i].name));
+        node2.title = list[i].name;
+        let node3 = document.createElement('SPAN');
+        node3.className = 'score';
+        node3.appendChild(document.createTextNode(list[i].score));
+        let node4 = document.createElement('SPAN');
+        node4.className = 'popularity';
+        node4.appendChild(document.createTextNode(list[i].popularity));
+        let node5 = document.createElement('SPAN');
+        node5.className = 'moves';
+        node5.appendChild(document.createTextNode(list[i].moves));
+        node5.title = list[i].moves;
+        node1.appendChild(node2);
+        node1.appendChild(node3);
+        node1.appendChild(node4);
+        node1.appendChild(node5);
+        if (indexMatch >= 0 && i == 0) {
+            node1.style.color = '#64c4db';
+            node1.targetindex = list[i].moves.split(' ').length;
+            node1.onclick = function() {
+                let i = this.targetindex;
+                if (i < _history.length && i >= 0 && i != _historyindex) historyMove(i - _historyindex);
+            }
+        } else {
+            node1.targetmoves = list[i].moves;
+            node1.onclick = function() {
+                let savedhistory = _history2 == null ? [_historyindex, JSON.parse(JSON.stringify(_history))] : _history2;
+                command(this.targetmoves);
+                _history2 = savedhistory;
+                refreshButtonRevert();
+            }
+        }
+        elem.appendChild(node1);
+    }
+}
+
+// ============================
+// Position and Moves
+// ============================
+
+function bounds(x, y) {
+    return x >= 0 && x <= 7 && y >= 0 && y <= 7;
+}
+
+function board(pos, x, y) {
+    if (x >= 0 && x <= 7 && y >= 0 && y <= 7) return pos.b[x][y];
+    return 'x';
+}
+
+function colorflip(pos) {
+    let board = new Array(8);
+    for (let i = 0; i < 8; i++) board[i] = new Array(8);
+    for (x = 0; x < 8; x++)
+        for (y = 0; y < 8; y++) {
+            board[x][y] = pos.b[x][7 - y];
+            let color = board[x][y].toUpperCase() == board[x][y];
+            board[x][y] = color ? board[x][y].toLowerCase() : board[x][y].toUpperCase();
+        }
+    return {
+        b: board,
+        c: [pos.c[2], pos.c[3], pos.c[0], pos.c[1]],
+        e: pos.e == null ? null : [pos.e[0], 7 - pos.e[1]],
+        w: !pos.w,
+        m: [pos.m[0], pos.m[1]]
+    };
+}
+
+function sum(pos, func, param) {
+    let sum = 0;
+    for (let x = 0; x < 8; x++)
+        for (let y = 0; y < 8; y++) sum += func(pos, { x: x, y: y }, param);
+    return sum;
+}
+
+function parseMoveNumber(fen) {
+    let a = fen.replace(/^\s+/, '').split(' ');
+    return (a.length > 5 && !isNaN(a[5]) && a[5] != '') ? parseInt(a[5]) : 1;
+}
+
+function parseFEN(fen) {
+    let board = new Array(8);
+    for (let i = 0; i < 8; i++) board[i] = new Array(8);
+    let a = fen.replace(/^\s+/, '').split(' '),
+        s = a[0],
+        x, y;
+    for (x = 0; x < 8; x++)
+        for (y = 0; y < 8; y++) {
+            board[x][y] = '-';
+        }
+    x = 0, y = 0;
+    for (let i = 0; i < s.length; i++) {
+        if (s[i] == ' ') break;
+        if (s[i] == '/') {
+            x = 0;
+            y++;
+        } else {
+            if (!bounds(x, y)) continue;
+            if ('KQRBNP'.indexOf(s[i].toUpperCase()) != -1) {
+                board[x][y] = s[i];
+                x++;
+            } else if ('0123456789'.indexOf(s[i]) != -1) {
+                x += parseInt(s[i]);
+            } else x++;
+        }
+    }
+    let castling, enpassant, whitemove = !(a.length > 1 && a[1] == 'b');
+    if (a.length > 2) {
+        castling = [a[2].indexOf('K') != -1, a[2].indexOf('Q') != -1,
+            a[2].indexOf('k') != -1, a[2].indexOf('q') != -1
+        ];
+    } else {
+        castling = [true, true, true, true];
+    }
+    if (a.length > 3 && a[3].length == 2) {
+        let ex = 'abcdefgh'.indexOf(a[3][0]);
+        let ey = '87654321'.indexOf(a[3][1]);
+        enpassant = (ex >= 0 && ey >= 0) ? [ex, ey] : null;
+    } else {
+        enpassant = null;
+    }
+    let movecount = [(a.length > 4 && !isNaN(a[4]) && a[4] != '') ? parseInt(a[4]) : 0,
+        (a.length > 5 && !isNaN(a[5]) && a[5] != '') ? parseInt(a[5]) : 1
+    ];
+    return {
+        b: board,
+        c: castling,
+        e: enpassant,
+        w: whitemove,
+        m: movecount
+    };
+}
+
+function generateFEN(pos) {
+    let s = '',
+        f = 0,
+        castling = pos.c,
+        enpassant = pos.e,
+        board = pos.b;
+    for (let y = 0; y < 8; y++) {
+        for (let x = 0; x < 8; x++) {
+            if (board[x][y] == '-') {
+                f++;
+            } else {
+                if (f > 0) s += f, f = 0;
+                s += board[x][y];
+            }
+        }
+        if (f > 0) s += f, f = 0;
+        if (y < 7) s += '/';
+    }
+    s += ' ' + (pos.w ? 'w' : 'b') +
+        ' ' + ((castling[0] || castling[1] || castling[2] || castling[3]) ?
+            ((castling[0] ? 'K' : '') + (castling[1] ? 'Q' : '') +
+                (castling[2] ? 'k' : '') + (castling[3] ? 'q' : '')) :
+            '-') +
+        ' ' + (enpassant == null ? '-' : ('abcdefgh' [enpassant[0]] + '87654321' [enpassant[1]])) +
+        ' ' + pos.m[0] + ' ' + pos.m[1];
+    return s;
+}
+
+function isWhiteCheck(pos) {
+    let kx = null,
+        ky = null;
+    for (let x = 0; x < 8; x++) {
+        for (let y = 0; y < 8; y++) {
+            if (pos.b[x][y] == 'K') {
+                kx = x;
+                ky = y;
+            }
+        }
+    }
+    if (kx == null || ky == null) return false;
+    if (board(pos, kx + 1, ky - 1) == 'p' ||
+        board(pos, kx - 1, ky - 1) == 'p' ||
+        board(pos, kx + 2, ky + 1) == 'n' ||
+        board(pos, kx + 2, ky - 1) == 'n' ||
+        board(pos, kx + 1, ky + 2) == 'n' ||
+        board(pos, kx + 1, ky - 2) == 'n' ||
+        board(pos, kx - 2, ky + 1) == 'n' ||
+        board(pos, kx - 2, ky - 1) == 'n' ||
+        board(pos, kx - 1, ky + 2) == 'n' ||
+        board(pos, kx - 1, ky - 2) == 'n' ||
+        board(pos, kx - 1, ky - 1) == 'k' ||
+        board(pos, kx, ky - 1) == 'k' ||
+        board(pos, kx + 1, ky - 1) == 'k' ||
+        board(pos, kx - 1, ky) == 'k' ||
+        board(pos, kx + 1, ky) == 'k' ||
+        board(pos, kx - 1, ky + 1) == 'k' ||
+        board(pos, kx, ky + 1) == 'k' ||
+        board(pos, kx + 1, ky + 1) == 'k') return true;
+    for (let i = 0; i < 8; i++) {
+        let ix = (i + (i > 3)) % 3 - 1;
+        let iy = (((i + (i > 3)) / 3) << 0) - 1;
+        for (let d = 1; d < 8; d++) {
+            let b = board(pos, kx + d * ix, ky + d * iy);
+            let line = ix == 0 || iy == 0;
+            if (b == 'q' || b == 'r' && line || b == 'b' && !line) return true;
+            if (b != '-') break;
+        }
+    }
+    return false;
+}
+
+function doMove(pos, from, to, promotion) {
+    if (pos.b[from.x][from.y].toUpperCase() != pos.b[from.x][from.y]) {
+        let r = colorflip(doMove(colorflip(pos), {
+            x: from.x,
+            y: 7 - from.y
+        }, {
+            x: to.x,
+            y: 7 - to.y
+        }, promotion));
+        r.m[1]++;
+        return r;
+    }
+    let r = colorflip(colorflip(pos));
+    r.w = !r.w;
+    if (from.x == 7 && from.y == 7) r.c[0] = false;
+    if (from.x == 0 && from.y == 7) r.c[1] = false;
+    if (to.x == 7 && to.y == 0) r.c[2] = false;
+    if (to.x == 0 && to.y == 0) r.c[3] = false;
+    if (from.x == 4 && from.y == 7) r.c[0] = r.c[1] = false;
+    r.e = pos.b[from.x][from.y] == 'P' && from.y == 6 && to.y == 4 ? [from.x, 5] : null;
+    if (pos.b[from.x][from.y] == 'K') {
+        if (Math.abs(from.x - to.x) > 1) {
+            r.b[from.x][from.y] = '-';
+            r.b[to.x][to.y] = 'K';
+            r.b[to.x > 4 ? 5 : 3][to.y] = 'R';
+            r.b[to.x > 4 ? 7 : 0][to.y] = '-';
+            return r;
+        }
+    }
+    if (pos.b[from.x][from.y] == 'P' && to.y == 0) {
+        r.b[to.x][to.y] = promotion != null ? promotion : getPromotionPiece();
+    } else if (pos.b[from.x][from.y] == 'P' &&
+        pos.e != null && to.x == pos.e[0] && to.y == pos.e[1] &&
+        Math.abs(from.x - to.x) == 1) {
+        r.b[to.x][from.y] = '-';
+        r.b[to.x][to.y] = pos.b[from.x][from.y];
+
+    } else {
+        r.b[to.x][to.y] = pos.b[from.x][from.y];
+    }
+    r.b[from.x][from.y] = '-';
+    r.m[0] = (pos.b[from.x][from.y] == 'P' || pos.b[to.x][to.y] != '-') ? 0 : r.m[0] + 1;
+    return r;
+}
+
+function isLegal(pos, from, to) {
+    if (!bounds(from.x, from.y)) return false;
+    if (!bounds(to.x, to.y)) return false;
+    if (from.x == to.x && from.y == to.y) return false;
+    if (pos.b[from.x][from.y] != pos.b[from.x][from.y].toUpperCase()) {
+        return isLegal(colorflip(pos), {
+            x: from.x,
+            y: 7 - from.y
+        }, {
+            x: to.x,
+            y: 7 - to.y
+        })
+    }
+    if (!pos.w) return false;
+    let pfrom = pos.b[from.x][from.y];
+    let pto = pos.b[to.x][to.y];
+    if (pto.toUpperCase() == pto && pto != '-') return false;
+    if (pfrom == '-') {
+        return false;
+    } else if (pfrom == 'P') {
+        let enpassant = pos.e != null && to.x == pos.e[0] && to.y == pos.e[1];
+        if (!((from.x == to.x && from.y == to.y + 1 && pto == '-') ||
+                (from.x == to.x && from.y == 6 && to.y == 4 && pto == '-' && pos.b[to.x][5] == '-') ||
+                (Math.abs(from.x - to.x) == 1 && from.y == to.y + 1 && (pto != '-' || enpassant))
+            )) return false;
+    } else if (pfrom == 'N') {
+        if (Math.abs(from.x - to.x) < 1 || Math.abs(from.x - to.x) > 2) return false;
+        if (Math.abs(from.y - to.y) < 1 || Math.abs(from.y - to.y) > 2) return false;
+        if (Math.abs(from.x - to.x) + Math.abs(from.y - to.y) != 3) return false;
+    } else if (pfrom == 'K') {
+        let castling = true;
+        if (from.y != 7 || to.y != 7) castling = false;
+        if (from.x != 4 || (to.x != 2 && to.x != 6)) castling = false;
+        if (to.x == 6 && !pos.c[0] || to.x == 2 && !pos.c[1]) castling = false;
+        if (to.x == 2 && pos.b[0][7] + pos.b[1][7] + pos.b[2][7] + pos.b[3][7] != 'R---') castling = false;
+        if (to.x == 6 && pos.b[5][7] + pos.b[6][7] + pos.b[7][7] != '--R') castling = false;
+        if ((Math.abs(from.x - to.x) > 1 || Math.abs(from.y - to.y) > 1) && !castling) return false;
+        if (castling && isWhiteCheck(pos)) return false;
+        if (castling && isWhiteCheck(doMove(pos, from, {
+                x: to.x == 2 ? 3 : 5,
+                y: 7
+            }))) return false;
+    }
+    if (pfrom == 'B' || pfrom == 'R' || pfrom == 'Q') {
+        let a = from.x - to.x,
+            b = from.y - to.y;
+        let line = a == 0 || b == 0;
+        let diag = Math.abs(a) == Math.abs(b);
+        if (!line && !diag) return false;
+        if (pfrom == 'R' && !line) return false;
+        if (pfrom == 'B' && !diag) return false;
+        let count = Math.max(Math.abs(a), Math.abs(b));
+        let ix = a > 0 ? -1 : a < 0 ? 1 : 0,
+            iy = b > 0 ? -1 : b < 0 ? 1 : 0;
+        for (let i = 1; i < count; i++) {
+            if (pos.b[from.x + ix * i][from.y + iy * i] != '-') return false;
+        }
+    }
+    if (isWhiteCheck(doMove(pos, from, to))) return false;
+    return true;
+}
+
+function parseMove(pos, s) {
+    let promotion = null;
+    s = s.replace(/[\+|#|\?|!|x]/g, '');
+    if (s.length >= 2 && s[s.length - 2] == '=') {
+        promotion = s[s.length - 1]
+        s = s.substring(0, s.length - 2);
+    }
+    if (s.length >= 3 && 'NBRQ'.indexOf(s[s.length - 1]) >= 0) {
+        promotion = s[s.length - 1]
+        s = s.substring(0, s.length - 1);
+    }
+    if (s == 'O-O' || s == 'O-O-O') {
+        let from = {
+                x: 4,
+                y: pos.w ? 7 : 0
+            },
+            to = {
+                x: s == 'O-O' ? 6 : 2,
+                y: pos.w ? 7 : 0
+            };
+        if (isLegal(pos, from, to)) return {
+            from: from,
+            to: to
+        };
+        else return null;
+    } else {
+        let p;
+        if ('PNBRQK'.indexOf(s[0]) < 0) {
+            p = 'P';
+        } else {
+            p = s[0];
+            s = s.substring(1);
+        }
+        if (s.length < 2 || s.length > 4) return null;
+        let xto = 'abcdefgh'.indexOf(s[s.length - 2]);
+        let yto = '87654321'.indexOf(s[s.length - 1]);
+        let xfrom = -1,
+            yfrom = -1;
+        if (s.length > 2) {
+            xfrom = 'abcdefgh'.indexOf(s[0]);
+            yfrom = '87654321'.indexOf(s[s.length - 3]);
+        }
+        for (let x = 0; x < 8; x++) {
+            for (let y = 0; y < 8; y++) {
+                if (xfrom != -1 && xfrom != x) continue;
+                if (yfrom != -1 && yfrom != y) continue;
+                if (pos.b[x][y] == (pos.w ? p : p.toLowerCase()) && isLegal(pos, {
+                        x: x,
+                        y: y
+                    }, {
+                        x: xto,
+                        y: yto
+                    })) {
+                    xfrom = x;
+                    yfrom = y;
+                }
+            }
+        }
+        if (xto < 0 || yto < 0 || xfrom < 0 || yfrom < 0) return null;
+        return {
+            from: {
+                x: xfrom,
+                y: yfrom
+            },
+            to: {
+                x: xto,
+                y: yto
+            },
+            p: promotion
+        };
+    }
+}
+
+function genMoves(pos) {
+    let moves = [];
+    for (let x1 = 0; x1 < 8; x1++)
+        for (let y1 = 0; y1 < 8; y1++)
+            for (let x2 = 0; x2 < 8; x2++)
+                for (let y2 = 0; y2 < 8; y2++) {
+                    if (isLegal(pos, {
+                            x: x1,
+                            y: y1
+                        }, {
+                            x: x2,
+                            y: y2
+                        })) {
+                        if ((y2 == 0 || y2 == 7) && pos.b[x1][y1].toUpperCase() == 'P') {
+                            moves.push({
+                                from: {
+                                    x: x1,
+                                    y: y1
+                                },
+                                to: {
+                                    x: x2,
+                                    y: y2
+                                },
+                                p: 'N'
+                            });
+                            moves.push({
+                                from: {
+                                    x: x1,
+                                    y: y1
+                                },
+                                to: {
+                                    x: x2,
+                                    y: y2
+                                },
+                                p: 'B'
+                            });
+                            moves.push({
+                                from: {
+                                    x: x1,
+                                    y: y1
+                                },
+                                to: {
+                                    x: x2,
+                                    y: y2
+                                },
+                                p: 'R'
+                            });
+                            moves.push({
+                                from: {
+                                    x: x1,
+                                    y: y1
+                                },
+                                to: {
+                                    x: x2,
+                                    y: y2
+                                },
+                                p: 'Q'
+                            });
+                        } else moves.push({
+                            from: {
+                                x: x1,
+                                y: y1
+                            },
+                            to: {
+                                x: x2,
+                                y: y2
+                            }
+                        });
+                    }
+                }
+    return moves;
+}
+
+function sanMove(pos, move, moves) {
+    let s = '';
+    if (move.from.x == 4 && move.to.x == 6 && pos.b[move.from.x][move.from.y].toLowerCase() == 'k') {
+        s = 'O-O';
+    } else if (move.from.x == 4 && move.to.x == 2 && pos.b[move.from.x][move.from.y].toLowerCase() == 'k') {
+        s = 'O-O-O';
+    } else {
+        let piece = pos.b[move.from.x][move.from.y].toUpperCase();
+        if (piece != 'P') {
+            let a = 0,
+                sx = 0,
+                sy = 0;
+            for (let i = 0; i < moves.length; i++) {
+                if (pos.b[moves[i].from.x][moves[i].from.y] == pos.b[move.from.x][move.from.y] &&
+                    (moves[i].from.x != move.from.x || moves[i].from.y != move.from.y) &&
+                    (moves[i].to.x == move.to.x && moves[i].to.y == move.to.y)) {
+                    a++;
+                    if (moves[i].from.x == move.from.x) sx++;
+                    if (moves[i].from.y == move.from.y) sy++;
+                }
+            }
+            s += piece;
+            if (a > 0) {
+                if (sx > 0 && sy > 0) s += 'abcdefgh' [move.from.x] + '87654321' [move.from.y];
+                else if (sx > 0) s += '87654321' [move.from.y];
+                else s += 'abcdefgh' [move.from.x];
+            }
+        }
+        if (pos.b[move.to.x][move.to.y] != '-' || piece == 'P' && move.to.x != move.from.x) {
+            if (piece == 'P') s += 'abcdefgh' [move.from.x];
+            s += 'x';
+        }
+        s += 'abcdefgh' [move.to.x] + '87654321' [move.to.y];
+        if (piece == 'P' && (move.to.y == 0 || move.to.y == 7)) s += '=' + (move.p == null ? 'Q' : move.p);
+    }
+    let pos2 = doMove(pos, move.from, move.to, move.p);
+    if (isWhiteCheck(pos2) || isWhiteCheck(colorflip(pos2))) s += genMoves(pos2).length == 0 ? '#' : '+';
+    return s;
+}
+
+function fixCastling(pos) {
+    pos.c[0] &= !(pos.b[7][7] != 'R' || pos.b[4][7] != 'K');
+    pos.c[1] &= !(pos.b[0][7] != 'R' || pos.b[4][7] != 'K');
+    pos.c[2] &= !(pos.b[7][0] != 'r' || pos.b[4][0] != 'k');
+    pos.c[3] &= !(pos.b[0][0] != 'r' || pos.b[4][0] != 'k');
+}
+
+function checkPosition(pos) {
+    let errmsgs = [];
+    let wk = bk = 0,
+        wp = bp = 0,
+        wpr = bpr = 0,
+        wn = wb1 = wb2 = wr = wq = 0,
+        bn = bb1 = bb2 = br = bq = 0;
+    for (let x = 0; x < 8; x++) {
+        for (let y = 0; y < 8; y++) {
+            let c = ((x + y) % 2) == 0;
+            if (pos.b[x][y] == 'K') wk++;
+            if (pos.b[x][y] == 'k') bk++;
+            if (pos.b[x][y] == 'P') wp++;
+            if (pos.b[x][y] == 'p') bp++;
+            if (pos.b[x][y] == 'N') wn++;
+            if (pos.b[x][y] == 'n') bn++;
+            if (c && pos.b[x][y] == 'B') wb1++;
+            if (c && pos.b[x][y] == 'b') bb1++;
+            if (!c && pos.b[x][y] == 'B') wb2++;
+            if (!c && pos.b[x][y] == 'b') bb2++;
+            if (pos.b[x][y] == 'R') wr++;
+            if (pos.b[x][y] == 'r') br++;
+            if (pos.b[x][y] == 'Q') wq++;
+            if (pos.b[x][y] == 'q') bq++;
+            if (pos.b[x][y] == 'P' && (y == 0 || y == 7)) wpr++;
+            if (pos.b[x][y] == 'p' && (y == 0 || y == 7)) bpr++;
+        }
+    }
+    if (wk == 0) errmsgs.push('Missing white king');
+    if (bk == 0) errmsgs.push('Missing black king');
+    if (wk > 1) errmsgs.push('Two white kings');
+    if (bk > 1) errmsgs.push('Two black kings');
+    let wcheck = isWhiteCheck(pos);
+    let bcheck = isWhiteCheck(colorflip(pos));
+    if (pos.w && bcheck || !pos.w && wcheck) errmsgs.push('Non-active color is in check');
+    if (wp > 8) errmsgs.push('Too many white pawns');
+    if (bp > 8) errmsgs.push('Too many black pawns');
+    if (wpr > 0) errmsgs.push('White pawns in first or last rank');
+    if (bpr > 0) errmsgs.push('Black pawns in first or last rank');
+    let we = Math.max(0, wq - 1) + Math.max(0, wr - 2) + Math.max(0, wb1 - 1) + Math.max(0, wb2 - 1) + Math.max(0, wn - 2);
+    let be = Math.max(0, bq - 1) + Math.max(0, br - 2) + Math.max(0, bb1 - 1) + Math.max(0, bb2 - 1) + Math.max(0, bn - 2);
+    if (we > Math.max(0, 8 - wp)) errmsgs.push('Too many extra white pieces');
+    if (be > Math.max(0, 8 - bp)) errmsgs.push('Too many extra black pieces');
+    if ((pos.c[0] && (pos.b[7][7] != 'R' || pos.b[4][7] != 'K')) ||
+        (pos.c[1] && (pos.b[0][7] != 'R' || pos.b[4][7] != 'K'))) errmsgs.push('White has castling rights and king or rook not in their starting position');
+    if ((pos.c[2] && (pos.b[7][0] != 'r' || pos.b[4][0] != 'k')) ||
+        (pos.c[3] && (pos.b[0][0] != 'r' || pos.b[4][0] != 'k'))) errmsgs.push('Black has castling rights and king or rook not in their starting position');
+    return errmsgs;
+}
+
+// ============================
+// Move List Functions
+// ============================
+
+function refreshMoves() {
+    let pos = parseFEN(getCurFEN());
+    _curmoves = [];
+    setElemText(document.getElementById('moves'), '');
+    let errmsgs = checkPosition(pos);
+    if (errmsgs.length == 0) {
+        let moves = genMoves(pos);
+        for (let i = 0; i < moves.length; i++) {
+            _curmoves.push({
+                move: moves[i],
+                san: sanMove(pos, moves[i], moves),
+                fen: generateFEN(doMove(pos, moves[i].from, moves[i].to, moves[i].p)),
+                w: !pos.w,
+                eval: null,
+                depth: 0
+            });
+        }
+        if (_curmoves.length == 0) {
+            let matecheck = pos.w && isWhiteCheck(pos) || !pos.w && isWhiteCheck(colorflip(pos));
+            let div0 = document.createElement('div');
+            div0.style.padding = '8px 16px';
+            let div = document.createElement('div');
+            div.style.backgroundColor = '#800080';
+            div.className = 'positionStatus';
+            setElemText(div, matecheck ? 'Checkmate' : 'Stalemate');
+            div0.appendChild(div);
+            let ul = document.createElement('ul'),
+                li = document.createElement('li');
+            setElemText(li, matecheck && pos.w ? 'Black wins' : matecheck ? 'White wins' : 'Draw');
+            ul.appendChild(li);
+            div0.appendChild(ul);
+            document.getElementById('moves').appendChild(div0);
+        } else {
+            showEvals();
+        }
+    } else {
+        let div0 = document.createElement('div');
+        div0.style.padding = '8px 16px';
+        let div = document.createElement('div');
+        div.style.backgroundColor = '#bb0000';
+        div.className = 'positionStatus';
+        setElemText(div, 'Illegal position');
+        div0.appendChild(div);
+
+        let ul = document.createElement('ul');
+        for (let i = 0; i < errmsgs.length; i++) {
+            let li = document.createElement('li');
+            setElemText(li, errmsgs[i]);
+            ul.appendChild(li);
+        }
+        div0.appendChild(ul);
+
+        document.getElementById('moves').appendChild(div0);
+
+    }
+}
+
+// ============================
+// History Functions
+// ============================
+function historyButtons() {
+    document.getElementById('buttonBack').className = _historyindex > 0 ? 'on' : 'off';
+    document.getElementById('buttonForward').className = _historyindex < _history.length - 1 ? 'on' : 'off';
+}
+
+function historySave() {
+    // Save the current history
+}
+
+function historyAdd(fen, oldhistory, move, san) {
+    if (_historyindex >= 0 && _history[_historyindex][0] == fen) return;
+    let c = null;
+    if (oldhistory != null) {
+        for (let i = 0; i < oldhistory.length; i++) {
+            if (oldhistory[i][0] == fen && oldhistory[i].length > 1) c = oldhistory[i][1];
+        }
+    } else {
+        if (_history2 == null) {
+            _history2 = [_historyindex, JSON.parse(JSON.stringify(_history))];
+            refreshButtonRevert();
+        }
+    }
+    _historyindex++;
+    _history.length = _historyindex;
+    _history.push([fen, c, move, san]);
+    historyButtons();
+    historySave();
+}
+
+function historyMove(v, e, ctrl) {
+    if (e == null) e = window.event;
+    let oldindex = _historyindex;
+    if (_historyindex == _history.length - 1 &&
+        _history[_historyindex][0] != getCurFEN()) historyAdd(getCurFEN());
+    _historyindex += v
+    if (_historyindex < 0) _historyindex = 0;
+    if (_historyindex >= _history.length) _historyindex = _history.length - 1;
+    if ((e != null && e.ctrlKey && Math.abs(v) == 1) || ctrl) _historyindex = v == 1 ? _history.length - 1 : 0;
+    if (v == 0 || (oldindex != _historyindex || getCurFEN() != _history[_historyindex][0])) {
+        setCurFEN(_history[_historyindex][0]);
+        historyButtons();
+        historySave();
+        showBoard();
+    }
+}
+
+function historyKeep(wname, bname) {
+    _wname = wname || 'White';
+    _bname = bname || 'Black';
+    _history2 = null;
+    refreshButtonRevert();
+    historyMove(0);
+}
+
+// ============================
+// Mouse and Keyboard Events
+// ============================
+
+function getCurScale() {
+    if (document.getElementById('wChessboard').style.display == 'none') return 1;
+    return Math.min(
+        (document.getElementById('wChessboard').clientWidth - 414 + 408) / 408,
+        (document.getElementById('wChessboard').clientHeight + (_mobile ? 30 : 0) - 437 + 368) / 368
+    );
+}
+
+function getDragX(x, full) {
+    let bb = document.getElementById('chessboard1').getBoundingClientRect();
+    let w = bb.width / 8;
+    let offsetX = bb.left + w / 2;
+    if (_flip) return 7 - Math.round((x - offsetX) / w);
+    else return Math.round((x - offsetX) / w);
+}
+
+function getDragY(y, full) {
+    let bb = document.getElementById('chessboard1').getBoundingClientRect();
+    let h = bb.width / 8;
+    let offsetY = bb.top + h / 2;
+    if (_flip) return 7 - Math.round((y - offsetY) / h);
+    else return Math.round((y - offsetY) / h);
+}
+
+function getCurSan(move) {
+    if (move == null) return null;
+    for (let i = 0; i < _curmoves.length; i++)
+        if (_curmoves[i].move.from.x == move.from.x && _curmoves[i].move.from.y == move.from.y &&
+            _curmoves[i].move.to.x == move.to.x && _curmoves[i].move.to.y == move.to.y &&
+            _curmoves[i].move.p == move.p) return _curmoves[i].san;
+    return null;
+}
+
+function onMouseDown(e) {
+    if (_menu) showHideMenu(false, e);
+    if (e == null) e = window.event;
+    let elem = target = e.target != null ? e.target : e.srcElement;
+    if (document.onmousemove == graphMouseMove && target != null && target.id != 'graphWrapper' && target.id != 'graph') {
+        document.getElementById('graphWrapper').onmouseout();
+    } else if (document.onmousemove == graphMouseMove) {
+        graphMouseDown(e);
+        return;
+    }
+    if (_dragElement != null) return true;
+    if (target != null && target.className == 'cbCell' && target.children[0].id == 'chessboard1') {
+        target = target.children[0];
+        let bb = document.getElementById('chessboard1').getBoundingClientRect();
+        let w = bb.width / 8;
+        let cx = Math.round((e.clientX - bb.left - (w / 2)) / w);
+        let cy = Math.round((e.clientY - bb.top - (w / 2)) / w);
+        for (let i = 0; i < target.children.length; i++) {
+            e0 = target.children[i];
+            if (e0.style.left == (cx * 40) + 'px' && e0.style.top == (cy * 40) + 'px') elem = e0;
+        }
+    }
+    while (target != null && target.id != 'chessboard1' && target.id != 'editWrapper' && target.tagName != 'BODY') {
+        target = target.parentNode;
+    }
+    if (target == null) return true;
+    if (elem.id == 'editWrapper' || elem.className.length < 3) return;
+    if (target.id != 'editWrapper' && target.id != 'chessboard1') return true;
+
+    let edit = isEdit();
+    if (edit && target.id == 'chessboard1' && elem.className != null && (e.which === 2 || e.button === 4)) {
+        if (getPaintPiece() == elem.className[2]) setPaintPiece('S');
+        else setPaintPiece(elem.className[2]);
+        if (e && e.preventDefault) e.preventDefault();
+        return;
+    }
+    if (target.id == 'chessboard1' && edit && (getPaintPiece() != 'S' || (e.which === 3 || e.button === 2))) {
+        if (e && e.preventDefault) e.preventDefault();
+        paintMouse(e);
+        return;
+    }
+
+    document.onmousemove = onMouseMove;
+    document.body.focus();
+    document.onselectstart = function() {
+        return false;
+    };
+    elem.ondragstart = function() {
+        return false;
+    };
+    _dragActive = false;
+    _dragElement = elem;
+    _startX = e.clientX;
+    _startY = e.clientY;
+    _dragCtrl = target.id == 'editWrapper' ? true : e.ctrlKey;
+    _dragLMB = (e.which === 3 || e.button === 2) ? 1 : 0;
+    return false;
+
+}
+
+function dragActivate() {
+    if (_dragElement == null) return;
+    if (_dragElement.parentNode == null) return;
+    if (_dragElement.className[2] == '-' && !dragFromEditTools) return;
+    let dragFromEditTools = _dragElement.parentNode.id != 'chessboard1';
+
+    let clone = _dragElement.cloneNode(false);
+    if (!_dragCtrl) _dragElement.className = _dragElement.className[0] + ' -';
+    _dragElement = clone;
+    _dragElement.className = _dragElement.className.substring(0, 3);
+    _dragElement.style.backgroundColor = 'transparent';
+    _dragElement.style.background = 'none';
+    _dragElement.style.zIndex = 10000;
+    _dragElement.style.pointerEvents = 'none';
+    _dragElement.style.transform = 'scale(' + getCurScale() + ')';
+    document.getElementById('dragPiece').appendChild(_dragElement);
+    _dragActive = true;
+    if (!isEdit() && !_dragCtrl) showLegalMoves({
+        x: getDragX(_startX),
+        y: getDragY(_startY)
+    });
+    if (dragFromEditTools) setPaintPiece(_dragElement.className[2]);
+}
+
+function doMoveHandler(move, copy) {
+    updateTooltip('');
+    let oldfen = getCurFEN();
+    let pos = parseFEN(oldfen);
+    let legal = copy == null && isLegal(pos, move.from, move.to) && _curmoves.length > 0;
+    if (legal) {
+        let san = getCurSan(move);
+        if (pos.w != _play) pos = doMove(pos, move.from, move.to, move.p);
+        historyAdd(oldfen);
+        setCurFEN(generateFEN(pos));
+        historyAdd(getCurFEN(), null, move, san);
+        showBoard(getCurFEN() == oldfen);
+        doComputerMove();
+    } else if (isEdit() && (move.from.x != move.to.x || move.from.y != move.to.y)) {
+        if (copy && bounds(move.to.x, move.to.y)) {
+            pos.b[move.to.x][move.to.y] = copy;
+        } else if (!copy && bounds(move.from.x, move.from.y)) {
+            if (bounds(move.to.x, move.to.y)) pos.b[move.to.x][move.to.y] = pos.b[move.from.x][move.from.y];
+            pos.b[move.from.x][move.from.y] = '-';
+        } else return false;
+        fixCastling(pos);
+        historyAdd(oldfen);
+        setCurFEN(generateFEN(pos));
+        historyAdd(getCurFEN());
+        showBoard(getCurFEN() == oldfen);
+    } else return false;
+    return true;
+}
+
+function onMouseMove(e) {
+    defaultMouseMove(e);
+    if (document.onmousemove != onMouseMove && isEdit() && getPaintPiece() != 'S') paintMouse(e, getPaintPiece());
+    if (_dragElement == null) return;
+    if (e == null) e = window.event;
+    if (!_dragActive) {
+        if (Math.abs(e.clientX - _startX) < 8 && Math.abs(e.clientY - _startY) < 8) return;
+        if (_dragLMB > 0) {
+            let x1 = getDragX(_startX),
+                y1 = getDragY(_startY),
+                x2 = getDragX(e.clientX),
+                y2 = getDragY(e.clientY);
+            showArrow3({
+                from: {
+                    x: x1,
+                    y: y1
+                },
+                to: {
+                    x: x2,
+                    y: y2
+                }
+            });
+            _dragLMB = 2;
+            return;
+        }
+        if ('PNBRQK'.indexOf(_dragElement.className[2].toUpperCase()) < 0) return;
+        dragActivate();
+    }
+
+    _dragElement.style.left = (e.clientX * _bodyScale - 20) + 'px';
+    _dragElement.style.top = (getClientY(e) - 20) + 'px';
+    _dragElement.style.color = 'transparent';
+    setElemText(_dragElement, '-'); // force browser to refresh pop-up
+}
+
+function onMouseUp(e) {
+    if (document.onmousemove == graphMouseMove) return;
+    onMouseMove(e);
+    if (!_dragActive && _clickFrom != null && _clickFromElem != null && _clickFromElem.className.indexOf(' h0') > 0 && _dragLMB == 0) {
+        let oldDragElement = _dragElement;
+        _dragElement = _clickFromElem;
+        let x2 = getDragX(e.clientX);
+        let y2 = getDragY(e.clientY);
+        _dragElement = null;
+        if (!doMoveHandler({
+                from: _clickFrom,
+                to: {
+                    x: x2,
+                    y: y2
+                }
+            })) _dragElement = oldDragElement;
+    }
+    if (_dragElement != null) {
+        let x1 = getDragX(_startX),
+            y1 = getDragY(_startY);
+        let x2 = getDragX(e.clientX),
+            y2 = getDragY(e.clientY);
+        if (_dragActive) {
+            if (!doMoveHandler({
+                    from: {
+                        x: x1,
+                        y: y1
+                    },
+                    to: {
+                        x: x2,
+                        y: y2
+                    }
+                }, _dragCtrl ? _dragElement.className[2] : null)) {
+                showBoard(true);
+            } else {
+                if (!bounds(x1, y1)) setPaintPiece('S');
+            }
+        } else {
+            let ew1br = document.getElementById('editWrapper').children[0].children[0].getBoundingClientRect();
+            let ew1w = ew1br.width;
+            if (_dragElement.parentNode.id != 'chessboard1') {
+                x1 = -Math.round((e.clientX - ew1br.left - (ew1w / 2)) / ew1w) - 1;
+                y1 = -Math.round((e.clientY - ew1br.top - (ew1w / 2)) / ew1w) - 1;
+                if (_dragElement.parentNode.className != 'cb' || x1 > 0 || y1 > 0) x1 = y1 = -99;
+            }
+            if (e.which === 3 || e.button === 2) {
+                if (_dragElement.parentNode.id == 'chessboard1') {
+                    if (_dragLMB == 1) {
+                        let c = _dragElement.className;
+                        _dragElement.className = c.split(' ')[0] + ' ' + c.split(' ')[1] +
+                            (c.indexOf(' h0') >= 0 ? ' h0' : '') +
+                            (c.indexOf(' h1') >= 0 ? ' h1' : '') +
+                            (c.indexOf(' h2') >= 0 ? ' h2' : '') +
+                            (c.indexOf(' h3') < 0 ? ' h3' : '');
+                    }
+                    finalArrow3();
+                } else {
+                    let list = document.getElementById('editWrapper').children[0].children,
+                        p = null;
+                    for (let i = 0; i < list.length; i++) {
+                        let x1c = -Math.round((list[i].getBoundingClientRect().left - ew1br.left) / ew1w) - 1;
+                        let y1c = -Math.round((list[i].getBoundingClientRect().top - ew1br.top) / ew1w) - 1;
+                        if (list[i].className != null && x1c == x1 && y1c == y1) p = list[i].className[2];
+                    }
+                    if (p != null) {
+                        if (p == 'S') setCurFEN(START);
+                        else if (p == '-') setCurFEN('8/8/8/8/8/8/8/8 w - - 0 0');
+                        else {
+                            let pos = parseFEN(getCurFEN());
+                            for (let x = 0; x < 8; x++)
+                                for (let y = 0; y < 8; y++)
+                                    if (pos.b[x][y] == p) pos.b[x][y] = '-';
+                            fixCastling(pos);
+                            setCurFEN(generateFEN(pos));
+                        }
+                        historySave();
+                        showBoard();
+                    }
+                }
+            } else if (_clickFrom != null &&
+                _clickFromElem != null &&
+                _clickFromElem.className.indexOf(' h0') > 0 &&
+                _clickFrom.x == x1 &&
+                _clickFrom.y == y1 ||
+                _dragElement.className[2] == '-' && _dragElement.parentNode.id == 'chessboard1') {
+                showLegalMoves(null);
+            } else {
+                showLegalMoves({
+                    x: x1,
+                    y: y1
+                });
+            }
+        }
+    } else {
+        if (_clickFrom == null || _clickFrom.x > 0 && _clickFrom.y > 0 || (_clickFromElem != null && _clickFromElem.className[2] == 'S' && (e.which === 1 || e.button === 0))) showLegalMoves(null);
+    }
+    document.onmousemove = defaultMouseMove;
+    document.onselectstart = null;
+    _dragElement = null;
+
+}
+
+function onWheel(e) {
+    if (_menu) showHideMenu(false);
+    if (e.ctrlKey) return;
+    if (isEdit()) {
+        let p = getPaintPiece();
+        let str = 'Spnbrqk-PNBRQK';
+        let index = str.indexOf(p);
+        if (index >= 0) {
+            if (e.deltaY < 0) index--;
+            if (e.deltaY > 0) index++;
+            if (index < 0) index = str.length - 1;
+            if (index == str.length) index = 0;
+            setPaintPiece(str[index]);
+        }
+
+    } else {
+        if (e.deltaY < 0) historyMove(-1);
+        if (e.deltaY > 0) historyMove(+1);
+    }
+    e.preventDefault();
+}
+
+function setPaintPiece(newp) {
+    let list = document.getElementById('editWrapper').children[0].children,
+        newe = null;
+    for (let i = 0; i < list.length; i++) {
+        if (list[i].className != null && list[i].className[2] == newp) newe = list[i];
+    }
+    if (newe != null) {
+        let x2 = -Math.round(parseFloat(newe.style.left.replace('px', '')) / 40) - 1;
+        let y2 = -Math.round(parseFloat(newe.style.top.replace('px', '')) / 40) - 1;
+        showLegalMoves({
+            x: x2,
+            y: y2
+        });
+    }
+}
+
+function getPaintPiece() {
+    let list = document.getElementById('editWrapper').children[0].children;
+    for (let i = 0; i < list.length; i++) {
+        if (list[i].className != null && list[i].className.indexOf(' h0') > 0) return list[i].className[2];
+    }
+    return 'S';
+}
+
+function isEdit() {
+    return _clickFrom != null && _clickFromElem != null && _clickFromElem.className.indexOf(' h0') > 0 && _clickFrom.x < 0 && _clickFrom.y < 0;
+}
+
+function paintMouse(e, p) {
+    if (e == null) e = window.event;
+    let elem = target = e.target != null ? e.target : e.srcElement;
+    if (elem.parentNode == null || elem.parentNode.id != 'chessboard1') return;
+    let w = elem.getBoundingClientRect().width;
+    let h = elem.getBoundingClientRect().height;
+    let offsetX = document.getElementById('chessboard1').getBoundingClientRect().left + w / 2;
+    let offsetY = document.getElementById('chessboard1').getBoundingClientRect().top + h / 2;
+    let x1 = Math.round((e.clientX - offsetX) / w);
+    let y1 = Math.round((e.clientY - offsetY) / h);
+    if (_flip) {
+        x1 = 7 - x1;
+        y1 = 7 - y1;
+    }
+    if (bounds(x1, y1) && (_clickFromElem != null && _clickFromElem.className.indexOf(' h0') > 0 || (e.which === 3 || e.button === 2))) {
+
+        let pos = parseFEN(getCurFEN());
+        let newp = null;
+        if (e.ctrlKey || (e.which === 3 || e.button === 2)) newp = '-';
+        else newp = p != null ? p : _clickFromElem.className[2];
+        pos.b[x1][y1] = newp;
+        fixCastling(pos);
+        setCurFEN(generateFEN(pos));
+        historySave();
+        showBoard(null, null, true);
+        if (p == null) {
+            document.onmousemove = function(event) {
+                paintMouse(event, newp);
+            };
+        }
+    } else document.onmousemove = defaultMouseMove;
+}
+
+function onKeyDown(e) {
+    if (e.ctrlKey) return;
+
+    const key = e.key;
+    const engineReady = _engine != null && _engine.ready;
+
+    switch (key) {
+        case '`':
+        case '*':
+            if (engineReady) command('depth ' + (_engine.depth !== 0 ? '0' : DEFAULT_DEPTH));
+            break;
+        case '+':
+            if (engineReady) command('depth ' + Math.min(MAX_DEPTH, _engine.depth + 1));
+            break;
+        case '-':
+            if (engineReady) command('depth ' + Math.max(MIN_DEPTH, _engine.depth - 1));
+            break;
+        case 'ArrowUp':
+        case 'ArrowLeft':
+            historyMove(-1);
+            break;
+        case 'PageUp':
+            historyMove(-10);
+            break;
+        case 'Home':
+            historyMove(-1, null, true);
+            break;
+        case 'ArrowDown':
+        case 'ArrowRight':
+            historyMove(1);
+            break;
+        case 'PageDown':
+            historyMove(10);
+            break;
+        case 'End':
+            historyMove(1, null, true);
+            break;
+        case 'R':
+            showBoard(false, true);
+            break;
+        case 'P':
+            togglePromotionPiece();
+            break;
+        case 'K':
+            command('keep');
+            break;
+        case 'Escape':
+            command('revert');
+            break;
+        case 'F':
+            command('flip');
+            break;
+        case 'T':
+            command('sidetomove');
+            break;
+        case '0':
+            command('reset');
+            break;
+        case 'N':
+            command('window');
+            break;
+        case 'C':
+            showHideWindow('Chessboard');
+            break;
+        case 'M':
+            showHideWindow('Moves');
+            break;
+        case 'H':
+            showHideWindow('History');
+            break;
+        case 'G':
+            showHideWindow('Graph');
+            break;
+        case 'O':
+            showHideWindow('Opening');
+            break;
+        case 'S':
+            showHideWindow('Static');
+            break;
+        case 'E':
+            showHideWindow('Edit');
+            break;
+        case '1':
+            menuAnalysisMode();
+            break;
+        case '2':
+            menuPlayEngineWhite();
+            break;
+        case '3':
+            menuPlayEngineBlack();
+            break;
+        case '4':
+            menuTwoPlayerMode();
+            break;
+        default:
+            break;
+    }
+}
+
+// ============================
+// Evaluation Engine
+// ============================
+
+function loadEngine() {
+    let engine = {
+        ready: false,
+        kill: false,
+        waiting: true,
+        depth: DEFAULT_DEPTH,
+        lastnodes: 0
+    };
+    let wasmSupported = typeof WebAssembly === 'object' && WebAssembly.validate(Uint8Array.of(0x0, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00));
+    if (typeof(Worker) === 'undefined') return engine;
+    try {
+        var worker = new Worker('./engine/stockfish-nnue-16.js');
+    } catch (err) {
+        return engine;
+    }
+    worker.onmessage = function(e) {
+        if (engine.messagefunc) engine.messagefunc(e.data);
+    }
+    engine.send = function send(cmd, message) {
+        cmd = String(cmd).trim();
+        engine.messagefunc = message;
+        worker.postMessage(cmd);
+    };
+    engine.eval = function eval(fen, done, info) {
+        engine.send('position fen ' + fen);
+        engine.send('go depth ' + engine.depth, function message(str) {
+            let matches = str.match(/depth (\d+) .*score (cp|mate) ([-\d]+) .*nodes (\d+) .*pv (.+)/);
+            if (!matches) matches = str.match(/depth (\d+) .*score (cp|mate) ([-\d]+).*/);
+            if (matches) {
+                if (engine.lastnodes == 0) engine.fen = fen;
+                if (matches.length > 4) {
+                    let nodes = Number(matches[4]);
+                    if (nodes < engine.lastnodes) engine.fen = fen;
+                    engine.lastnodes = nodes;
+                }
+                let depth = Number(matches[1]);
+                let type = matches[2];
+                let score = Number(matches[3]);
+                if (type == 'mate') score = (1000000 - Math.abs(score)) * (score <= 0 ? -1 : 1);
+                engine.score = score;
+                if (matches.length > 5) {
+                    let pv = matches[5].split(' ');
+                    if (info != null && engine.fen == fen) info(depth, score, pv);
+                }
+            }
+            if (str.indexOf('bestmove') >= 0 || str.indexOf('mate 0') >= 0 || str == 'info depth 0 score cp 0') {
+                if (engine.fen == fen) done(str);
+                engine.lastnodes = 0;
+            }
+        });
+    };
+    engine.send('uci', function onuci(str) {
+        if (str === 'uciok') {
+            engine.send('isready', function onready(str) {
+                if (str === 'readyok') {
+                    engine.ready = true;
+                }
+            });
+        }
+    });
+    return engine;
+}
+
+function addHistoryEval(index, score, depth, move) {
+    if (_history[index].length < 2 || _history[index][1] == null || (_history[index][1] != null && _history[index][1].depth < depth)) {
+        let black = _history[index][0].indexOf(' b ') > 0;
+        let ei = { score: score, depth: depth, black: black, move: move };
+        if (_history[index].length >= 2) _history[index][1] = ei;
+        else {
+            _history[index].push(ei);
+            _history[index].push(null);
+        }
+        repaintGraph();
+        _wantUpdateInfo = true;
+    }
+}
+
+function evalNext() {
+    for (let i = 0; i < _curmoves.length; i++) {
+        if (_curmoves[i].depth < _engine.depth) {
+            let curpos = _curmoves[i].fen;
+            _engine.score = null;
+            if (!_engine.waiting) return;
+            _engine.waiting = false;
+            let initialdepth = _engine.depth;
+            let savedpv = [];
+            _engine.eval(curpos, function done(str) {
+                _engine.waiting = true;
+                if (i >= _curmoves.length || _curmoves[i].fen != curpos) return;
+                if (_engine.score != null && _engine.depth == initialdepth) {
+                    _curmoves[i].eval = _curmoves[i].w ? _engine.score : -_engine.score;
+                    _curmoves[i].depth = _engine.depth;
+                    let m = str.match(/^bestmove\s(\S+)(?:\sponder\s(\S+))?/);
+                    _curmoves[i].answer = (m && m.length > 1 && m[1] != null && (m[1].length == 4 || m[1].length == 5)) ? m[1] : null;
+                    _curmoves[i].answerpv = [];
+                    let pvtext = '';
+                    if (_curmoves[i].answer != null) {
+                        if (savedpv.length < 1 || savedpv[0] != m[1]) savedpv = [m[1]];
+                        if (m.length > 2 && m[2] != null && m[2].length != 4 && m[2].length != 5) {
+                            if (savedpv.length < 2 || savedpv[1] != m[2]) savedpv = [m[1], m[2]];
+                        }
+                        let nextpos = parseFEN(curpos);
+                        for (let j = 0; j < savedpv.length; j++) {
+                            if (pvtext.length > 0) pvtext += ' ';
+                            let move = parseBestMove(savedpv[j]);
+                            pvtext += sanMove(nextpos, move, genMoves(nextpos));
+                            _curmoves[i].answerpv.push(savedpv[j]);
+                            if (j + 1 < savedpv.length) nextpos = doMove(nextpos, move.from, move.to, move.p);
+                        }
+                    }
+                    _curmoves[i].pvtext = pvtext.length > 0 ? pvtext : '-';
+                    showEvals();
+                }
+                if (!_engine.kill) evalNext();
+            }, function info(depth, score, pv) {
+                savedpv = pv;
+            });
+            return;
+        }
+    }
+    if (_curmoves.length > 0 && _history[_historyindex][0] == getCurFEN()) addHistoryEval(_historyindex, _curmoves[0].w ? -_curmoves[0].eval : _curmoves[0].eval, _engine.depth, _curmoves[0].move);
+    for (let i = _history.length - 1; i >= 0; i--) {
+        if (_history[i].length < 2 || _history[i][1] == null || (_history[i][1] != null && _history[i][1].depth < _engine.depth - 1)) {
+            let curpos = _history[i][0];
+            _engine.score = null;
+            if (!_engine.waiting) return;
+            if (checkPosition(parseFEN(curpos)).length > 0) {
+                addHistoryEval(i, null, _engine.depth - 1);
+                if (!_engine.kill) evalNext();
+            } else {
+                _engine.waiting = false;
+                _engine.eval(curpos, function done(str) {
+                    _engine.waiting = true;
+                    if (i >= _history.length || _history[i][0] != curpos) return;
+                    if (_engine.score != null) {
+                        let m = str.match(/^bestmove\s(\S+)(?:\sponder\s(\S+))?/);
+                        let answer = (m && m.length > 1 && (m[1].length == 4 || m[1].length == 5)) ? m[1] : null;
+                        addHistoryEval(i, _engine.score, _engine.depth - 1, parseBestMove(answer));
+                    }
+                    if (!_engine.kill) evalNext();
+                });
+            }
+            return;
+        }
+    }
+    historySave();
+}
+
+function applyEval(m, s, d) {
+    if (s == null || m.length < 4 || _engine.depth == 0) return;
+    for (let i = 0; i < _curmoves.length; i++) {
+        if (_curmoves[i].move.from.x == 'abcdefgh'.indexOf(m[0]) &&
+            _curmoves[i].move.from.y == '87654321'.indexOf(m[1]) &&
+            _curmoves[i].move.to.x == 'abcdefgh'.indexOf(m[2]) &&
+            _curmoves[i].move.to.y == '87654321'.indexOf(m[3])) {
+            if (d > _curmoves[i].depth) {
+                _curmoves[i].eval = _curmoves[i].w ? -s : s;
+                _curmoves[i].depth = d;
+                showEvals();
+            }
+            break;
+        }
+    }
+}
+
+function parseBestMove(m) {
+    if (m == null || m.length < 4) return null;
+    let from = {
+        x: 'abcdefgh'.indexOf(m[0]),
+        y: '87654321'.indexOf(m[1])
+    };
+    let to = {
+        x: 'abcdefgh'.indexOf(m[2]),
+        y: '87654321'.indexOf(m[3])
+    };
+    let p = m.length > 4 ? 'nbrq'.indexOf(m[4]) : -1;
+    if (p < 0) return {
+        from: from,
+        to: to
+    };
+    return {
+        from: from,
+        to: to,
+        p: 'NBRQ' [p]
+    };
+}
+
+function updateSkillLevelBasedOnDepth(depth) {
+    let skillLevel;
+    if (depth >= 1 && depth <= 10) {
+        skillLevel = depth;
+    } else {
+        switch (depth) {
+            case 11:
+                skillLevel = 12;
+                break;
+            case 12:
+                skillLevel = 14;
+                break;
+            case 13:
+                skillLevel = 16;
+                break;
+            case 14:
+                skillLevel = 18;
+                break;
+            default:
+                skillLevel = 20; // Any depth 15 or higher sets the skill to 20
+        }
+    }
+    _engine.send('setoption name Skill Level value ' + skillLevel);
+}
+
+function evalAll() {
+    if (_play != null) return;
+    if (_engine == null || !_engine.ready || !_engine.waiting) {
+        if (_engine) _engine.kill = true;
+        window.setTimeout(evalAll, 50);
+        return;
+    }
+    _engine.kill = false;
+    _engine.waiting = false;
+    for (let i = 0; i < _curmoves.length; i++) {
+        _curmoves[i].eval = null;
+        _curmoves[i].depth = null;
+    }
+    if (_engine.depth == 0) {
+        _engine.waiting = true;
+        return;
+    }
+    let fen = getCurFEN();
+    _engine.send('stop');
+    _engine.send('ucinewgame');
+    updateSkillLevelBasedOnDepth(_engine.depth);
+    _engine.score = null;
+    if (_curmoves.length == 0) {
+        _engine.waiting = true;
+        if (!_engine.kill) evalNext();
+        return;
+    }
+    _engine.eval(fen, function done(str) {
+        _engine.waiting = true;
+        if (fen != getCurFEN()) return;
+        let matches = str.match(/^bestmove\s(\S+)(?:\sponder\s(\S+))?/);
+        if (matches && matches.length > 1) {
+            applyEval(matches[1], _engine.score, _engine.depth - 1);
+            if (_history[_historyindex][0] == fen) addHistoryEval(_historyindex, _engine.score, _engine.depth - 1, parseBestMove(matches[1]));
+        }
+        if (!_engine.kill) evalNext();
+    }, function info(depth, score, pv) {
+        if (fen != getCurFEN() || depth <= 10) return;
+        applyEval(pv[0], score, depth - 1);
+        if (_history[_historyindex][0] == fen) addHistoryEval(_historyindex, score, depth - 1, parseBestMove(pv[0]));
+    });
+}
+
+function doComputerMove() {
+    if (_play == null) return;
+    let fen = getCurFEN();
+    if (_isPlayerWhite == true && fen.indexOf(' w ') > 0) return;
+    if (_isPlayerWhite == false && fen.indexOf(' b ') > 0) return;
+    if (_engine != null && !_engine.waiting) {
+        if (_engine) _engine.kill = true;
+        window.setTimeout(function() {
+            doComputerMove();
+        }, 50);
+        return;
+    }
+    if (_engine == null || !_engine.ready || _engine.depth == 0) {
+        if (_curmoves.length == 0) return;
+        let move = _curmoves[Math.floor(Math.random() * _curmoves.length)].move;
+        let san = getCurSan(move);
+        let pos = doMove(parseFEN(fen), move.from, move.to, move.p);
+        historyAdd(fen);
+        setCurFEN(generateFEN(pos));
+        historyAdd(getCurFEN(), null, move, san);
+        updateTooltip('');
+        showBoard(false);
+    } else {
+        _engine.kill = false;
+        _engine.waiting = false;
+        _engine.send('stop');
+        _engine.send('ucinewgame');
+        _engine.score = null;
+        _engine.eval(fen, function done(str) {
+            _engine.waiting = true;
+            if (fen != getCurFEN()) return;
+            let matches = str.match(/^bestmove\s(\S+)(?:\sponder\s(\S+))?/);
+            if (matches && matches.length > 1) {
+                let move = parseBestMove(matches[1]);
+                let san = getCurSan(move);
+                let pos = doMove(parseFEN(fen), move.from, move.to, move.p);
+                historyAdd(fen);
+                setCurFEN(generateFEN(pos));
+                historyAdd(getCurFEN(), null, move, san);
+                updateTooltip('');
+                showBoard(false);
+            }
+        });
+    }
+}
+
+// ============================
+// Classical Static Evaluation
+// ============================
+
+function highlightMove(index, state) {
+    setArrow(!state);
+    if (_dragElement != null) return;
+    let elem = document.getElementById('chessboard1');
+    let x1 = _curmoves[index].move.from.x;
+    let y1 = _curmoves[index].move.from.y;
+    let x2 = _curmoves[index].move.to.x;
+    let y2 = _curmoves[index].move.to.y;
+    let text = getEvalText(_curmoves[index].eval, true);
+    for (let i = 0; i < elem.children.length; i++) {
+        let div = elem.children[i];
+        if (div.tagName != 'DIV') continue;
+        if (div.style.zIndex > 0) continue;
+        let x = parseInt(div.style.left.replace('px', '')) / 40;
+        let y = parseInt(div.style.top.replace('px', '')) / 40;
+        if (_flip) {
+            x = 7 - x;
+            y = 7 - y;
+        }
+        let c = div.className.split(' ')[0] + ' ' + div.className.split(' ')[1];
+        setElemText(div, '');
+        if (div.className.indexOf(' h2') >= 0) c += ' h2';
+        if (state && x1 == x && y1 == y) div.className = c + ' h0';
+        else if (state && x2 == x && y2 == y) {
+            div.className = c + ' h1';
+            setElemText(div, text);
+        } else div.className = c;
+        div.onmouseover = null;
+    }
+    if (state) updateTooltip('', _curmoves[index].answerpv);
+    else updateTooltip('');
+}
+
+function repaintStatic() {
+    if (document.getElementById('wStatic').style.display == 'none') return;
+
+    let curfen = getCurFEN();
+    let pos = parseFEN(curfen);
+
+    // Static evaluation window
+    window.setTimeout(function() {
+        if (getCurFEN() != curfen) return;
+        let elem = document.getElementById('static');
+        let evalUnit = 213;
+        while (elem.firstChild) elem.removeChild(elem.firstChild);
+        let staticEvalListLast = _historyindex > 0 ? getStaticEvalList(parseFEN(_history[_historyindex - 1][0])) : null;
+        let staticEvalList = getStaticEvalList(pos),
+            total = 0,
+            ci = 5;
+        for (let i = 0; i < staticEvalList.length; i++) {
+            if (i > 0 && staticEvalList[i - 1].group != staticEvalList[i].group) ci++;
+            let c1 = 0,
+                c2 = 0,
+                c3 = 0;
+            while (c1 + c2 + c3 == 0) {
+                c1 = 22 + (ci % 2) * 216;
+                c2 = 22 + (((ci / 2) << 0) % 3) * 108;
+                c3 = 22 + ((((ci / 6) << 0)) % 2) * 216;
+                if (c1 + c2 + c3 < 100) {
+                    c1 = c2 = c3 = 0;
+                    ci++;
+                }
+            }
+            staticEvalList[i].bgcol = 'rgb(' + c1 + ',' + c2 + ',' + c3 + ')';
+            staticEvalList[i].rel = staticEvalList[i].item[2] - (staticEvalListLast == null ? 0 : staticEvalListLast[i].item[2]);
+        }
+        let sortArray = [];
+        for (let i = 0; i < staticEvalList.length; i++) sortArray.push({
+            value: _staticSortByChange ? staticEvalList[i].rel : staticEvalList[i].item[2],
+            index: i
+        });
+        sortArray.sort(function(a, b) {
+            return (Math.abs(a.value) < Math.abs(b.value)) ? 1 : Math.abs(a.value) > Math.abs(b.value) ? -1 : 0;
+        });
+        for (let j = 0; j < sortArray.length; j++) {
+            let i = sortArray[j].index;
+            total += staticEvalList[i].item[2];
+            let text = (staticEvalList[i].item[2] / evalUnit).toFixed(2);
+            if (text == '-0.00') text = '0.00';
+            let rel = (staticEvalList[i].rel / evalUnit).toFixed(2);
+            if (rel == '-0.00') rel = '0.00';
+            if (!_staticSortByChange && text == '0.00') continue;
+            if (_staticSortByChange && rel == '0.00') continue;
+
+            let node0 = document.createElement('SPAN');
+            node0.className = 'circle';
+            node0.style.backgroundColor = staticEvalList[i].bgcol;
+
+            let node1 = document.createElement('DIV');
+            node1.className = 'line';
+            let node2 = document.createElement('SPAN');
+            node2.className = 'group';
+            node2.appendChild(document.createTextNode(staticEvalList[i].group));
+            let node6 = document.createElement('SPAN');
+            node6.className = 'name';
+            node6.appendChild(document.createTextNode(staticEvalList[i].elem[0].toUpperCase() + staticEvalList[i].elem.replace(/\_/g, ' ').substring(1)));
+
+            let node3 = document.createElement('SPAN');
+            node3.className = 'eval';
+            if (text.indexOf('.') >= 0) {
+                let node4 = document.createElement('SPAN');
+                node4.className = 'numleft';
+                node4.appendChild(document.createTextNode(text.substring(0, text.indexOf('.') + 1)));
+                let node5 = document.createElement('SPAN');
+                node5.className = 'numright';
+                node5.appendChild(document.createTextNode(text.substring(text.indexOf('.') + 1)));
+                node3.appendChild(node4);
+                node3.appendChild(node5);
+            } else {
+                node3.appendChild(document.createTextNode(text));
+            }
+
+            let node7 = document.createElement('SPAN');
+            node7.className = 'eval rel';
+            if (rel.indexOf('.') >= 0) {
+                let node8 = document.createElement('SPAN');
+                node8.className = 'numleft';
+                node8.appendChild(document.createTextNode(rel.substring(0, rel.indexOf('.') + 1)));
+                let node9 = document.createElement('SPAN');
+                node9.className = 'numright';
+                node9.appendChild(document.createTextNode(rel.substring(rel.indexOf('.') + 1)));
+                node7.appendChild(node8);
+                node7.appendChild(node9);
+            } else {
+                node3.appendChild(document.createTextNode(rel));
+            }
+            node1.appendChild(node0);
+            node1.appendChild(node2);
+            node1.appendChild(node6);
+            node1.appendChild(node3);
+            node1.appendChild(node7);
+            node1.name = staticEvalList[i].elem.toLowerCase().replace(/ /g, '_');
+            node1.onclick = function() {
+                let data = _staticEvalData,
+                    sei = null;
+                for (let j = 0; j < data.length; j++) {
+                    let n = data[j].name.toLowerCase().replace(/ /g, '_');
+                    if (n == this.name) sei = data[j];
+                }
+                if (sei == null) return;
+                let func = null,
+                    n2 = this.name.toLowerCase().replace(/ /g, '_');
+                try {
+                    eval('func = $' + n2 + ';');
+                } catch (e) {}
+                let elem = document.getElementById('chessboard1');
+                for (let i = 0; i < elem.children.length; i++) {
+                    let div = elem.children[i];
+                    if (div.tagName != 'DIV' || div.style.zIndex > 0) continue;
+                    let x = parseInt(div.style.left.replace('px', '')) / 40;
+                    let y = parseInt(div.style.top.replace('px', '')) / 40;
+                    if (_flip) {
+                        x = 7 - x;
+                        y = 7 - y;
+                    }
+                    let sqeval = 0;
+                    if (n2 == 'king_danger') {
+                        sqeval = $unsafe_checks(pos, {
+                            x: x,
+                            y: y
+                        });
+                        if (sqeval == 0) sqeval = $unsafe_checks(colorflip(pos), {
+                            x: x,
+                            y: 7 - y
+                        });
+                        if (sqeval == 0) sqeval = $weak_bonus(pos, {
+                            x: x,
+                            y: y
+                        });
+                        if (sqeval == 0) sqeval = $weak_bonus(colorflip(pos), {
+                            x: x,
+                            y: 7 - y
+                        });
+                        let showKDarrows = function(p, flipy) {
+                            for (let x2 = 0; x2 < 8; x2++)
+                                for (let y2 = 0; y2 < 8; y2++) {
+                                    if ('PNBRQ'.indexOf(board(p, x, y)) < 0) continue;
+                                    let s = {
+                                            x: x,
+                                            y: y
+                                        },
+                                        s2 = {
+                                            x: x2,
+                                            y: y2
+                                        },
+                                        a = false;
+                                    if ($king_ring(p, s2)) {
+                                        if ($pawn_attack(p, s2) && Math.abs(x - x2) == 1 && y - y2 == flipy ? 1 : -1 ||
+                                            $knight_attack(p, s2, s) ||
+                                            $bishop_xray_attack(p, s2, s) ||
+                                            $rook_xray_attack(p, s2, s) ||
+                                            $queen_attack(p, s2, s)) a = false;
+                                    }
+                                    if (!a && $knight_attack(p, s2, s) && $safe_check(p, s2, 0) > 0) a = true;
+                                    if (!a && $bishop_xray_attack(p, s2, s) && $safe_check(p, s2, 1) > 0) a = true;
+                                    if (!a && $rook_xray_attack(p, s2, s) && $safe_check(p, s2, 2) > 0) a = true;
+                                    if (!a && $queen_attack(p, s2, s) && $safe_check(p, s2, 3) > 0) a = true;
+                                    if (a) {
+                                        if (!flipy) showArrow3({
+                                            from: s,
+                                            to: s2
+                                        });
+                                        else showArrow3({
+                                            from: {
+                                                x: x,
+                                                y: 7 - y
+                                            },
+                                            to: {
+                                                x: x2,
+                                                y: 7 - y2
+                                            }
+                                        });
+                                        finalArrow3();
+                                    }
+                                }
+                        };
+                        showKDarrows(pos, false);
+                        showKDarrows(colorflip(pos), true);
+                    } else {
+                        try {
+                            sqeval = func(pos, {
+                                x: x,
+                                y: y
+                            });
+                            if (sqeval == 0 && sei.forwhite) sqeval = func(colorflip(pos), {
+                                x: x,
+                                y: 7 - y
+                            });
+                            if (sqeval == 0) sqeval = func(pos, {
+                                x: x,
+                                y: y
+                            }, true);
+                            if (sqeval == 0 && sei.forwhite) sqeval = func(colorflip(pos), {
+                                x: x,
+                                y: 7 - y
+                            }, true);
+                        } catch (e) {}
+                    }
+                    let c = div.className.split(' ')[0] + ' ' + div.className.split(' ')[1];
+                    if (div.className.indexOf(' h2') >= 0) c += ' h2';
+                    if (sqeval != 0) c += ' h3';
+                    div.className = c;
+                }
+            };
+            elem.appendChild(node1);
+        }
+        setElemText(document.getElementById('staticInfo'), 'Static evaluation (' + (total / evalUnit).toFixed(2) + ')');
+    }, 50);
+}
+
+function showEvals() {
+    setElemText(document.getElementById('moves'), '');
+    setElemText(document.getElementById('buttonMovesPv'), _movesPv ? 'PV' : 'Reply');
+    if (_curmoves.length > 0) {
+        let sortfunc = function(a, b) {
+            let a0 = a.eval == null ? -2000000 : a.eval * (_curmoves[0].w ? -1 : 1);
+            let b0 = b.eval == null ? -2000000 : b.eval * (_curmoves[0].w ? -1 : 1);
+
+            let r = 0;
+            if (a0 < b0 || (a0 == b0 && a.san < b.san)) r = 1;
+            if (a0 > b0 || (a0 == b0 && a.san > b.san)) r = -1;
+            return r;
+        }
+        _curmoves.sort(sortfunc);
+    }
+    for (let i = 0; i < _curmoves.length; i++) {
+        let node1 = document.createElement('DIV');
+        node1.className = 'line';
+        let node0 = document.createElement('SPAN');
+        node0.className = getCircleClassName(i);
+        let node2 = document.createElement('SPAN');
+        node2.appendChild(document.createTextNode(_curmoves[i].san));
+        node2.className = 'san';
+        let node3 = document.createElement('SPAN');
+        node3.className = 'eval';
+        let node6 = document.createElement('SPAN');
+        node6.className = 'pv';
+        if (_movesPv) node6.appendChild(document.createTextNode(_curmoves[i].pvtext || '?'));
+        else node6.appendChild(document.createTextNode((_curmoves[i].pvtext || '?').split(' ')[0]));
+        let node7 = document.createElement('SPAN');
+        node7.className = 'depth';
+        node7.appendChild(document.createTextNode(_curmoves[i].depth | '?'));
+
+        let text = getEvalText(_curmoves[i].eval, false);
+        if (text.indexOf('.') >= 0) {
+            let node4 = document.createElement('SPAN');
+            node4.className = 'numleft';
+            node4.appendChild(document.createTextNode(text.substring(0, text.indexOf('.') + 1)));
+            let node5 = document.createElement('SPAN');
+            node5.className = 'numright';
+            node5.appendChild(document.createTextNode(text.substring(text.indexOf('.') + 1)));
+            node3.appendChild(node4);
+            node3.appendChild(node5);
+        } else {
+            node3.appendChild(document.createTextNode(text));
+        }
+        node1.appendChild(node0);
+        node1.appendChild(node2);
+        node1.appendChild(node3);
+        node1.appendChild(node6);
+        node1.appendChild(node7);
+        node1.index = i;
+        node1.onmouseover = function() {
+            highlightMove(this.index, true);
+        };
+        node1.onmouseout = function() {
+            highlightMove(this.index, false);
+        };
+        node1.onmousedown = function(e) {
+            if (_menu) showHideMenu(false);
+            doMoveHandler(_curmoves[this.index].move);
+        };
+        if (_historyindex + 1 < _history.length && _history[_historyindex + 1].length > 3 && _history[_historyindex + 1][3] == _curmoves[i].san) node1.style.color = '#64c4db'
+        document.getElementById('moves').appendChild(node1);
+    }
+    if (_arrow) setArrow(true);
+    updateLegalMoves();
+}
 
 _staticEvalData = (function() {
     let data = [],
@@ -2177,2555 +4763,9 @@ _staticEvalData = (function() {
     return data;
 })();
 
-// Input box and commands
-
-function command(text) {
-    if (text == null || text.length == 0) return;
-    let mvdivs = ['<div class="moves">', '<div class="tview2 tview2-column">', '<div class="extension-item Moves">'];
-    for (let i = 0; i < mvdivs.length; i++) {
-        if (text.indexOf(mvdivs[i]) >= 0) {
-            let text2 = text,
-                ntext = '';
-            text2 = text2.replace(/<span class="user_link[^>]*>([^<]*)<\/span>/g, "<a class=\"user_link\">$1</a>");
-            let nmt = '<a class="user_link';
-            if (text2.indexOf(nmt) > 0) {
-                text2 = text2.substr(text2.indexOf(nmt) + nmt.length);
-                text2 = text2.substr(text2.indexOf(">") + 1);
-                ntext += "[White \"" + text2.substr(0, text2.indexOf("</a>")).replace(/<span[^>]*>[^<]*<\/span>/g, "").replace(/&nbsp;/g, " ").trim() + "\"]\n";
-                text2 = text2.substr(text2.indexOf("</a>") + 4);
-            }
-            if (text2.indexOf(nmt) > 0) {
-                text2 = text2.substr(text2.indexOf(nmt) + nmt.length);
-                text2 = text2.substr(text2.indexOf(">") + 1);
-                ntext += "[Black \"" + text2.substr(0, text2.indexOf("</a>")).replace(/<span[^>]*>[^<]*<\/span>/g, "").replace(/&nbsp;/g, " ").trim() + "\"]\n";
-                text2 = text2.substr(text2.indexOf("</a>") + 4);
-            }
-            text2 = text;
-            nmt = '<div class="playerInfo';
-            for (let j = 0; j < 2; j++)
-                if (text2.indexOf(nmt) > 0) {
-                    text2 = text2.substr(text2.indexOf(nmt));
-                    let black = text2.indexOf("black") < text2.indexOf(">");
-                    text2 = text2.substr(nmt.length);
-                    let h = '<h2 class="name">';
-                    let nm = "[" + (black ? "Black" : "White") + " \"" + text2.substring(text2.indexOf(h) + h.length, text2.indexOf('</h2>')).trim() + "\"]\n";
-                    if (j == 1 && !black) ntext = nm + ntext;
-                    else ntext += nm;
-                }
-
-            text = text.substring(text.indexOf(mvdivs[i]));
-            if (i == 2) text = text.replace(/<div class="notationTableInlineElement((?!<\/div>).)*<\/div>/g, "");
-            text = text.substring(mvdivs[i].length, text.indexOf('</div>'));
-            if (i == 2) {
-                text = text.replace(/<dt>\s*(<span[^>]*>)?\s*([^<\s]*)\s*(<\/span>)?\s*<\/dt>/g, "<index>$2</index>")
-                    .replace(/<span class="move">\s*([^<\s]*)\s*<\/span>/g, "<move>$1</move>")
-            } else {
-                text = text.replace(/<interrupt>((?!<\/interrupt>).)*<\/interrupt>/g, "")
-                    .replace(/<(move|m1|m2)[^<>"]*(("[^"]*")[^<>"]*)*>/g, "<move>").replace(/<\/(m1|m2)>/g, "</move>")
-                    .replace(/<\/?san>|<eval>[^<]*<\/eval>|<glyph[^<]*<\/glyph>|<move>\.\.\.<\/move>/g, "")
-                    .replace(/\?/g, "x");
-            }
-            text = ntext + text
-                .replace(/{|}/g, "")
-                .replace(/(<index[^>]*>)/g, "{").replace(/<\/index>/g, ".}")
-                .replace(/<move>/g, "{").replace(/<\/move>/g, " }")
-                .replace(/(^|})[^{]*($|{)/g, "");
-        }
-    }
-    if (text.split("/").length == 8 && text.split(".").length == 1) {
-        pos = parseFEN(text);
-        setCurFEN(generateFEN(pos));
-        _history = [
-            [getCurFEN()]
-        ];
-        _historyindex = 0;
-        historyMove(0);
-    } else if (text.split(".").length > 1) {
-        let whitename = null,
-            blackname = null;
-        let wi = text.indexOf("[White \""),
-            bi = text.indexOf("[Black \"");
-        if (wi >= 0 && bi > wi) {
-            let wil = text.substr(wi + 8).indexOf("\"]"),
-                bil = text.substr(bi + 8).indexOf("\"]");
-            if (wil > 0 && wil < 128) whitename = text.substr(wi + 8, wil);
-            if (bil > 0 && bil < 128) blackname = text.substr(bi + 8, bil);
-        }
-
-        text = text.replace(/\u2605/g, "").replace(/\u0445/g, "x");
-        text = " " + text.replace(/\./g, " ").replace(/(\[FEN [^\]]+\])+?/g, function($0, $1) {
-            return $1.replace(/\[|\]|"/g, "").replace(/\s/g, ".");
-        });
-        text = text.replace(/\[Event /g, "* [Event ").replace(/\s(\[[^\]]+\])+?/g, "").replace(/(\{[^\}]+\})+?/g, "");
-        let r = /(\([^\(\)]+\))+?/g;
-        while (r.test(text)) text = text.replace(r, "");
-        text = text.replace(/0-0-0/g, "O-O-O").replace(/0-0/g, "O-O").replace(/(1\-0|0\-1|1\/2\-1\/2)/g, " * ")
-            .replace(/\s\d+/g, " ").replace(/\$\d+/g, "").replace(/\?/g, "");
-        let moves = text.replace(/\s/g, " ").replace(/ +/g, " ").trim().split(' ');
-        let pos = parseFEN(START);
-        let oldhistory = JSON.parse(JSON.stringify(_history));
-        _history = [
-            [START]
-        ];
-        _historyindex = 0;
-        gm = 0;
-        for (let i = 0; i < moves.length; i++) {
-            if (moves[i].length == 0) continue;
-            if ("*".indexOf(moves[i][0]) == 0) {
-                if (i < moves.length - 1) {
-                    pos = parseFEN(START);
-                    historyAdd(generateFEN(pos), oldhistory);
-                    gm++;
-                }
-                continue;
-            } else if (moves[i].indexOf("FEN.") == 0) {
-                pos = parseFEN(moves[i].substring(4).replace(/\./g, " "));
-                if (_history[_historyindex][0] == START) _historyindex--;
-                historyAdd(generateFEN(pos), oldhistory);
-                continue;
-            }
-            if (moves[i] == "--") {
-                pos.w = !pos.w;
-                historyAdd(generateFEN(pos), oldhistory);
-                continue;
-            }
-            let move = parseMove(pos, moves[i]);
-            if (move == null) {
-                alert("incorrect move: " + moves[i] + " " + gm);
-                break;
-            }
-            let san = sanMove(pos, move, genMoves(pos));
-            pos = doMove(pos, move.from, move.to, move.p);
-            historyAdd(generateFEN(pos), oldhistory, move, san);
-        }
-        setCurFEN(generateFEN(pos));
-        historyKeep(whitename, blackname);
-    } else if (text.toLowerCase() == "reset") {
-        setCurFEN(START);
-        _history = [
-            [getCurFEN()]
-        ];
-        _historyindex = 0;
-        historyKeep();
-        _history2 = null;
-        if (_nncache != null) _nncache.clear();
-    } else if (text.toLowerCase() == "clear") {
-        setCurFEN("8/8/8/8/8/8/8/8 w - - 0 0");
-        showBoard();
-        historySave();
-    } else if (text.toLowerCase() == "colorflip") {
-        setCurFEN(generateFEN(colorflip(parseFEN(getCurFEN()))));
-        showBoard();
-        historySave();
-    } else if (text.toLowerCase() == "sidetomove") {
-        setCurFEN(getCurFEN().replace(" w ", " ! ").replace(" b ", " w ").replace(" ! ", " b "));
-        showBoard();
-        historySave();
-    } else if (text.toLowerCase().indexOf("depth ") == 0) {
-        if (_engine != null && _engine.ready) {
-            _engine.depth = Math.min(max_depth, Math.max(0, parseInt(text.toLowerCase().replace("depth ", ""))));
-            if (isNaN(_engine.depth)) _engine.depth = default_depth;
-        }
-        showBoard();
-        historySave();
-    } else if (text.toLowerCase() == "flip") {
-        doFlip();
-    } else if (text.toLowerCase() == "window") {
-        let encoded = "";
-        if (_history[0][0] == START) {
-            let gi = "";
-            for (let i = 1; i < _history.length; i++) {
-                let pos = parseFEN(_history[i - 1][0]);
-                let moves = genMoves(pos);
-                let mindex = -1;
-                for (let j = 0; j < moves.length; j++) {
-                    let move = moves[j];
-                    let pos2 = doMove(pos, move.from, move.to, move.p);
-                    if (generateFEN(pos2) == _history[i][0]) mindex = j;
-                }
-                if (mindex < 0) {
-                    gi = "";
-                    break;
-                }
-                let symbols = (moves.length + 1).toString(2).length,
-                    v = "";
-                for (let j = 0; j < symbols; j++) v += "0";
-                let n = (mindex + 1).toString(2);
-                n = v.substr(n.length) + n;
-                gi += n;
-                if (i == _history.length - 1) gi += v;
-            }
-            let cur = "";
-            for (let i = 0; i < gi.length; i++) {
-                cur += gi[i];
-                if (i == gi.length - 1)
-                    while (cur.length < 6) cur += "0";
-                if (cur.length == 6) {
-                    encoded += "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_" [parseInt(cur, 2)];
-                    cur = "";
-                }
-            }
-        }
-        let wb = document.getElementById("wb").children;
-        let lparams = [];
-        for (let i = 0; i < wb.length; i++) {
-            if (wb[i].tagName != 'DIV') continue;
-            let winId = wb[i].id.substring(2);
-            let elem = document.getElementById("w" + winId);
-            if (elem.style.display == "none") continue;
-            if (elem.style.position == "absolute" && !_mobile) {
-                lparams.push((winId[0] + elem.style.width + "," + elem.style.height + "," + elem.style.left + "," + elem.style.top).replace(/px/g, ""));
-            } else if ((elem.style.width != elem.originalWidth || elem.style.height != elem.originalHeight) && !_mobile) {
-                lparams.push((winId[0] + elem.style.width + "," + elem.style.height).replace(/(\.[0-9]+)?px/g, ""));
-            } else lparams.push(winId[0]);
-        }
-        let lparamsstr = lparams.join(" ").toLowerCase();
-        let url = [location.protocol, '//', location.host, location.pathname].join('');
-        let params = [];
-        if (_color > 0) params.push("col" + _color);
-        if (_engine != null && _engine.ready && _engine.depth != default_depth) params.push("depth " + _engine.depth);
-        if (lparamsstr != "c m h g") params.push("layout " + (lparamsstr.length == 0 ? "-" : lparamsstr));
-        if (encoded.length > 0) params.push("~" + encoded);
-        else if (getCurFEN() != START) params.push(getCurFEN());
-        for (let i = 0; i < params.length; i++) {
-            url += (i == 0 ? "?" : "&") + String.fromCharCode("a".charCodeAt(0) + i) + "=" + params[i];
-        }
-        window.open(url, "_blank");
-
-    } else if (text[0] == "~") {
-        let pos = parseFEN(START);
-        let oldhistory = JSON.parse(JSON.stringify(_history));
-        _history = [
-            [START]
-        ];
-        _historyindex = 0;
-        let gi = "";
-        for (let i = 1; i < text.length; i++) {
-            let n = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_".indexOf(text[i]).toString(2);
-            gi += "000000".substr(n.length) + n;
-        }
-        let i = 0;
-        while (i < gi.length) {
-            let moves = genMoves(pos);
-            let symbols = (moves.length + 1).toString(2).length,
-                cur = "";
-            for (let j = 0; j < symbols; j++) {
-                cur += (i < gi.length ? gi[i] : "0");
-                i++;
-            }
-            let n = parseInt(cur, 2);
-            if (n == 0 || n >= moves.length + 1) break;
-            let move = moves[n - 1],
-                san = sanMove(pos, move, moves);
-            pos = doMove(pos, move.from, move.to, move.p);
-            historyAdd(generateFEN(pos), oldhistory, move, san);
-        }
-        setCurFEN(generateFEN(pos));
-        historyKeep();
-    } else if (text.toLowerCase() == "revert") {
-        if (_history2 != null) {
-            _historyindex = _history2[0];
-            _history = _history2[1];
-            _history2 = null;
-            setCurFEN(_history[_historyindex][0]);
-            refreshButtonRevert();
-            historyMove(0);
-        }
-    } else if (text.toLowerCase() == "keep") {
-        historyKeep(_wname, _bname);
-    } else if (text.length == 4 && text.toLowerCase().indexOf("col") == 0) {
-        setBoardColor(Math.max(0, text.charCodeAt(3) - "0".charCodeAt(0)));
-    } else if (text.toLowerCase().indexOf("layout ") == 0) {
-        let a = text.toUpperCase().split(" ");
-        a.splice(0, 1);
-        let wb = document.getElementById("wb").children;
-        for (let i = 0; i < wb.length; i++) {
-            if (wb[i].tagName != 'DIV') continue;
-            let winId = wb[i].id.substring(2);
-            let cur = a.find(function(x) {
-                return x[0] == winId[0];
-            });
-            if (cur != null && !_mobile) {
-                cur = cur.substring(1);
-                let b = cur.length == 0 ? [] : cur.split(",");
-                let elem = document.getElementById("w" + winId);
-                if (elem.firstElementChild.ondblclick != null) elem.firstElementChild.ondblclick();
-                if (b.length >= 2) {
-                    elem.style.width = b[0] + "px";
-                    elem.style.height = b[1] + "px";
-                }
-                if (b.length >= 4) {
-                    elem.style.left = b[2] + "px";
-                    elem.style.top = b[3] + "px";
-                    elem.style.position = "absolute";
-                }
-                showHideWindow(winId, true);
-            } else if (cur != null && _mobile) showHideWindow(winId, true);
-            else if (!_mobile) showHideWindow(winId, false);
-        }
-    } else {
-        for (let i = 0; i < _curmoves.length; i++)
-            if (_curmoves[i].san == text) {
-                doMoveHandler(_curmoves[i].move);
-                break;
-            }
-    }
-}
-
-function dosearch() {
-    let text = document.getElementById('searchInput').value;
-    document.getElementById('searchInput').value = getCurFEN();
-    command(text);
-    document.getElementById('searchInput').value = getCurFEN();
-    document.getElementById('searchInput').blur();
-}
-
-function showHideButtonGo(state) {
-    if (!document.getElementById('searchInput').focus) state = false;
-    if (state && document.getElementById('searchInput').value == getCurFEN()) state = false;
-    document.getElementById("buttonGo").style.display = state ? "" : "none";
-}
-
-function setupInput() {
-    document.getElementById("buttonGo").onclick = function() {
-        dosearch();
-    };
-    document.getElementById("buttonGo").onmousedown = function(event) {
-        event.preventDefault();
-    };
-    let input = document.getElementById("searchInput");
-    input.onmousedown = function() {
-        this.focuswithmouse = 1;
-    };
-    input.onmouseup = function() {
-        if (this.focuswithmouse == 2 && input.selectionStart == input.selectionEnd) this.select();
-        this.focuswithmouse = 0;
-    }
-    input.onfocus = function() {
-        if (this.focuswithmouse == 1) this.focuswithmouse = 2;
-        else {
-            input.select();
-            this.focuswithmouse = 0;
-        }
-        showHideButtonGo(true);
-        document.onkeydown = null;
-    };
-    input.onblur = function() {
-        input.selectionStart = input.selectionEnd;
-        showHideButtonGo(false);
-        document.onkeydown = onKeyDown;
-        this.focuswithmouse = 0;
-    };
-    input.onpaste = function() {
-        window.setTimeout(function() {
-            showHideButtonGo(true);
-        }, 1);
-    };
-    input.onkeydown = function(e) {
-        if (e.key === 'Escape') {
-            e.preventDefault(); // Prevents default handling of the Escape key
-            // Using setTimeout with 0 delay to queue the function at the end of the call stack
-            window.setTimeout(() => {
-                showHideButtonGo(true);
-            }, 0);
-        }
-    };
-    input.onkeyup = function(e) {
-        if (e.key === 'Escape') {
-            input.value = getCurFEN(); // Reset input value to the current FEN
-            this.select(); // Select the content of the input
-            showHideButtonGo(true); // Update the visibility state of the button
-        }
-    };
-    document.getElementById("simpleSearch").onsubmit = function() {
-        dosearch();
-        return false;
-    };
-}
-
-// Tooltip
-
-function getClientY(e) {
-    if (!_mobile) return e.clientY;
-    let scrollOffset = (window.pageYOffset || document.documentElement.scrollTop) - (document.documentElement.clientTop || 0);
-    return (e.clientY + scrollOffset) * _bodyScale;
-}
-
-function updateTooltipPos(e) {
-    let tooltip = document.getElementById("tooltip");
-    tooltip.style.left = (e.clientX * _bodyScale) + "px";
-    tooltip.style.top = (getClientY(e) + 20) + "px";
-}
-
-function updateTooltip(text, answerpv, movenumber, cl, e) {
-    let state = text.length > 0;
-    let tooltip = document.getElementById("tooltip");
-    while (tooltip.firstChild) tooltip.removeChild(tooltip.firstChild);
-    let span1 = document.createElement('span');
-    setElemText(span1, state ? text : "")
-    if (movenumber != null) {
-        let span2 = document.createElement('span');
-        span2.style.color = "#64c4db";
-        setElemText(span2, movenumber + " ")
-        tooltip.appendChild(span2);
-    }
-    if (cl != null && cl != "circle") {
-        let span3 = document.createElement('span');
-        span3.className = cl;
-        tooltip.appendChild(span3);
-        span1.style.paddingLeft = "12px";
-    }
-    tooltip.appendChild(span1);
-
-    _tooltipState = state;
-    tooltip.style.display = state ? "" : "none";
-    if (e != null) updateTooltipPos(e);
-
-    if (answerpv != null && answerpv.length > 0 && (answerpv[0].length == 4 || answerpv[0].length == 5)) {
-        for (let i = 0; i < Math.min(answerpv.length, _movesPv ? 5 : 1); i++) {
-            let move = {
-                from: {
-                    x: "abcdefgh".indexOf(answerpv[i][0]),
-                    y: "87654321".indexOf(answerpv[i][1])
-                },
-                to: {
-                    x: "abcdefgh".indexOf(answerpv[i][2]),
-                    y: "87654321".indexOf(answerpv[i][3])
-                }
-            };
-            showArrow1(move, 1 - (i / 5));
-        }
-    } else setArrow(_arrow);
-}
-
-// Chessboard and arrows
-
-function getEvalText(e, s) {
-    if (e == null) return s ? "" : "?";
-    let matein = Math.abs(Math.abs(e) - 1000000);
-    if (Math.abs(e) > 900000) {
-        if (s) return (e > 0 ? "+M" : "-M") + matein;
-        else return (e > 0 ? "white mate in " : "black mate in ") + matein;
-    }
-    return (e / 100).toFixed(2);
-}
-
-function showLegalMoves(from) {
-    setArrow(from == null);
-    let pos = parseFEN(getCurFEN());
-    let elem = document.getElementById('chessboard1');
-    for (let i = 0; i < elem.children.length; i++) {
-        let div = elem.children[i];
-        if (div.tagName != 'DIV') continue;
-        if (div.style.zIndex > 0) continue;
-        let x = parseInt(div.style.left.replace("px", "")) / 40;
-        let y = parseInt(div.style.top.replace("px", "")) / 40;
-        if (_flip) {
-            x = 7 - x;
-            y = 7 - y;
-        }
-        let c = div.className.split(' ')[0] + " " + div.className.split(' ')[1];
-        if (div.className.indexOf(" h2") >= 0) c += " h2";
-        div.className = c;
-        div.onmouseover = null;
-        setElemText(div, "");
-        if (from == null || from.x < 0 || from.y < 0) continue;
-        if (from.x == x && from.y == y) {
-            div.className += " h0";
-            _clickFromElem = div;
-        } else if (isLegal(pos, from, {
-                x: x,
-                y: y
-            })) {
-            if (_curmoves.length == 0) continue;
-            let text = "",
-                san = "",
-                answerpv = null,
-                cl = null;
-            for (let j = 0; j < _curmoves.length; j++) {
-                if (_curmoves[j].move.from.x == from.x && _curmoves[j].move.from.y == from.y &&
-                    _curmoves[j].move.to.x == x && _curmoves[j].move.to.y == y &&
-                    (_curmoves[j].move.p == 'Q' || _curmoves[j].move.p == null)) {
-                    text = getEvalText(_curmoves[j].eval, true);
-                    san = _curmoves[j].san;
-                    answerpv = _curmoves[j].answerpv;
-                    cl = getCircleClassName(j);
-                    break;
-                }
-            }
-            div.className += " h1";
-            setElemText(div, text);
-            div.tooltip = san + (text.length > 0 ? " " + text : "");
-            div.answerpv = answerpv == null ? [] : answerpv;
-            div.cl = cl == null ? "circle" : cl;
-            div.onmouseover = function(e) {
-                updateTooltip(this.tooltip, this.answerpv, null, this.cl, e);
-            };
-            div.onmouseout = function() {
-                updateTooltip("");
-            };
-        }
-        updateTooltip("");
-    }
-
-    elem = document.getElementById('editWrapper').children[0];
-    for (let i = 0; i < elem.children.length; i++) {
-        let div = elem.children[i];
-        if (div.tagName != 'DIV') continue;
-        if (div.style.zIndex > 0) continue;
-        let x = -parseInt(div.style.left.replace("px", "")) / 40 - 1;
-        let y = -parseInt(div.style.top.replace("px", "")) / 40 - 1;
-        let c = div.className.split(' ')[0] + " " + div.className.split(' ')[1];
-        div.className = c;
-        setElemText(div, "");
-        if (from == null || from.x >= 0 || from.y >= 0) continue;
-        if (from.x == x && from.y == y) {
-            div.className += " h0";
-            _clickFromElem = div;
-        }
-    }
-    showArrow3(null);
-
-    _clickFrom = from;
-}
-
-function updateLegalMoves() {
-    let pos = parseFEN(getCurFEN());
-    let elem = document.getElementById('chessboard1');
-    for (let i = 0; i < elem.children.length; i++) {
-        let div = elem.children[i];
-        if (div.tagName != 'DIV' || div.style.zIndex > 0 || div.className.indexOf(" h1") < 0 || div.cl != "circle") continue;
-        let x = parseInt(div.style.left.replace("px", "")) / 40;
-        let y = parseInt(div.style.top.replace("px", "")) / 40;
-        if (_flip) {
-            x = 7 - x;
-            y = 7 - y;
-        }
-        let c = div.className.split(' ')[0] + " " + div.className.split(' ')[1];
-        if (div.className.indexOf(" h2") >= 0) c += " h2";
-        for (let j = 0; j < _curmoves.length; j++) {
-            if (div.tooltip == _curmoves[j].san) {
-                let text = getEvalText(_curmoves[j].eval, true);
-                let san = _curmoves[j].san;
-                let answerpv = _curmoves[j].answerpv;
-                let cl = getCircleClassName(j);
-                setElemText(div, text);
-                div.tooltip = san + (text.length > 0 ? " " + text : "");
-                div.answerpv = answerpv == null ? [] : answerpv;
-                div.cl = cl == null ? "circle" : cl;
-                div.onmouseover = function(e) {
-                    updateTooltip(this.tooltip, this.answerpv, null, this.cl, e);
-                };
-                div.onmouseout = function() {
-                    updateTooltip("");
-                };
-                if (_tooltipState && getElemText(document.getElementById("tooltip").firstChild) == _curmoves[j].san) updateTooltip(div.tooltip, div.answerpv, null, div.cl, null);
-                break;
-            }
-        }
-    }
-}
-
-function setArrow(state) {
-    _arrow = state;
-    if (_arrow && _curmoves.length > 0 && _curmoves[0].eval != null) showArrow1(_curmoves[0].move);
-    else showArrow1();
-}
-
-function repaintLastMoveArrow() {
-    let lastmove = (getCurFEN() == _history[_historyindex][0] && _history[_historyindex].length > 2) ? _history[_historyindex][2] : null;
-    if (lastmove != null) {
-        let elem = document.getElementById("arrowWrapper2");
-        if (elem.children[0].children != null)
-            elem.children[0].children[0].children[0].children[0].style.fill = elem.children[0].children[1].style.stroke = getGraphPointColor(_historyindex);
-    }
-    showArrow2(lastmove);
-}
-
-function scrollReset(winId) {
-    let windowElem = document.getElementById("w" + winId);
-    let scrollElem = document.getElementById(winId.toLowerCase());
-    let oldDisplay = windowElem.style.display;
-    windowElem.style.display = "";
-    scrollElem.scrollTop = 0;
-    windowElem.style.display = oldDisplay;
-}
-
-function showBoard(noeval, refreshhistory, keepcontent) {
-    let pos = parseFEN(getCurFEN());
-    let dragElem = document.getElementById('dragPiece');
-    while (dragElem.firstChild) dragElem.removeChild(dragElem.firstChild);
-    let elem = document.getElementById('chessboard1');
-    if (keepcontent && elem.children.length != 64) keepcontent = false;
-    if (!keepcontent)
-        while (elem.firstChild) elem.removeChild(elem.firstChild);
-    let index = 0;
-    for (let x = 0; x < 8; x++)
-        for (let y = 0; y < 8; y++) {
-            let div = keepcontent ? elem.children[index] : document.createElement('div');
-            index++;
-            div.style.left = (_flip ? 7 - x : x) * 40 + "px";
-            div.style.top = (_flip ? 7 - y : y) * 40 + "px";
-            div.className = ((x + y) % 2 ? "d" : "l");
-            div.className += " " + pos.b[x][y];
-            if (pos.b[x][y] == "K" && isWhiteCheck(pos) ||
-                pos.b[x][y] == "k" && isWhiteCheck(colorflip(pos))) div.className += " h2";
-            if (!keepcontent) elem.appendChild(div);
-        }
-    if (_clickFromElem != null && _clickFrom != null && _clickFrom.x >= 0 && _clickFrom.y >= 0) _clickFromElem = null;
-    document.getElementById('searchInput').value = getCurFEN();
-
-    if (!noeval) {
-        refreshMoves();
-        if (refreshhistory)
-            for (let i = 0; i < _history.length; i++)
-                if (_history[i].length > 1 && _history[i][1] != null) _history[i][1].depth = -1;
-        scrollReset("Moves");
-        scrollReset("Opening");
-        scrollReset("Static");
-        if (_engine && !_engine.kill) evalAll();
-
-    }
-    document.getElementById('buttonStm').className = pos.w ? "white" : "black";
-
-    setArrow(true);
-    repaintLastMoveArrow();
-    showArrow3(null);
-
-    if (_menu) reloadMenu();
-    repaintGraph();
-    repaintSidebars();
-    updateInfo();
-    repaintStatic();
-    updateTooltip("");
-}
-
-function findMoveIndexBySan(san) {
-    for (let i = 0; i < _curmoves.length; i++)
-        if (san == _curmoves[i].san) return i;
-    return null;
-}
-
-function highlightMove(index, state) {
-    setArrow(!state);
-    if (_dragElement != null) return;
-    let elem = document.getElementById('chessboard1');
-    let x1 = _curmoves[index].move.from.x;
-    let y1 = _curmoves[index].move.from.y;
-    let x2 = _curmoves[index].move.to.x;
-    let y2 = _curmoves[index].move.to.y;
-    let text = getEvalText(_curmoves[index].eval, true);
-    for (let i = 0; i < elem.children.length; i++) {
-        let div = elem.children[i];
-        if (div.tagName != 'DIV') continue;
-        if (div.style.zIndex > 0) continue;
-        let x = parseInt(div.style.left.replace("px", "")) / 40;
-        let y = parseInt(div.style.top.replace("px", "")) / 40;
-        if (_flip) {
-            x = 7 - x;
-            y = 7 - y;
-        }
-        let c = div.className.split(' ')[0] + " " + div.className.split(' ')[1];
-        setElemText(div, "");
-        if (div.className.indexOf(" h2") >= 0) c += " h2";
-        if (state && x1 == x && y1 == y) div.className = c + " h0";
-        else if (state && x2 == x && y2 == y) {
-            div.className = c + " h1";
-            setElemText(div, text);
-        } else div.className = c;
-        div.onmouseover = null;
-    }
-    if (state) updateTooltip("", _curmoves[index].answerpv);
-    else updateTooltip("");
-}
-
-function showArrowInternal(move, wrapperId, opacity = 1) {
-    let elem = document.getElementById(wrapperId);
-    if (move == null) {
-        elem.style.display = "none";
-        return;
-    }
-    if (elem.children[0].children == null) return;
-    let line = elem.children[0].children[1];
-    line.setAttribute('x1', 20 + (_flip ? 7 - move.from.x : move.from.x) * 40);
-    line.setAttribute('y1', 20 + (_flip ? 7 - move.from.y : move.from.y) * 40);
-    line.setAttribute('x2', 20 + (_flip ? 7 - move.to.x : move.to.x) * 40);
-    line.setAttribute('y2', 20 + (_flip ? 7 - move.to.y : move.to.y) * 40);
-    line.style.opacity = opacity.toFixed(2);
-    elem.style.display = "block";
-}
-
-function showArrow1(move, opacity) {
-    let elem = document.getElementById("arrowWrapper1");
-    let elem0 = elem.children[0];
-    if (opacity == null || opacity == 1)
-        for (let i = elem0.children.length - 1; i >= 2; i--) elem0.removeChild(elem0.children[i]);
-    else elem.children[0].appendChild(elem0.children[1].cloneNode(false));
-    showArrowInternal(move, "arrowWrapper1", opacity);
-}
-
-function showArrow2(move) {
-    showArrowInternal(move, "arrowWrapper2");
-}
-
-function showArrow3(move) {
-    let elem0 = document.getElementById("arrowWrapper3").children[0];
-    if (elem0.children == null) return;
-    if (move == null) {
-        for (let i = elem0.children.length - 1; i >= 2; i--) elem0.removeChild(elem0.children[i]);
-    } else if (move.from.x == move.to.x && move.from.y == move.to.y || !bounds(move.from.x, move.from.y) || !bounds(move.to.x, move.to.y)) {
-        elem0.children[1].style.display = "none";
-    } else {
-        elem0.children[1].style.display = "";
-    }
-    showArrowInternal(move, "arrowWrapper3");
-}
-
-function finalArrow3() {
-    let elem = document.getElementById("arrowWrapper3");
-    let list = elem.children[0].children,
-        remElem = null;
-    if (list == null) return;
-    if (list[1].style.display == "none") return;
-    for (let i = 2; i < list.length; i++) {
-        if (list[i].getAttribute("x1") == list[1].getAttribute("x1") &&
-            list[i].getAttribute("y1") == list[1].getAttribute("y1") &&
-            list[i].getAttribute("x2") == list[1].getAttribute("x2") &&
-            list[i].getAttribute("y2") == list[1].getAttribute("y2")) remElem = list[i];
-    }
-    if (remElem == null) {
-        elem.children[0].appendChild(list[1].cloneNode(false));
-    } else {
-        elem.children[0].removeChild(remElem);
-    }
-    list[1].style.display = "none";
-}
-
-function updateInfo() {
-    let curfen = getCurFEN();
-    let pos = parseFEN(curfen);
-    let curpos = pos.m[1];
-    let positionInfoText = "Position: " + (_historyindex + 1) + " of " + _history.length + " - Last Move: ";
-    if (_history[_historyindex].length > 3 && _history[_historyindex][3] != null) {
-        let pos2 = parseFEN(_history[_historyindex][0]);
-        positionInfoText += (pos2.w ? (pos2.m[1] - 1) + "... " : pos2.m[1] + ". ") + _history[_historyindex][3];
-    } else positionInfoText += "-";
-    let movesInfoText = (pos.w ? "White" : "Black") + " To Play (" + _curmoves.length + " Legal Move" + (_curmoves.length == 1 ? "" : "s") + ")";
-    setElemText(document.getElementById('positionInfo'), positionInfoText);
-    setElemText(document.getElementById('movesInfo'), movesInfoText);
-
-    // History window
-    let elem = document.getElementById("history"),
-        movesText = "";
-    while (elem.firstChild) elem.removeChild(elem.firstChild);
-    let div = document.createElement('div');
-    let lastmn = null,
-        mn = null;
-    for (let i = 0; i < _history.length; i++) {
-        if (mn != lastmn) {
-            let span1 = document.createElement('span');
-            setElemText(span1, mn + ". ");
-            span1.style.color = "#64c4db";
-            div.appendChild(span1);
-            if (i <= _historyindex) movesText += mn + ".";
-            lastmn = mn;
-        }
-        mn = parseMoveNumber(_history[i][0]);
-        let san = '\u2605';
-        if (_history[i].length > 3 && _history[i][3] != null) san = _history[i][3];
-        let span2 = document.createElement('span');
-        setElemText(span2, san);
-        span2.className = "movelink" + (i == _historyindex ? " selected" : "");
-        span2.targetindex = i;
-        let c = getGraphPointColor(i);
-        if (c != "#008800") span2.style.borderBottomColor = c;
-        span2.onclick = function() {
-            let i = this.targetindex;
-            if (i < _history.length && i >= 0 && i != _historyindex) {
-                historyMove(i - _historyindex);
-            }
-        }
-        div.appendChild(span2);
-        div.appendChild(document.createTextNode(" "));
-        if (i > 0 && i <= _historyindex) movesText += san + " ";
-    }
-    elem.appendChild(div);
-
-    // Opening window
-    elem = document.getElementById("opening");
-    while (elem.firstChild) elem.removeChild(elem.firstChild);
-    let list = [],
-        lengthMatch = 0,
-        indexMatch = -1;
-    for (let i = 0; i < _open.length; i++) {
-        if (movesText.indexOf(_open[i][2]) == 0 && _open[i][2].length > lengthMatch) {
-            indexMatch = i;
-            lengthMatch = _open[i][2].length;
-        }
-    }
-    if (indexMatch >= 0) {
-        list.push({
-            name: _open[indexMatch][0] + " " + _open[indexMatch][1],
-            score: _open[indexMatch][3] + "%",
-            popularity: (_open[indexMatch][4] / 100).toFixed(2) + "%",
-            moves: _open[indexMatch][2]
-        });
-    }
-    for (let i = 0; i < _open.length; i++) {
-        if ((movesText.length > 0 || _history[0][0] == START) && _open[i][2].indexOf(movesText) == 0 && list.length < 512) {
-            list.push({
-                name: _open[i][0] + " " + _open[i][1],
-                score: _open[i][3] + "%",
-                popularity: (_open[i][4] / 100).toFixed(2) + "%",
-                moves: _open[i][2]
-            });
-        }
-    }
-    for (let i = 0; i < list.length; i++) {
-        let node1 = document.createElement("DIV");
-        node1.className = "line";
-        let node2 = document.createElement("SPAN");
-        node2.className = "name";
-        node2.appendChild(document.createTextNode(list[i].name));
-        node2.title = list[i].name;
-        let node3 = document.createElement("SPAN");
-        node3.className = "score";
-        node3.appendChild(document.createTextNode(list[i].score));
-        let node4 = document.createElement("SPAN");
-        node4.className = "popularity";
-        node4.appendChild(document.createTextNode(list[i].popularity));
-        let node5 = document.createElement("SPAN");
-        node5.className = "moves";
-        node5.appendChild(document.createTextNode(list[i].moves));
-        node5.title = list[i].moves;
-        node1.appendChild(node2);
-        node1.appendChild(node3);
-        node1.appendChild(node4);
-        node1.appendChild(node5);
-        if (indexMatch >= 0 && i == 0) {
-            node1.style.color = "#64c4db";
-            node1.targetindex = list[i].moves.split(" ").length;
-            node1.onclick = function() {
-                let i = this.targetindex;
-                if (i < _history.length && i >= 0 && i != _historyindex) historyMove(i - _historyindex);
-            }
-        } else {
-            node1.targetmoves = list[i].moves;
-            node1.onclick = function() {
-                let savedhistory = _history2 == null ? [_historyindex, JSON.parse(JSON.stringify(_history))] : _history2;
-                command(this.targetmoves);
-                _history2 = savedhistory;
-                refreshButtonRevert();
-            }
-        }
-        elem.appendChild(node1);
-    }
-}
-
-let _staticSortByChange = false;
-
-function repaintStatic() {
-    if (document.getElementById("wStatic").style.display == "none") return;
-
-    let curfen = getCurFEN();
-    let pos = parseFEN(curfen);
-
-    // Static evaluation window
-    window.setTimeout(function() {
-        if (getCurFEN() != curfen) return;
-        let elem = document.getElementById("static");
-        let evalUnit = 213;
-        while (elem.firstChild) elem.removeChild(elem.firstChild);
-        let staticEvalListLast = _historyindex > 0 ? getStaticEvalList(parseFEN(_history[_historyindex - 1][0])) : null;
-        let staticEvalList = getStaticEvalList(pos),
-            total = 0,
-            ci = 5;
-        for (let i = 0; i < staticEvalList.length; i++) {
-            if (i > 0 && staticEvalList[i - 1].group != staticEvalList[i].group) ci++;
-            let c1 = 0,
-                c2 = 0,
-                c3 = 0;
-            while (c1 + c2 + c3 == 0) {
-                c1 = 22 + (ci % 2) * 216;
-                c2 = 22 + (((ci / 2) << 0) % 3) * 108;
-                c3 = 22 + ((((ci / 6) << 0)) % 2) * 216;
-                if (c1 + c2 + c3 < 100) {
-                    c1 = c2 = c3 = 0;
-                    ci++;
-                }
-            }
-            staticEvalList[i].bgcol = "rgb(" + c1 + "," + c2 + "," + c3 + ")";
-            staticEvalList[i].rel = staticEvalList[i].item[2] - (staticEvalListLast == null ? 0 : staticEvalListLast[i].item[2]);
-        }
-        let sortArray = [];
-        for (let i = 0; i < staticEvalList.length; i++) sortArray.push({
-            value: _staticSortByChange ? staticEvalList[i].rel : staticEvalList[i].item[2],
-            index: i
-        });
-        sortArray.sort(function(a, b) {
-            return (Math.abs(a.value) < Math.abs(b.value)) ? 1 : Math.abs(a.value) > Math.abs(b.value) ? -1 : 0;
-        });
-        for (let j = 0; j < sortArray.length; j++) {
-            let i = sortArray[j].index;
-            total += staticEvalList[i].item[2];
-            let text = (staticEvalList[i].item[2] / evalUnit).toFixed(2);
-            if (text == "-0.00") text = "0.00";
-            let rel = (staticEvalList[i].rel / evalUnit).toFixed(2);
-            if (rel == "-0.00") rel = "0.00";
-            if (!_staticSortByChange && text == "0.00") continue;
-            if (_staticSortByChange && rel == "0.00") continue;
-
-            let node0 = document.createElement("SPAN");
-            node0.className = "circle";
-            node0.style.backgroundColor = staticEvalList[i].bgcol;
-
-            let node1 = document.createElement("DIV");
-            node1.className = "line";
-            let node2 = document.createElement("SPAN");
-            node2.className = "group";
-            node2.appendChild(document.createTextNode(staticEvalList[i].group));
-            let node6 = document.createElement("SPAN");
-            node6.className = "name";
-            node6.appendChild(document.createTextNode(staticEvalList[i].elem[0].toUpperCase() + staticEvalList[i].elem.replace(/\_/g, " ").substring(1)));
-
-            let node3 = document.createElement("SPAN");
-            node3.className = "eval";
-            if (text.indexOf(".") >= 0) {
-                let node4 = document.createElement("SPAN");
-                node4.className = "numleft";
-                node4.appendChild(document.createTextNode(text.substring(0, text.indexOf(".") + 1)));
-                let node5 = document.createElement("SPAN");
-                node5.className = "numright";
-                node5.appendChild(document.createTextNode(text.substring(text.indexOf(".") + 1)));
-                node3.appendChild(node4);
-                node3.appendChild(node5);
-            } else {
-                node3.appendChild(document.createTextNode(text));
-            }
-
-            let node7 = document.createElement("SPAN");
-            node7.className = "eval rel";
-            if (rel.indexOf(".") >= 0) {
-                let node8 = document.createElement("SPAN");
-                node8.className = "numleft";
-                node8.appendChild(document.createTextNode(rel.substring(0, rel.indexOf(".") + 1)));
-                let node9 = document.createElement("SPAN");
-                node9.className = "numright";
-                node9.appendChild(document.createTextNode(rel.substring(rel.indexOf(".") + 1)));
-                node7.appendChild(node8);
-                node7.appendChild(node9);
-            } else {
-                node3.appendChild(document.createTextNode(rel));
-            }
-            node1.appendChild(node0);
-            node1.appendChild(node2);
-            node1.appendChild(node6);
-            node1.appendChild(node3);
-            node1.appendChild(node7);
-            node1.name = staticEvalList[i].elem.toLowerCase().replace(/ /g, "_");
-            node1.onclick = function() {
-                let data = _staticEvalData,
-                    sei = null;
-                for (let j = 0; j < data.length; j++) {
-                    let n = data[j].name.toLowerCase().replace(/ /g, "_");
-                    if (n == this.name) sei = data[j];
-                }
-                if (sei == null) return;
-                let func = null,
-                    n2 = this.name.toLowerCase().replace(/ /g, "_");
-                try {
-                    eval("func = $" + n2 + ";");
-                } catch (e) {}
-                let elem = document.getElementById('chessboard1');
-                for (let i = 0; i < elem.children.length; i++) {
-                    let div = elem.children[i];
-                    if (div.tagName != 'DIV' || div.style.zIndex > 0) continue;
-                    let x = parseInt(div.style.left.replace("px", "")) / 40;
-                    let y = parseInt(div.style.top.replace("px", "")) / 40;
-                    if (_flip) {
-                        x = 7 - x;
-                        y = 7 - y;
-                    }
-                    let sqeval = 0;
-                    if (n2 == "king_danger") {
-                        sqeval = $unsafe_checks(pos, {
-                            x: x,
-                            y: y
-                        });
-                        if (sqeval == 0) sqeval = $unsafe_checks(colorflip(pos), {
-                            x: x,
-                            y: 7 - y
-                        });
-                        if (sqeval == 0) sqeval = $weak_bonus(pos, {
-                            x: x,
-                            y: y
-                        });
-                        if (sqeval == 0) sqeval = $weak_bonus(colorflip(pos), {
-                            x: x,
-                            y: 7 - y
-                        });
-                        let showKDarrows = function(p, flipy) {
-                            for (let x2 = 0; x2 < 8; x2++)
-                                for (let y2 = 0; y2 < 8; y2++) {
-                                    if ("PNBRQ".indexOf(board(p, x, y)) < 0) continue;
-                                    let s = {
-                                            x: x,
-                                            y: y
-                                        },
-                                        s2 = {
-                                            x: x2,
-                                            y: y2
-                                        },
-                                        a = false;
-                                    if ($king_ring(p, s2)) {
-                                        if ($pawn_attack(p, s2) && Math.abs(x - x2) == 1 && y - y2 == flipy ? 1 : -1 ||
-                                            $knight_attack(p, s2, s) ||
-                                            $bishop_xray_attack(p, s2, s) ||
-                                            $rook_xray_attack(p, s2, s) ||
-                                            $queen_attack(p, s2, s)) a = false;
-                                    }
-                                    if (!a && $knight_attack(p, s2, s) && $safe_check(p, s2, 0) > 0) a = true;
-                                    if (!a && $bishop_xray_attack(p, s2, s) && $safe_check(p, s2, 1) > 0) a = true;
-                                    if (!a && $rook_xray_attack(p, s2, s) && $safe_check(p, s2, 2) > 0) a = true;
-                                    if (!a && $queen_attack(p, s2, s) && $safe_check(p, s2, 3) > 0) a = true;
-                                    if (a) {
-                                        if (!flipy) showArrow3({
-                                            from: s,
-                                            to: s2
-                                        });
-                                        else showArrow3({
-                                            from: {
-                                                x: x,
-                                                y: 7 - y
-                                            },
-                                            to: {
-                                                x: x2,
-                                                y: 7 - y2
-                                            }
-                                        });
-                                        finalArrow3();
-                                    }
-                                }
-                        };
-                        showKDarrows(pos, false);
-                        showKDarrows(colorflip(pos), true);
-                    } else {
-                        try {
-                            sqeval = func(pos, {
-                                x: x,
-                                y: y
-                            });
-                            if (sqeval == 0 && sei.forwhite) sqeval = func(colorflip(pos), {
-                                x: x,
-                                y: 7 - y
-                            });
-                            if (sqeval == 0) sqeval = func(pos, {
-                                x: x,
-                                y: y
-                            }, true);
-                            if (sqeval == 0 && sei.forwhite) sqeval = func(colorflip(pos), {
-                                x: x,
-                                y: 7 - y
-                            }, true);
-                        } catch (e) {}
-                    }
-                    let c = div.className.split(' ')[0] + " " + div.className.split(' ')[1];
-                    if (div.className.indexOf(" h2") >= 0) c += " h2";
-                    if (sqeval != 0) c += " h3";
-                    div.className = c;
-                }
-            };
-            elem.appendChild(node1);
-        }
-        setElemText(document.getElementById('staticInfo'), "Static evaluation (" + (total / evalUnit).toFixed(2) + ")");
-    }, 50);
-}
-
-function getCircleClassName(i) {
-    let cl = "circle";
-    if (_curmoves[i].eval != null && _curmoves[0].eval != null) {
-        let etop = Math.max(-6, Math.min(6, _curmoves[0].eval / 100));
-        let ecur = Math.max(-6, Math.min(6, _curmoves[i].eval / 100));
-        let lost = Math.abs(etop - ecur);
-        if (lost <= 1.0) cl += " ok";
-        else if (lost <= 3.0) cl += " mi";
-        else cl += " bl";
-    }
-    return cl;
-}
-let _movesPv = false;
-
-function showEvals() {
-    setElemText(document.getElementById("moves"), "");
-    setElemText(document.getElementById("buttonMovesPv"), _movesPv ? "PV" : "Reply");
-    if (_curmoves.length > 0) {
-        let sortfunc = function(a, b) {
-            let a0 = a.eval == null ? -2000000 : a.eval * (_curmoves[0].w ? -1 : 1);
-            let b0 = b.eval == null ? -2000000 : b.eval * (_curmoves[0].w ? -1 : 1);
-
-            let r = 0;
-            if (a0 < b0 || (a0 == b0 && a.san < b.san)) r = 1;
-            if (a0 > b0 || (a0 == b0 && a.san > b.san)) r = -1;
-            return r;
-        }
-        _curmoves.sort(sortfunc);
-    }
-    for (let i = 0; i < _curmoves.length; i++) {
-        let node1 = document.createElement("DIV");
-        node1.className = "line";
-        let node0 = document.createElement("SPAN");
-        node0.className = getCircleClassName(i);
-        let node2 = document.createElement("SPAN");
-        node2.appendChild(document.createTextNode(_curmoves[i].san));
-        node2.className = "san";
-        let node3 = document.createElement("SPAN");
-        node3.className = "eval";
-        let node6 = document.createElement("SPAN");
-        node6.className = "pv";
-        if (_movesPv) node6.appendChild(document.createTextNode(_curmoves[i].pvtext || "?"));
-        else node6.appendChild(document.createTextNode((_curmoves[i].pvtext || "?").split(' ')[0]));
-        let node7 = document.createElement("SPAN");
-        node7.className = "depth";
-        node7.appendChild(document.createTextNode(_curmoves[i].depth | "?"));
-
-        let text = getEvalText(_curmoves[i].eval, false);
-        if (text.indexOf(".") >= 0) {
-            let node4 = document.createElement("SPAN");
-            node4.className = "numleft";
-            node4.appendChild(document.createTextNode(text.substring(0, text.indexOf(".") + 1)));
-            let node5 = document.createElement("SPAN");
-            node5.className = "numright";
-            node5.appendChild(document.createTextNode(text.substring(text.indexOf(".") + 1)));
-            node3.appendChild(node4);
-            node3.appendChild(node5);
-        } else {
-            node3.appendChild(document.createTextNode(text));
-        }
-        node1.appendChild(node0);
-        node1.appendChild(node2);
-        node1.appendChild(node3);
-        node1.appendChild(node6);
-        node1.appendChild(node7);
-        node1.index = i;
-        node1.onmouseover = function() {
-            highlightMove(this.index, true);
-        };
-        node1.onmouseout = function() {
-            highlightMove(this.index, false);
-        };
-        node1.onmousedown = function(e) {
-            if (_menu) showHideMenu(false);
-            doMoveHandler(_curmoves[this.index].move);
-        };
-        if (_historyindex + 1 < _history.length && _history[_historyindex + 1].length > 3 && _history[_historyindex + 1][3] == _curmoves[i].san) node1.style.color = "#64c4db"
-        document.getElementById("moves").appendChild(node1);
-    }
-    if (_arrow) setArrow(true);
-    updateLegalMoves();
-}
-
-// Chess position
-
-function bounds(x, y) {
-    return x >= 0 && x <= 7 && y >= 0 && y <= 7;
-}
-
-function board(pos, x, y) {
-    if (x >= 0 && x <= 7 && y >= 0 && y <= 7) return pos.b[x][y];
-    return "x";
-}
-
-function colorflip(pos) {
-    let board = new Array(8);
-    for (let i = 0; i < 8; i++) board[i] = new Array(8);
-    for (x = 0; x < 8; x++)
-        for (y = 0; y < 8; y++) {
-            board[x][y] = pos.b[x][7 - y];
-            let color = board[x][y].toUpperCase() == board[x][y];
-            board[x][y] = color ? board[x][y].toLowerCase() : board[x][y].toUpperCase();
-        }
-    return {
-        b: board,
-        c: [pos.c[2], pos.c[3], pos.c[0], pos.c[1]],
-        e: pos.e == null ? null : [pos.e[0], 7 - pos.e[1]],
-        w: !pos.w,
-        m: [pos.m[0], pos.m[1]]
-    };
-}
-
-function sum(pos, func, param) {
-    let sum = 0;
-    for (let x = 0; x < 8; x++)
-        for (let y = 0; y < 8; y++) sum += func(pos, {
-            x: x,
-            y: y
-        }, param);
-    return sum;
-}
-
-function parseMoveNumber(fen) {
-    let a = fen.replace(/^\s+/, '').split(' ');
-    return (a.length > 5 && !isNaN(a[5]) && a[5] != '') ? parseInt(a[5]) : 1;
-}
-
-function parseFEN(fen) {
-    let board = new Array(8);
-    for (let i = 0; i < 8; i++) board[i] = new Array(8);
-    let a = fen.replace(/^\s+/, '').split(' '),
-        s = a[0],
-        x, y;
-    for (x = 0; x < 8; x++)
-        for (y = 0; y < 8; y++) {
-            board[x][y] = '-';
-        }
-    x = 0, y = 0;
-    for (let i = 0; i < s.length; i++) {
-        if (s[i] == ' ') break;
-        if (s[i] == '/') {
-            x = 0;
-            y++;
-        } else {
-            if (!bounds(x, y)) continue;
-            if ('KQRBNP'.indexOf(s[i].toUpperCase()) != -1) {
-                board[x][y] = s[i];
-                x++;
-            } else if ('0123456789'.indexOf(s[i]) != -1) {
-                x += parseInt(s[i]);
-            } else x++;
-        }
-    }
-    let castling, enpassant, whitemove = !(a.length > 1 && a[1] == 'b');
-    if (a.length > 2) {
-        castling = [a[2].indexOf('K') != -1, a[2].indexOf('Q') != -1,
-            a[2].indexOf('k') != -1, a[2].indexOf('q') != -1
-        ];
-    } else {
-        castling = [true, true, true, true];
-    }
-    if (a.length > 3 && a[3].length == 2) {
-        let ex = 'abcdefgh'.indexOf(a[3][0]);
-        let ey = '87654321'.indexOf(a[3][1]);
-        enpassant = (ex >= 0 && ey >= 0) ? [ex, ey] : null;
-    } else {
-        enpassant = null;
-    }
-    let movecount = [(a.length > 4 && !isNaN(a[4]) && a[4] != '') ? parseInt(a[4]) : 0,
-        (a.length > 5 && !isNaN(a[5]) && a[5] != '') ? parseInt(a[5]) : 1
-    ];
-    return {
-        b: board,
-        c: castling,
-        e: enpassant,
-        w: whitemove,
-        m: movecount
-    };
-}
-
-function generateFEN(pos) {
-    let s = '',
-        f = 0,
-        castling = pos.c,
-        enpassant = pos.e,
-        board = pos.b;
-    for (let y = 0; y < 8; y++) {
-        for (let x = 0; x < 8; x++) {
-            if (board[x][y] == '-') {
-                f++;
-            } else {
-                if (f > 0) s += f, f = 0;
-                s += board[x][y];
-            }
-        }
-        if (f > 0) s += f, f = 0;
-        if (y < 7) s += '/';
-    }
-    s += ' ' + (pos.w ? 'w' : 'b') +
-        ' ' + ((castling[0] || castling[1] || castling[2] || castling[3]) ?
-            ((castling[0] ? 'K' : '') + (castling[1] ? 'Q' : '') +
-                (castling[2] ? 'k' : '') + (castling[3] ? 'q' : '')) :
-            '-') +
-        ' ' + (enpassant == null ? '-' : ('abcdefgh' [enpassant[0]] + '87654321' [enpassant[1]])) +
-        ' ' + pos.m[0] + ' ' + pos.m[1];
-    return s;
-}
-
-function isWhiteCheck(pos) {
-    let kx = null,
-        ky = null;
-    for (let x = 0; x < 8; x++) {
-        for (let y = 0; y < 8; y++) {
-            if (pos.b[x][y] == 'K') {
-                kx = x;
-                ky = y;
-            }
-        }
-    }
-    if (kx == null || ky == null) return false;
-    if (board(pos, kx + 1, ky - 1) == 'p' ||
-        board(pos, kx - 1, ky - 1) == 'p' ||
-        board(pos, kx + 2, ky + 1) == 'n' ||
-        board(pos, kx + 2, ky - 1) == 'n' ||
-        board(pos, kx + 1, ky + 2) == 'n' ||
-        board(pos, kx + 1, ky - 2) == 'n' ||
-        board(pos, kx - 2, ky + 1) == 'n' ||
-        board(pos, kx - 2, ky - 1) == 'n' ||
-        board(pos, kx - 1, ky + 2) == 'n' ||
-        board(pos, kx - 1, ky - 2) == 'n' ||
-        board(pos, kx - 1, ky - 1) == 'k' ||
-        board(pos, kx, ky - 1) == 'k' ||
-        board(pos, kx + 1, ky - 1) == 'k' ||
-        board(pos, kx - 1, ky) == 'k' ||
-        board(pos, kx + 1, ky) == 'k' ||
-        board(pos, kx - 1, ky + 1) == 'k' ||
-        board(pos, kx, ky + 1) == 'k' ||
-        board(pos, kx + 1, ky + 1) == 'k') return true;
-    for (let i = 0; i < 8; i++) {
-        let ix = (i + (i > 3)) % 3 - 1;
-        let iy = (((i + (i > 3)) / 3) << 0) - 1;
-        for (let d = 1; d < 8; d++) {
-            let b = board(pos, kx + d * ix, ky + d * iy);
-            let line = ix == 0 || iy == 0;
-            if (b == 'q' || b == 'r' && line || b == 'b' && !line) return true;
-            if (b != "-") break;
-        }
-    }
-    return false;
-}
-
-function doMove(pos, from, to, promotion) {
-    if (pos.b[from.x][from.y].toUpperCase() != pos.b[from.x][from.y]) {
-        let r = colorflip(doMove(colorflip(pos), {
-            x: from.x,
-            y: 7 - from.y
-        }, {
-            x: to.x,
-            y: 7 - to.y
-        }, promotion));
-        r.m[1]++;
-        return r;
-    }
-    let r = colorflip(colorflip(pos));
-    r.w = !r.w;
-    if (from.x == 7 && from.y == 7) r.c[0] = false;
-    if (from.x == 0 && from.y == 7) r.c[1] = false;
-    if (to.x == 7 && to.y == 0) r.c[2] = false;
-    if (to.x == 0 && to.y == 0) r.c[3] = false;
-    if (from.x == 4 && from.y == 7) r.c[0] = r.c[1] = false;
-    r.e = pos.b[from.x][from.y] == 'P' && from.y == 6 && to.y == 4 ? [from.x, 5] : null;
-    if (pos.b[from.x][from.y] == 'K') {
-        if (Math.abs(from.x - to.x) > 1) {
-            r.b[from.x][from.y] = '-';
-            r.b[to.x][to.y] = 'K';
-            r.b[to.x > 4 ? 5 : 3][to.y] = 'R';
-            r.b[to.x > 4 ? 7 : 0][to.y] = '-';
-            return r;
-        }
-    }
-    if (pos.b[from.x][from.y] == 'P' && to.y == 0) {
-        r.b[to.x][to.y] = promotion != null ? promotion : getPromotionPiece();
-    } else if (pos.b[from.x][from.y] == 'P' &&
-        pos.e != null && to.x == pos.e[0] && to.y == pos.e[1] &&
-        Math.abs(from.x - to.x) == 1) {
-        r.b[to.x][from.y] = '-';
-        r.b[to.x][to.y] = pos.b[from.x][from.y];
-
-    } else {
-        r.b[to.x][to.y] = pos.b[from.x][from.y];
-    }
-    r.b[from.x][from.y] = '-';
-    r.m[0] = (pos.b[from.x][from.y] == 'P' || pos.b[to.x][to.y] != '-') ? 0 : r.m[0] + 1;
-    return r;
-}
-
-function isLegal(pos, from, to) {
-    if (!bounds(from.x, from.y)) return false;
-    if (!bounds(to.x, to.y)) return false;
-    if (from.x == to.x && from.y == to.y) return false;
-    if (pos.b[from.x][from.y] != pos.b[from.x][from.y].toUpperCase()) {
-        return isLegal(colorflip(pos), {
-            x: from.x,
-            y: 7 - from.y
-        }, {
-            x: to.x,
-            y: 7 - to.y
-        })
-    }
-    if (!pos.w) return false;
-    let pfrom = pos.b[from.x][from.y];
-    let pto = pos.b[to.x][to.y];
-    if (pto.toUpperCase() == pto && pto != '-') return false;
-    if (pfrom == '-') {
-        return false;
-    } else if (pfrom == 'P') {
-        let enpassant = pos.e != null && to.x == pos.e[0] && to.y == pos.e[1];
-        if (!((from.x == to.x && from.y == to.y + 1 && pto == '-') ||
-                (from.x == to.x && from.y == 6 && to.y == 4 && pto == '-' && pos.b[to.x][5] == '-') ||
-                (Math.abs(from.x - to.x) == 1 && from.y == to.y + 1 && (pto != '-' || enpassant))
-            )) return false;
-    } else if (pfrom == 'N') {
-        if (Math.abs(from.x - to.x) < 1 || Math.abs(from.x - to.x) > 2) return false;
-        if (Math.abs(from.y - to.y) < 1 || Math.abs(from.y - to.y) > 2) return false;
-        if (Math.abs(from.x - to.x) + Math.abs(from.y - to.y) != 3) return false;
-    } else if (pfrom == 'K') {
-        let castling = true;
-        if (from.y != 7 || to.y != 7) castling = false;
-        if (from.x != 4 || (to.x != 2 && to.x != 6)) castling = false;
-        if (to.x == 6 && !pos.c[0] || to.x == 2 && !pos.c[1]) castling = false;
-        if (to.x == 2 && pos.b[0][7] + pos.b[1][7] + pos.b[2][7] + pos.b[3][7] != 'R---') castling = false;
-        if (to.x == 6 && pos.b[5][7] + pos.b[6][7] + pos.b[7][7] != '--R') castling = false;
-        if ((Math.abs(from.x - to.x) > 1 || Math.abs(from.y - to.y) > 1) && !castling) return false;
-        if (castling && isWhiteCheck(pos)) return false;
-        if (castling && isWhiteCheck(doMove(pos, from, {
-                x: to.x == 2 ? 3 : 5,
-                y: 7
-            }))) return false;
-    }
-    if (pfrom == 'B' || pfrom == 'R' || pfrom == 'Q') {
-        let a = from.x - to.x,
-            b = from.y - to.y;
-        let line = a == 0 || b == 0;
-        let diag = Math.abs(a) == Math.abs(b);
-        if (!line && !diag) return false;
-        if (pfrom == 'R' && !line) return false;
-        if (pfrom == 'B' && !diag) return false;
-        let count = Math.max(Math.abs(a), Math.abs(b));
-        let ix = a > 0 ? -1 : a < 0 ? 1 : 0,
-            iy = b > 0 ? -1 : b < 0 ? 1 : 0;
-        for (let i = 1; i < count; i++) {
-            if (pos.b[from.x + ix * i][from.y + iy * i] != '-') return false;
-        }
-    }
-    if (isWhiteCheck(doMove(pos, from, to))) return false;
-    return true;
-}
-
-function parseMove(pos, s) {
-    let promotion = null;
-    s = s.replace(/[\+|#|\?|!|x]/g, "");
-    if (s.length >= 2 && s[s.length - 2] == "=") {
-        promotion = s[s.length - 1]
-        s = s.substring(0, s.length - 2);
-    }
-    if (s.length >= 3 && "NBRQ".indexOf(s[s.length - 1]) >= 0) {
-        promotion = s[s.length - 1]
-        s = s.substring(0, s.length - 1);
-    }
-    if (s == "O-O" || s == "O-O-O") {
-        let from = {
-                x: 4,
-                y: pos.w ? 7 : 0
-            },
-            to = {
-                x: s == "O-O" ? 6 : 2,
-                y: pos.w ? 7 : 0
-            };
-        if (isLegal(pos, from, to)) return {
-            from: from,
-            to: to
-        };
-        else return null;
-    } else {
-        let p;
-        if ("PNBRQK".indexOf(s[0]) < 0) {
-            p = "P";
-        } else {
-            p = s[0];
-            s = s.substring(1);
-        }
-        if (s.length < 2 || s.length > 4) return null;
-        let xto = "abcdefgh".indexOf(s[s.length - 2]);
-        let yto = "87654321".indexOf(s[s.length - 1]);
-        let xfrom = -1,
-            yfrom = -1;
-        if (s.length > 2) {
-            xfrom = "abcdefgh".indexOf(s[0]);
-            yfrom = "87654321".indexOf(s[s.length - 3]);
-        }
-        for (let x = 0; x < 8; x++) {
-            for (let y = 0; y < 8; y++) {
-                if (xfrom != -1 && xfrom != x) continue;
-                if (yfrom != -1 && yfrom != y) continue;
-                if (pos.b[x][y] == (pos.w ? p : p.toLowerCase()) && isLegal(pos, {
-                        x: x,
-                        y: y
-                    }, {
-                        x: xto,
-                        y: yto
-                    })) {
-                    xfrom = x;
-                    yfrom = y;
-                }
-            }
-        }
-        if (xto < 0 || yto < 0 || xfrom < 0 || yfrom < 0) return null;
-        return {
-            from: {
-                x: xfrom,
-                y: yfrom
-            },
-            to: {
-                x: xto,
-                y: yto
-            },
-            p: promotion
-        };
-    }
-}
-
-function genMoves(pos) {
-    let moves = [];
-    for (let x1 = 0; x1 < 8; x1++)
-        for (let y1 = 0; y1 < 8; y1++)
-            for (let x2 = 0; x2 < 8; x2++)
-                for (let y2 = 0; y2 < 8; y2++) {
-                    if (isLegal(pos, {
-                            x: x1,
-                            y: y1
-                        }, {
-                            x: x2,
-                            y: y2
-                        })) {
-                        if ((y2 == 0 || y2 == 7) && pos.b[x1][y1].toUpperCase() == "P") {
-                            moves.push({
-                                from: {
-                                    x: x1,
-                                    y: y1
-                                },
-                                to: {
-                                    x: x2,
-                                    y: y2
-                                },
-                                p: "N"
-                            });
-                            moves.push({
-                                from: {
-                                    x: x1,
-                                    y: y1
-                                },
-                                to: {
-                                    x: x2,
-                                    y: y2
-                                },
-                                p: "B"
-                            });
-                            moves.push({
-                                from: {
-                                    x: x1,
-                                    y: y1
-                                },
-                                to: {
-                                    x: x2,
-                                    y: y2
-                                },
-                                p: "R"
-                            });
-                            moves.push({
-                                from: {
-                                    x: x1,
-                                    y: y1
-                                },
-                                to: {
-                                    x: x2,
-                                    y: y2
-                                },
-                                p: "Q"
-                            });
-                        } else moves.push({
-                            from: {
-                                x: x1,
-                                y: y1
-                            },
-                            to: {
-                                x: x2,
-                                y: y2
-                            }
-                        });
-                    }
-                }
-    return moves;
-}
-
-function sanMove(pos, move, moves) {
-    let s = "";
-    if (move.from.x == 4 && move.to.x == 6 && pos.b[move.from.x][move.from.y].toLowerCase() == "k") {
-        s = 'O-O';
-    } else if (move.from.x == 4 && move.to.x == 2 && pos.b[move.from.x][move.from.y].toLowerCase() == "k") {
-        s = 'O-O-O';
-    } else {
-        let piece = pos.b[move.from.x][move.from.y].toUpperCase();
-        if (piece != "P") {
-            let a = 0,
-                sx = 0,
-                sy = 0;
-            for (let i = 0; i < moves.length; i++) {
-                if (pos.b[moves[i].from.x][moves[i].from.y] == pos.b[move.from.x][move.from.y] &&
-                    (moves[i].from.x != move.from.x || moves[i].from.y != move.from.y) &&
-                    (moves[i].to.x == move.to.x && moves[i].to.y == move.to.y)) {
-                    a++;
-                    if (moves[i].from.x == move.from.x) sx++;
-                    if (moves[i].from.y == move.from.y) sy++;
-                }
-            }
-            s += piece;
-            if (a > 0) {
-                if (sx > 0 && sy > 0) s += "abcdefgh" [move.from.x] + "87654321" [move.from.y];
-                else if (sx > 0) s += "87654321" [move.from.y];
-                else s += "abcdefgh" [move.from.x];
-            }
-        }
-        if (pos.b[move.to.x][move.to.y] != "-" || piece == "P" && move.to.x != move.from.x) {
-            if (piece == "P") s += "abcdefgh" [move.from.x];
-            s += 'x';
-        }
-        s += "abcdefgh" [move.to.x] + "87654321" [move.to.y];
-        if (piece == "P" && (move.to.y == 0 || move.to.y == 7)) s += "=" + (move.p == null ? "Q" : move.p);
-    }
-    let pos2 = doMove(pos, move.from, move.to, move.p);
-    if (isWhiteCheck(pos2) || isWhiteCheck(colorflip(pos2))) s += genMoves(pos2).length == 0 ? "#" : "+";
-    return s;
-}
-
-function fixCastling(pos) {
-    pos.c[0] &= !(pos.b[7][7] != 'R' || pos.b[4][7] != 'K');
-    pos.c[1] &= !(pos.b[0][7] != 'R' || pos.b[4][7] != 'K');
-    pos.c[2] &= !(pos.b[7][0] != 'r' || pos.b[4][0] != 'k');
-    pos.c[3] &= !(pos.b[0][0] != 'r' || pos.b[4][0] != 'k');
-}
-
-function checkPosition(pos) {
-    let errmsgs = [];
-    let wk = bk = 0,
-        wp = bp = 0,
-        wpr = bpr = 0,
-        wn = wb1 = wb2 = wr = wq = 0,
-        bn = bb1 = bb2 = br = bq = 0;
-    for (let x = 0; x < 8; x++) {
-        for (let y = 0; y < 8; y++) {
-            let c = ((x + y) % 2) == 0;
-            if (pos.b[x][y] == 'K') wk++;
-            if (pos.b[x][y] == 'k') bk++;
-            if (pos.b[x][y] == 'P') wp++;
-            if (pos.b[x][y] == 'p') bp++;
-            if (pos.b[x][y] == 'N') wn++;
-            if (pos.b[x][y] == 'n') bn++;
-            if (c && pos.b[x][y] == 'B') wb1++;
-            if (c && pos.b[x][y] == 'b') bb1++;
-            if (!c && pos.b[x][y] == 'B') wb2++;
-            if (!c && pos.b[x][y] == 'b') bb2++;
-            if (pos.b[x][y] == 'R') wr++;
-            if (pos.b[x][y] == 'r') br++;
-            if (pos.b[x][y] == 'Q') wq++;
-            if (pos.b[x][y] == 'q') bq++;
-            if (pos.b[x][y] == 'P' && (y == 0 || y == 7)) wpr++;
-            if (pos.b[x][y] == 'p' && (y == 0 || y == 7)) bpr++;
-        }
-    }
-    if (wk == 0) errmsgs.push("Missing white king");
-    if (bk == 0) errmsgs.push("Missing black king");
-    if (wk > 1) errmsgs.push("Two white kings");
-    if (bk > 1) errmsgs.push("Two black kings");
-    let wcheck = isWhiteCheck(pos);
-    let bcheck = isWhiteCheck(colorflip(pos));
-    if (pos.w && bcheck || !pos.w && wcheck) errmsgs.push("Non-active color is in check");
-    if (wp > 8) errmsgs.push("Too many white pawns");
-    if (bp > 8) errmsgs.push("Too many black pawns");
-    if (wpr > 0) errmsgs.push("White pawns in first or last rank");
-    if (bpr > 0) errmsgs.push("Black pawns in first or last rank");
-    let we = Math.max(0, wq - 1) + Math.max(0, wr - 2) + Math.max(0, wb1 - 1) + Math.max(0, wb2 - 1) + Math.max(0, wn - 2);
-    let be = Math.max(0, bq - 1) + Math.max(0, br - 2) + Math.max(0, bb1 - 1) + Math.max(0, bb2 - 1) + Math.max(0, bn - 2);
-    if (we > Math.max(0, 8 - wp)) errmsgs.push("Too many extra white pieces");
-    if (be > Math.max(0, 8 - bp)) errmsgs.push("Too many extra black pieces");
-    if ((pos.c[0] && (pos.b[7][7] != 'R' || pos.b[4][7] != 'K')) ||
-        (pos.c[1] && (pos.b[0][7] != 'R' || pos.b[4][7] != 'K'))) errmsgs.push("White has castling rights and king or rook not in their starting position");
-    if ((pos.c[2] && (pos.b[7][0] != 'r' || pos.b[4][0] != 'k')) ||
-        (pos.c[3] && (pos.b[0][0] != 'r' || pos.b[4][0] != 'k'))) errmsgs.push("Black has castling rights and king or rook not in their starting position");
-    return errmsgs;
-}
-
-// Move list
-function refreshMoves() {
-    let pos = parseFEN(getCurFEN());
-    _curmoves = [];
-    setElemText(document.getElementById("moves"), "");
-    let errmsgs = checkPosition(pos);
-    if (errmsgs.length == 0) {
-        let moves = genMoves(pos);
-        for (let i = 0; i < moves.length; i++) {
-            _curmoves.push({
-                move: moves[i],
-                san: sanMove(pos, moves[i], moves),
-                fen: generateFEN(doMove(pos, moves[i].from, moves[i].to, moves[i].p)),
-                w: !pos.w,
-                eval: null,
-                depth: 0
-            });
-        }
-        if (_curmoves.length == 0) {
-            let matecheck = pos.w && isWhiteCheck(pos) || !pos.w && isWhiteCheck(colorflip(pos));
-            let div0 = document.createElement('div');
-            div0.style.padding = "8px 16px";
-            let div = document.createElement('div');
-            div.style.backgroundColor = "#800080";
-            div.className = "positionStatus";
-            setElemText(div, matecheck ? "Checkmate" : "Stalemate");
-            div0.appendChild(div);
-            let ul = document.createElement('ul'),
-                li = document.createElement('li');
-            setElemText(li, matecheck && pos.w ? "Black wins" : matecheck ? "White wins" : "Draw");
-            ul.appendChild(li);
-            div0.appendChild(ul);
-            document.getElementById("moves").appendChild(div0);
-        } else {
-            showEvals();
-        }
-    } else {
-        let div0 = document.createElement('div');
-        div0.style.padding = "8px 16px";
-        let div = document.createElement('div');
-        div.style.backgroundColor = "#bb0000";
-        div.className = "positionStatus";
-        setElemText(div, "Illegal position");
-        div0.appendChild(div);
-
-        let ul = document.createElement('ul');
-        for (let i = 0; i < errmsgs.length; i++) {
-            let li = document.createElement('li');
-            setElemText(li, errmsgs[i]);
-            ul.appendChild(li);
-        }
-        div0.appendChild(ul);
-
-        document.getElementById("moves").appendChild(div0);
-
-    }
-
-}
-
-// History
-
-function historyButtons() {
-    document.getElementById('buttonBack').className = _historyindex > 0 ? "on" : "off";
-    document.getElementById('buttonForward').className = _historyindex < _history.length - 1 ? "on" : "off";
-}
-
-function historySave() {}
-
-function historyAdd(fen, oldhistory, move, san) {
-    if (_historyindex >= 0 && _history[_historyindex][0] == fen) return;
-    let c = null;
-    if (oldhistory != null) {
-        for (let i = 0; i < oldhistory.length; i++) {
-            if (oldhistory[i][0] == fen && oldhistory[i].length > 1) c = oldhistory[i][1];
-        }
-    } else {
-        if (_history2 == null) {
-            _history2 = [_historyindex, JSON.parse(JSON.stringify(_history))];
-            refreshButtonRevert();
-        }
-    }
-    _historyindex++;
-    _history.length = _historyindex;
-    _history.push([fen, c, move, san]);
-    historyButtons();
-    historySave();
-}
-
-function historyMove(v, e, ctrl) {
-    if (e == null) e = window.event;
-    let oldindex = _historyindex;
-    if (_historyindex == _history.length - 1 &&
-        _history[_historyindex][0] != getCurFEN()) historyAdd(getCurFEN());
-    _historyindex += v
-    if (_historyindex < 0) _historyindex = 0;
-    if (_historyindex >= _history.length) _historyindex = _history.length - 1;
-    if ((e != null && e.ctrlKey && Math.abs(v) == 1) || ctrl) _historyindex = v == 1 ? _history.length - 1 : 0;
-    if (v == 0 || (oldindex != _historyindex || getCurFEN() != _history[_historyindex][0])) {
-        setCurFEN(_history[_historyindex][0]);
-        historyButtons();
-        historySave();
-        showBoard();
-    }
-}
-
-function historyKeep(wname, bname) {
-    _wname = wname || "White";
-    _bname = bname || "Black";
-    _history2 = null;
-    refreshButtonRevert();
-    historyMove(0);
-}
-
-// Mouse and keyboard events
-function getCurScale() {
-    if (document.getElementById("wChessboard").style.display == "none") return 1;
-    return Math.min((document.getElementById("wChessboard").clientWidth - 414 + 408) / 408,
-        (document.getElementById("wChessboard").clientHeight + (_mobile ? 30 : 0) - 437 + 368) / 368);
-}
-
-function getDragX(x, full) {
-    let bb = document.getElementById('chessboard1').getBoundingClientRect();
-    let w = bb.width / 8;
-    let offsetX = bb.left + w / 2;
-    if (_flip) return 7 - Math.round((x - offsetX) / w);
-    else return Math.round((x - offsetX) / w);
-}
-
-function getDragY(y, full) {
-    let bb = document.getElementById('chessboard1').getBoundingClientRect();
-    let h = bb.width / 8;
-    let offsetY = bb.top + h / 2;
-    if (_flip) return 7 - Math.round((y - offsetY) / h);
-    else return Math.round((y - offsetY) / h);
-}
-
-function getCurSan(move) {
-    if (move == null) return null;
-    for (let i = 0; i < _curmoves.length; i++)
-        if (_curmoves[i].move.from.x == move.from.x && _curmoves[i].move.from.y == move.from.y &&
-            _curmoves[i].move.to.x == move.to.x && _curmoves[i].move.to.y == move.to.y &&
-            _curmoves[i].move.p == move.p) return _curmoves[i].san;
-    return null;
-}
-
-function onMouseDown(e) {
-    if (_menu) showHideMenu(false, e);
-    if (e == null) e = window.event;
-    let elem = target = e.target != null ? e.target : e.srcElement;
-    if (document.onmousemove == graphMouseMove && target != null && target.id != 'graphWrapper' && target.id != 'graph') {
-        document.getElementById("graphWrapper").onmouseout();
-    } else if (document.onmousemove == graphMouseMove) {
-        graphMouseDown(e);
-        return;
-    }
-    if (_dragElement != null) return true;
-    if (target != null && target.className == 'cbCell' && target.children[0].id == 'chessboard1') {
-        target = target.children[0];
-        let bb = document.getElementById('chessboard1').getBoundingClientRect();
-        let w = bb.width / 8;
-        let cx = Math.round((e.clientX - bb.left - (w / 2)) / w);
-        let cy = Math.round((e.clientY - bb.top - (w / 2)) / w);
-        for (let i = 0; i < target.children.length; i++) {
-            e0 = target.children[i];
-            if (e0.style.left == (cx * 40) + "px" && e0.style.top == (cy * 40) + "px") elem = e0;
-        }
-    }
-    while (target != null && target.id != 'chessboard1' && target.id != 'editWrapper' && target.tagName != 'BODY') {
-        target = target.parentNode;
-    }
-    if (target == null) return true;
-    if (elem.id == 'editWrapper' || elem.className.length < 3) return;
-    if (target.id != 'editWrapper' && target.id != 'chessboard1') return true;
-
-    let edit = isEdit();
-    if (edit && target.id == 'chessboard1' && elem.className != null && (e.which === 2 || e.button === 4)) {
-        if (getPaintPiece() == elem.className[2]) setPaintPiece('S');
-        else setPaintPiece(elem.className[2]);
-        if (e && e.preventDefault) e.preventDefault();
-        return;
-    }
-    if (target.id == 'chessboard1' && edit && (getPaintPiece() != 'S' || (e.which === 3 || e.button === 2))) {
-        if (e && e.preventDefault) e.preventDefault();
-        paintMouse(e);
-        return;
-    }
-
-    document.onmousemove = onMouseMove;
-    document.body.focus();
-    document.onselectstart = function() {
-        return false;
-    };
-    elem.ondragstart = function() {
-        return false;
-    };
-    _dragActive = false;
-    _dragElement = elem;
-    _startX = e.clientX;
-    _startY = e.clientY;
-    _dragCtrl = target.id == 'editWrapper' ? true : e.ctrlKey;
-    _dragLMB = (e.which === 3 || e.button === 2) ? 1 : 0;
-    return false;
-
-}
-
-function dragActivate() {
-    if (_dragElement == null) return;
-    if (_dragElement.parentNode == null) return;
-    if (_dragElement.className[2] == '-' && !dragFromEditTools) return;
-    let dragFromEditTools = _dragElement.parentNode.id != 'chessboard1';
-
-    let clone = _dragElement.cloneNode(false);
-    if (!_dragCtrl) _dragElement.className = _dragElement.className[0] + " -";
-    _dragElement = clone;
-    _dragElement.className = _dragElement.className.substring(0, 3);
-    _dragElement.style.backgroundColor = "transparent";
-    _dragElement.style.background = "none";
-    _dragElement.style.zIndex = 10000;
-    _dragElement.style.pointerEvents = "none";
-    _dragElement.style.transform = "scale(" + getCurScale() + ")";
-    document.getElementById('dragPiece').appendChild(_dragElement);
-    _dragActive = true;
-    if (!isEdit() && !_dragCtrl) showLegalMoves({
-        x: getDragX(_startX),
-        y: getDragY(_startY)
-    });
-    if (dragFromEditTools) setPaintPiece(_dragElement.className[2]);
-}
-
-function doMoveHandler(move, copy) {
-    updateTooltip("");
-    let oldfen = getCurFEN();
-    let pos = parseFEN(oldfen);
-    let legal = copy == null && isLegal(pos, move.from, move.to) && _curmoves.length > 0;
-    if (legal) {
-        let san = getCurSan(move);
-        if (pos.w != _play) pos = doMove(pos, move.from, move.to, move.p);
-        historyAdd(oldfen);
-        setCurFEN(generateFEN(pos));
-        historyAdd(getCurFEN(), null, move, san);
-        showBoard(getCurFEN() == oldfen);
-        doComputerMove();
-    } else if (isEdit() && (move.from.x != move.to.x || move.from.y != move.to.y)) {
-        if (copy && bounds(move.to.x, move.to.y)) {
-            pos.b[move.to.x][move.to.y] = copy;
-        } else if (!copy && bounds(move.from.x, move.from.y)) {
-            if (bounds(move.to.x, move.to.y)) pos.b[move.to.x][move.to.y] = pos.b[move.from.x][move.from.y];
-            pos.b[move.from.x][move.from.y] = '-';
-        } else return false;
-        fixCastling(pos);
-        historyAdd(oldfen);
-        setCurFEN(generateFEN(pos));
-        historyAdd(getCurFEN());
-        showBoard(getCurFEN() == oldfen);
-    } else return false;
-    return true;
-}
-
-function onMouseMove(e) {
-    defaultMouseMove(e);
-    if (document.onmousemove != onMouseMove && isEdit() && getPaintPiece() != 'S') paintMouse(e, getPaintPiece());
-    if (_dragElement == null) return;
-    if (e == null) e = window.event;
-    if (!_dragActive) {
-        if (Math.abs(e.clientX - _startX) < 8 && Math.abs(e.clientY - _startY) < 8) return;
-        if (_dragLMB > 0) {
-            let x1 = getDragX(_startX),
-                y1 = getDragY(_startY),
-                x2 = getDragX(e.clientX),
-                y2 = getDragY(e.clientY);
-            showArrow3({
-                from: {
-                    x: x1,
-                    y: y1
-                },
-                to: {
-                    x: x2,
-                    y: y2
-                }
-            });
-            _dragLMB = 2;
-            return;
-        }
-        if ('PNBRQK'.indexOf(_dragElement.className[2].toUpperCase()) < 0) return;
-        dragActivate();
-    }
-
-    _dragElement.style.left = (e.clientX * _bodyScale - 20) + 'px';
-    _dragElement.style.top = (getClientY(e) - 20) + 'px';
-    _dragElement.style.color = 'transparent';
-    setElemText(_dragElement, '-'); // force browser to refresh pop-up
-}
-
-function onMouseUp(e) {
-    if (document.onmousemove == graphMouseMove) return;
-    onMouseMove(e);
-    if (!_dragActive && _clickFrom != null && _clickFromElem != null && _clickFromElem.className.indexOf(" h0") > 0 && _dragLMB == 0) {
-        let oldDragElement = _dragElement;
-        _dragElement = _clickFromElem;
-        let x2 = getDragX(e.clientX);
-        let y2 = getDragY(e.clientY);
-        _dragElement = null;
-        if (!doMoveHandler({
-                from: _clickFrom,
-                to: {
-                    x: x2,
-                    y: y2
-                }
-            })) _dragElement = oldDragElement;
-    }
-    if (_dragElement != null) {
-        let x1 = getDragX(_startX),
-            y1 = getDragY(_startY);
-        let x2 = getDragX(e.clientX),
-            y2 = getDragY(e.clientY);
-        if (_dragActive) {
-            if (!doMoveHandler({
-                    from: {
-                        x: x1,
-                        y: y1
-                    },
-                    to: {
-                        x: x2,
-                        y: y2
-                    }
-                }, _dragCtrl ? _dragElement.className[2] : null)) {
-                showBoard(true);
-            } else {
-                if (!bounds(x1, y1)) setPaintPiece('S');
-            }
-        } else {
-            let ew1br = document.getElementById('editWrapper').children[0].children[0].getBoundingClientRect();
-            let ew1w = ew1br.width;
-            if (_dragElement.parentNode.id != 'chessboard1') {
-                x1 = -Math.round((e.clientX - ew1br.left - (ew1w / 2)) / ew1w) - 1;
-                y1 = -Math.round((e.clientY - ew1br.top - (ew1w / 2)) / ew1w) - 1;
-                if (_dragElement.parentNode.className != "cb" || x1 > 0 || y1 > 0) x1 = y1 = -99;
-            }
-            if (e.which === 3 || e.button === 2) {
-                if (_dragElement.parentNode.id == 'chessboard1') {
-                    if (_dragLMB == 1) {
-                        let c = _dragElement.className;
-                        _dragElement.className = c.split(' ')[0] + " " + c.split(' ')[1] +
-                            (c.indexOf(" h0") >= 0 ? " h0" : "") +
-                            (c.indexOf(" h1") >= 0 ? " h1" : "") +
-                            (c.indexOf(" h2") >= 0 ? " h2" : "") +
-                            (c.indexOf(" h3") < 0 ? " h3" : "");
-                    }
-                    finalArrow3();
-                } else {
-                    let list = document.getElementById('editWrapper').children[0].children,
-                        p = null;
-                    for (let i = 0; i < list.length; i++) {
-                        let x1c = -Math.round((list[i].getBoundingClientRect().left - ew1br.left) / ew1w) - 1;
-                        let y1c = -Math.round((list[i].getBoundingClientRect().top - ew1br.top) / ew1w) - 1;
-                        if (list[i].className != null && x1c == x1 && y1c == y1) p = list[i].className[2];
-                    }
-                    if (p != null) {
-                        if (p == 'S') setCurFEN(START);
-                        else if (p == '-') setCurFEN("8/8/8/8/8/8/8/8 w - - 0 0");
-                        else {
-                            let pos = parseFEN(getCurFEN());
-                            for (let x = 0; x < 8; x++)
-                                for (let y = 0; y < 8; y++)
-                                    if (pos.b[x][y] == p) pos.b[x][y] = '-';
-                            fixCastling(pos);
-                            setCurFEN(generateFEN(pos));
-                        }
-                        historySave();
-                        showBoard();
-                    }
-                }
-            } else if (_clickFrom != null &&
-                _clickFromElem != null &&
-                _clickFromElem.className.indexOf(" h0") > 0 &&
-                _clickFrom.x == x1 &&
-                _clickFrom.y == y1 ||
-                _dragElement.className[2] == '-' && _dragElement.parentNode.id == 'chessboard1') {
-                showLegalMoves(null);
-            } else {
-                showLegalMoves({
-                    x: x1,
-                    y: y1
-                });
-            }
-        }
-    } else {
-        if (_clickFrom == null || _clickFrom.x > 0 && _clickFrom.y > 0 || (_clickFromElem != null && _clickFromElem.className[2] == 'S' && (e.which === 1 || e.button === 0))) showLegalMoves(null);
-    }
-    document.onmousemove = defaultMouseMove;
-    document.onselectstart = null;
-    _dragElement = null;
-
-}
-
-function onWheel(e) {
-    if (_menu) showHideMenu(false);
-    if (e.ctrlKey) return;
-    if (isEdit()) {
-        let p = getPaintPiece();
-        let str = 'Spnbrqk-PNBRQK';
-        let index = str.indexOf(p);
-        if (index >= 0) {
-            if (e.deltaY < 0) index--;
-            if (e.deltaY > 0) index++;
-            if (index < 0) index = str.length - 1;
-            if (index == str.length) index = 0;
-            setPaintPiece(str[index]);
-        }
-
-    } else {
-        if (e.deltaY < 0) historyMove(-1);
-        if (e.deltaY > 0) historyMove(+1);
-    }
-    e.preventDefault();
-}
-
-function setPaintPiece(newp) {
-    let list = document.getElementById('editWrapper').children[0].children,
-        newe = null;
-    for (let i = 0; i < list.length; i++) {
-        if (list[i].className != null && list[i].className[2] == newp) newe = list[i];
-    }
-    if (newe != null) {
-        let x2 = -Math.round(parseFloat(newe.style.left.replace("px", "")) / 40) - 1;
-        let y2 = -Math.round(parseFloat(newe.style.top.replace("px", "")) / 40) - 1;
-        showLegalMoves({
-            x: x2,
-            y: y2
-        });
-    }
-}
-
-function getPaintPiece() {
-    let list = document.getElementById('editWrapper').children[0].children;
-    for (let i = 0; i < list.length; i++) {
-        if (list[i].className != null && list[i].className.indexOf(" h0") > 0) return list[i].className[2];
-    }
-    return 'S';
-}
-
-function isEdit() {
-    return _clickFrom != null && _clickFromElem != null && _clickFromElem.className.indexOf(" h0") > 0 && _clickFrom.x < 0 && _clickFrom.y < 0;
-}
-
-function paintMouse(e, p) {
-    if (e == null) e = window.event;
-    let elem = target = e.target != null ? e.target : e.srcElement;
-    if (elem.parentNode == null || elem.parentNode.id != 'chessboard1') return;
-    let w = elem.getBoundingClientRect().width;
-    let h = elem.getBoundingClientRect().height;
-    let offsetX = document.getElementById('chessboard1').getBoundingClientRect().left + w / 2;
-    let offsetY = document.getElementById('chessboard1').getBoundingClientRect().top + h / 2;
-    let x1 = Math.round((e.clientX - offsetX) / w);
-    let y1 = Math.round((e.clientY - offsetY) / h);
-    if (_flip) {
-        x1 = 7 - x1;
-        y1 = 7 - y1;
-    }
-    if (bounds(x1, y1) && (_clickFromElem != null && _clickFromElem.className.indexOf(" h0") > 0 || (e.which === 3 || e.button === 2))) {
-
-        let pos = parseFEN(getCurFEN());
-        let newp = null;
-        if (e.ctrlKey || (e.which === 3 || e.button === 2)) newp = '-';
-        else newp = p != null ? p : _clickFromElem.className[2];
-        pos.b[x1][y1] = newp;
-        fixCastling(pos);
-        setCurFEN(generateFEN(pos));
-        historySave();
-        showBoard(null, null, true);
-        if (p == null) {
-            document.onmousemove = function(event) {
-                paintMouse(event, newp);
-            };
-        }
-    } else document.onmousemove = defaultMouseMove;
-}
-
-function onKeyDown(e) {
-    if (e.ctrlKey) return;
-
-    const key = e.key;
-    const engineReady = _engine != null && _engine.ready;
-
-    switch (key) {
-        case '`':
-        case '*':
-            if (engineReady) command("depth " + (_engine.depth !== 0 ? "0" : default_depth));
-            break;
-        case '+':
-            if (engineReady) command("depth " + Math.min(max_depth, _engine.depth + 1));
-            break;
-        case '-':
-            if (engineReady) command("depth " + Math.max(0, _engine.depth - 1));
-            break;
-        case 'ArrowUp':
-        case 'ArrowLeft':
-            historyMove(-1);
-            break;
-        case 'PageUp':
-            historyMove(-10);
-            break;
-        case 'Home':
-            historyMove(-1, null, true);
-            break;
-        case 'ArrowDown':
-        case 'ArrowRight':
-            historyMove(1);
-            break;
-        case 'PageDown':
-            historyMove(10);
-            break;
-        case 'End':
-            historyMove(1, null, true);
-            break;
-        case 'R':
-            showBoard(false, true);
-            break;
-        case 'P':
-            togglePromotionPiece();
-            break;
-        case 'K':
-            command("keep");
-            break;
-        case 'Escape':
-            command("revert");
-            break;
-        case 'F':
-            command("flip");
-            break;
-        case 'T':
-            command("sidetomove");
-            break;
-        case '0':
-            command("reset");
-            break;
-        case 'C':
-            showHideWindow("Chessboard");
-            break;
-        case 'M':
-            showHideWindow("Moves");
-            break;
-        case 'H':
-            showHideWindow("History");
-            break;
-        case 'G':
-            showHideWindow("Graph");
-            break;
-        case 'O':
-            showHideWindow("Opening");
-            break;
-        case 'S':
-            showHideWindow("Static");
-            break;
-        case 'E':
-            showHideWindow("Edit");
-            break;
-        case '1':
-            menuAnalysisMode();
-            break;
-        case '2':
-            menuPlayEngineWhite();
-            break;
-        case '3':
-            menuPlayEngineBlack();
-            break;
-        case '4':
-            menuTwoPlayerMode();
-            break;
-        default:
-            break;
-    }
-}
-
-// Evaluation engine
-
-function loadEngine() {
-    let engine = {
-        ready: false,
-        kill: false,
-        waiting: true,
-        depth: default_depth,
-        lastnodes: 0
-    };
-    let wasmSupported = typeof WebAssembly === 'object' && WebAssembly.validate(Uint8Array.of(0x0, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00));
-    if (typeof(Worker) === "undefined") return engine;
-    try {
-        var worker = new Worker('./engine/stockfish-nnue-16.js');
-    } catch (err) {
-        return engine;
-    }
-    worker.onmessage = function(e) {
-        if (engine.messagefunc) engine.messagefunc(e.data);
-    }
-    engine.send = function send(cmd, message) {
-        cmd = String(cmd).trim();
-        engine.messagefunc = message;
-        worker.postMessage(cmd);
-    };
-    engine.eval = function eval(fen, done, info) {
-        engine.send("position fen " + fen);
-        engine.send("go depth " + engine.depth, function message(str) {
-            let matches = str.match(/depth (\d+) .*score (cp|mate) ([-\d]+) .*nodes (\d+) .*pv (.+)/);
-            if (!matches) matches = str.match(/depth (\d+) .*score (cp|mate) ([-\d]+).*/);
-            if (matches) {
-                if (engine.lastnodes == 0) engine.fen = fen;
-                if (matches.length > 4) {
-                    let nodes = Number(matches[4]);
-                    if (nodes < engine.lastnodes) engine.fen = fen;
-                    engine.lastnodes = nodes;
-                }
-                let depth = Number(matches[1]);
-                let type = matches[2];
-                let score = Number(matches[3]);
-                if (type == "mate") score = (1000000 - Math.abs(score)) * (score <= 0 ? -1 : 1);
-                engine.score = score;
-                if (matches.length > 5) {
-                    let pv = matches[5].split(" ");
-                    if (info != null && engine.fen == fen) info(depth, score, pv);
-                }
-            }
-            if (str.indexOf("bestmove") >= 0 || str.indexOf("mate 0") >= 0 || str == "info depth 0 score cp 0") {
-                if (engine.fen == fen) done(str);
-                engine.lastnodes = 0;
-            }
-        });
-    };
-    engine.send("uci", function onuci(str) {
-        if (str === "uciok") {
-            engine.send("isready", function onready(str) {
-                if (str === "readyok") engine.ready = true;
-            });
-        }
-    });
-    return engine;
-}
-
-function addHistoryEval(index, score, depth, move) {
-    if (_history[index].length < 2 || _history[index][1] == null || (_history[index][1] != null && _history[index][1].depth < depth)) {
-        let black = _history[index][0].indexOf(" b ") > 0;
-        let ei = {
-            score: score,
-            depth: depth,
-            black: black,
-            move: move
-        };
-        if (_history[index].length >= 2) _history[index][1] = ei;
-        else {
-            _history[index].push(ei);
-            _history[index].push(null);
-        }
-        repaintGraph();
-        _wantUpdateInfo = true;
-    }
-}
-
-function evalNext() {
-    for (let i = 0; i < _curmoves.length; i++) {
-        if (_curmoves[i].depth < _engine.depth) {
-            let curpos = _curmoves[i].fen;
-            _engine.score = null;
-            if (!_engine.waiting) return;
-            _engine.waiting = false;
-            let initialdepth = _engine.depth;
-            let savedpv = [];
-            _engine.eval(curpos, function done(str) {
-                _engine.waiting = true;
-                if (i >= _curmoves.length || _curmoves[i].fen != curpos) return;
-                if (_engine.score != null && _engine.depth == initialdepth) {
-                    _curmoves[i].eval = _curmoves[i].w ? _engine.score : -_engine.score;
-                    _curmoves[i].depth = _engine.depth;
-                    let m = str.match(/^bestmove\s(\S+)(?:\sponder\s(\S+))?/);
-                    _curmoves[i].answer = (m && m.length > 1 && m[1] != null && (m[1].length == 4 || m[1].length == 5)) ? m[1] : null;
-                    _curmoves[i].answerpv = [];
-                    let pvtext = "";
-                    if (_curmoves[i].answer != null) {
-                        if (savedpv.length < 1 || savedpv[0] != m[1]) savedpv = [m[1]];
-                        if (m.length > 2 && m[2] != null && m[2].length != 4 && m[2].length != 5) {
-                            if (savedpv.length < 2 || savedpv[1] != m[2]) savedpv = [m[1], m[2]];
-                        }
-                        let nextpos = parseFEN(curpos);
-                        for (let j = 0; j < savedpv.length; j++) {
-                            if (pvtext.length > 0) pvtext += " ";
-                            let move = parseBestMove(savedpv[j]);
-                            pvtext += sanMove(nextpos, move, genMoves(nextpos));
-                            _curmoves[i].answerpv.push(savedpv[j]);
-                            if (j + 1 < savedpv.length) nextpos = doMove(nextpos, move.from, move.to, move.p);
-                        }
-                    }
-                    _curmoves[i].pvtext = pvtext.length > 0 ? pvtext : "-";
-                    showEvals();
-                }
-                if (!_engine.kill) evalNext();
-            }, function info(depth, score, pv) {
-                savedpv = pv;
-            });
-            return;
-        }
-    }
-    if (_curmoves.length > 0 && _history[_historyindex][0] == getCurFEN()) addHistoryEval(_historyindex, _curmoves[0].w ? -_curmoves[0].eval : _curmoves[0].eval, _engine.depth, _curmoves[0].move);
-    for (let i = _history.length - 1; i >= 0; i--) {
-        if (_history[i].length < 2 || _history[i][1] == null || (_history[i][1] != null && _history[i][1].depth < _engine.depth - 1)) {
-            let curpos = _history[i][0];
-            _engine.score = null;
-            if (!_engine.waiting) return;
-            if (checkPosition(parseFEN(curpos)).length > 0) {
-                addHistoryEval(i, null, _engine.depth - 1);
-                if (!_engine.kill) evalNext();
-            } else {
-                _engine.waiting = false;
-                _engine.eval(curpos, function done(str) {
-                    _engine.waiting = true;
-                    if (i >= _history.length || _history[i][0] != curpos) return;
-                    if (_engine.score != null) {
-                        let m = str.match(/^bestmove\s(\S+)(?:\sponder\s(\S+))?/);
-                        let answer = (m && m.length > 1 && (m[1].length == 4 || m[1].length == 5)) ? m[1] : null;
-                        addHistoryEval(i, _engine.score, _engine.depth - 1, parseBestMove(answer));
-                    }
-                    if (!_engine.kill) evalNext();
-                });
-            }
-            return;
-        }
-    }
-    historySave();
-}
-
-function applyEval(m, s, d) {
-    if (s == null || m.length < 4 || _engine.depth == 0) return;
-    for (let i = 0; i < _curmoves.length; i++) {
-        if (_curmoves[i].move.from.x == "abcdefgh".indexOf(m[0]) &&
-            _curmoves[i].move.from.y == "87654321".indexOf(m[1]) &&
-            _curmoves[i].move.to.x == "abcdefgh".indexOf(m[2]) &&
-            _curmoves[i].move.to.y == "87654321".indexOf(m[3])) {
-            if (d > _curmoves[i].depth) {
-                _curmoves[i].eval = _curmoves[i].w ? -s : s;
-                _curmoves[i].depth = d;
-                showEvals();
-            }
-            break;
-        }
-    }
-}
-
-function parseBestMove(m) {
-    if (m == null || m.length < 4) return null;
-    let from = {
-        x: "abcdefgh".indexOf(m[0]),
-        y: "87654321".indexOf(m[1])
-    };
-    let to = {
-        x: "abcdefgh".indexOf(m[2]),
-        y: "87654321".indexOf(m[3])
-    };
-    let p = m.length > 4 ? "nbrq".indexOf(m[4]) : -1;
-    if (p < 0) return {
-        from: from,
-        to: to
-    };
-    return {
-        from: from,
-        to: to,
-        p: "NBRQ" [p]
-    };
-}
-
-function updateSkillLevelBasedOnDepth(depth) {
-    let skillLevel;
-    if (depth >= 1 && depth <= 10) {
-        skillLevel = depth;
-    } else {
-        switch (depth) {
-            case 11:
-                skillLevel = 12;
-                break;
-            case 12:
-                skillLevel = 14;
-                break;
-            case 13:
-                skillLevel = 16;
-                break;
-            case 14:
-                skillLevel = 18;
-                break;
-            default:
-                skillLevel = 20; // Any depth 15 or higher sets the skill to 20
-        }
-    }
-    _engine.send("setoption name Skill Level value " + skillLevel);
-}
-
-function evalAll() {
-    if (_play != null) return;
-    if (_engine == null || !_engine.ready || !_engine.waiting) {
-        if (_engine) _engine.kill = true;
-        window.setTimeout(evalAll, 50);
-        return;
-    }
-    _engine.kill = false;
-    _engine.waiting = false;
-    for (let i = 0; i < _curmoves.length; i++) {
-        _curmoves[i].eval = null;
-        _curmoves[i].depth = null;
-    }
-    if (_engine.depth == 0) {
-        _engine.waiting = true;
-        return;
-    }
-    let fen = getCurFEN();
-    _engine.send("stop");
-    _engine.send("ucinewgame");
-    updateSkillLevelBasedOnDepth(_engine.depth);
-    _engine.score = null;
-    if (_curmoves.length == 0) {
-        _engine.waiting = true;
-        if (!_engine.kill) evalNext();
-        return;
-    }
-    _engine.eval(fen, function done(str) {
-        _engine.waiting = true;
-        if (fen != getCurFEN()) return;
-        let matches = str.match(/^bestmove\s(\S+)(?:\sponder\s(\S+))?/);
-        if (matches && matches.length > 1) {
-            applyEval(matches[1], _engine.score, _engine.depth - 1);
-            if (_history[_historyindex][0] == fen) addHistoryEval(_historyindex, _engine.score, _engine.depth - 1, parseBestMove(matches[1]));
-        }
-        if (!_engine.kill) evalNext();
-    }, function info(depth, score, pv) {
-        if (fen != getCurFEN() || depth <= 10) return;
-        applyEval(pv[0], score, depth - 1);
-        if (_history[_historyindex][0] == fen) addHistoryEval(_historyindex, score, depth - 1, parseBestMove(pv[0]));
-    });
-}
-
-function doComputerMove() {
-    if (_play == null) return;
-    let fen = getCurFEN();
-    if (_isPlayerWhite == true && fen.indexOf(" w ") > 0) return;
-    if (_isPlayerWhite == false && fen.indexOf(" b ") > 0) return;
-    if (_engine != null && !_engine.waiting) {
-        if (_engine) _engine.kill = true;
-        window.setTimeout(function() {
-            doComputerMove();
-        }, 50);
-        return;
-    }
-    if (_engine == null || !_engine.ready || _engine.depth == 0) {
-        if (_curmoves.length == 0) return;
-        let move = _curmoves[Math.floor(Math.random() * _curmoves.length)].move;
-        let san = getCurSan(move);
-        let pos = doMove(parseFEN(fen), move.from, move.to, move.p);
-        historyAdd(fen);
-        setCurFEN(generateFEN(pos));
-        historyAdd(getCurFEN(), null, move, san);
-        updateTooltip("");
-        showBoard(false);
-    } else {
-        _engine.kill = false;
-        _engine.waiting = false;
-        _engine.send("stop");
-        _engine.send("ucinewgame");
-        _engine.send("setoption name Skill Level value 20");
-        _engine.score = null;
-        _engine.eval(fen, function done(str) {
-            _engine.waiting = true;
-            if (fen != getCurFEN()) return;
-            let matches = str.match(/^bestmove\s(\S+)(?:\sponder\s(\S+))?/);
-            if (matches && matches.length > 1) {
-                let move = parseBestMove(matches[1]);
-                let san = getCurSan(move);
-                let pos = doMove(parseFEN(fen), move.from, move.to, move.p);
-                historyAdd(fen);
-                setCurFEN(generateFEN(pos));
-                historyAdd(getCurFEN(), null, move, san);
-                updateTooltip("");
-                showBoard(false);
-            }
-        });
-    }
-}
-
-// Evaluation graph
-
-let _lastMouseDataPos = null;
+// ============================
+// Evaluation Graph
+// ============================
 
 function getGraphPointData(i) {
     let e = null,
@@ -4746,7 +4786,7 @@ function getGraphPointColor(i) {
         laste = getGraphPointData(i - 1);
     black = i >= 0 && i < _history.length && _history[i].length >= 2 && _history[i][1] != null && _history[i][1].score != null && _history[i][1].black;
     let lost = laste == null || e == null ? 0 : black ? (laste - e) : (e - laste);
-    return lost <= 1.0 ? "#008800" : lost <= 3.0 ? "#bb8800" : "#bb0000";
+    return lost <= 1.0 ? '#008800' : lost <= 3.0 ? '#bb8800' : '#bb0000';
 }
 
 function showGraphTooltip(i, event) {
@@ -4756,110 +4796,10 @@ function showGraphTooltip(i, event) {
         if (_history[i][1] != null && _history[i][1].score != null) {
             let e = _history[i][1].score;
             if (_history[i][1].black) e = -e;
-            evalText += " " + getEvalText(e, true);
+            evalText += ' ' + getEvalText(e, true);
         }
-        updateTooltip(evalText, null, (pos.w ? (pos.m[1] - 1) + "..." : pos.m[1] + "."), null, event);
-    } else updateTooltip("");
-}
-
-function setupMobileLayout(init) {
-    if (init) {
-        document.getElementById('colLeft').style.width = "300px";
-        document.getElementById('colRight').style.width = "300px";
-        document.getElementById('wChessboard').style.margin = "8px 0 0 0";
-        document.getElementById('wChessboard').style.resize = "none";
-        document.getElementById('wGraph').style.display = "none";
-        document.getElementById('wHistory').style.display = "none";
-        document.getElementById('wMoves').style.height = "121px";
-        document.getElementById('logo').style.height = "30px";
-        document.getElementById('logo').style.padding = "0";
-        document.getElementById('logo').style.transform = "scale(0.5)";
-        document.getElementById('logo').style.transformOrigin = "top left";
-        document.getElementById('logotextmain').style.top = "15px";
-        document.getElementById('logotextmain').style.left = "75px";
-        document.getElementById('logotextsub').style.top = "46px";
-        document.getElementById('logotextsub').style.left = "75px";
-        document.getElementById('toolbar').style.transform = "scale(2.3)";
-        document.getElementById('toolbar').style.transformOrigin = "top left";
-        document.getElementById('toolbar').style.top = "-2px";
-        document.getElementById('toolbar').style.left = "345px";
-        document.getElementById('toolbar').style.width = "112px";
-        document.getElementById('wb').style.transform = "scale(2)";
-        document.getElementById('positionInfo').style.display = "none";
-        document.getElementById('searchWrapper').style.top = "0";
-        document.getElementById('searchWrapper').style.height = "24px";
-        document.getElementById('searchInput').style.padding = "4px 4px 3px 4px";
-        document.getElementById('boxBoardOuter').style.marginTop = "31px";
-        document.getElementById('buttonGo').style.padding = "3px 4px 5px 4px";
-        document.getElementById('buttonGo').style.top = "0";
-    }
-    let winWidth = Math.min(window.innerWidth, window.outerWidth);
-    let winHeight = Math.min(window.innerHeight, window.outerHeight);
-    let horiz = winWidth > winHeight;
-    let width = horiz ? 660 : 320;
-    let scale = winWidth / width;
-    _bodyScale = 1 / scale;
-    let height = horiz ? Math.max(280, Math.min(504, winHeight / scale)) : Math.max(490, winHeight / scale);
-    document.body.style.display = "flex";
-    document.body.style.transformOrigin = "top left";
-    document.body.style.transform = "scale(" + (scale) + ")";
-    document.body.style.width = width + "px";
-    document.body.style.height = height + "px";
-    document.body.style.overflowX = "hidden";
-    document.getElementById('container').style.width = width + "px";
-    document.getElementById('container').style.height = height + "px";
-    document.getElementById('logo').style.position = horiz ? "absolute" : "";
-    document.getElementById('logo').style.top = horiz ? "0" : "";
-    document.getElementById('logo').style.left = horiz ? "355px" : "";
-    document.getElementById('wChessboard').style.width = horiz ? "310px" : "";
-    document.getElementById('wChessboard').style.height = (horiz ? height - 16 : 300) + "px";
-    document.getElementById('wb').style.top = horiz ? "0" : "329px";
-    document.getElementById('wb').style.right = horiz ? "324px" : "162px";
-    document.getElementById('wb').style.width = horiz ? "21px" : "";
-    document.getElementById('wb').style.height = horiz ? "120px" : "";
-    document.getElementById('colLeft').style.minWidth = horiz ? "300px" : "";
-    document.getElementById('colLeft').style.minHeight = horiz ? "1px" : "338px";
-    document.getElementById('colLeft').style.paddingTop = horiz ? "" : "7px";
-    document.getElementById('colLeft').style.marginLeft = horiz ? "5px" : "10px";
-    document.getElementById('colRight').style.marginLeft = horiz ? "45px" : "10px";
-    document.getElementById('colRight').style.marginTop = horiz ? "29px" : "";
-
-    let elems = document.getElementById("colRight");
-    for (let i = 0; i < elems.children.length; i++) {
-        let div = elems.children[i];
-        if (div.tagName != 'DIV' || div.className != "box") continue;
-        div.style.height = (horiz ? 243 + height - 280 : 121 + height - 490) + "px";
-        div.style.margin = "0";
-        div.style.resize = "none";
-    }
-}
-
-function checkSizes() {
-    if (_mobile && (document.activeElement == null || document.activeElement.tagName != "INPUT")) setupMobileLayout(false);
-
-    // Graph
-    let cw = document.getElementById("graphWrapper").clientWidth;
-    let ch = document.getElementById("graphWrapper").clientHeight;
-    let canvas = document.getElementById("graph");
-    if (canvas.width != cw || canvas.height != ch) repaintGraph();
-
-    // Chessboard
-    let targetScale = Math.round(getCurScale() * 1000) / 1000;
-    let targetMargin = ((document.getElementById("wChessboard").clientWidth - (document.getElementById("boxBoard").clientWidth + 4) * targetScale) / 2) - 0.5;
-    let oldScale = parseFloat(document.getElementById("boxBoard").style.transform.replace("scale(", "").replace(")", ""));
-    let oldMargin = parseFloat(document.getElementById("boxBoardOuter").style.marginLeft.replace("px", ""));
-    if (Math.round(oldScale * 1000) != Math.round(targetScale * 1000) ||
-        Math.round(oldMargin) != Math.round(targetMargin)) {
-        document.getElementById("boxBoard").style.transform = "scale(" + targetScale + ")";
-        document.getElementById("boxBoardOuter").style.marginLeft =
-            document.getElementById("boxBoardOuter").style.marginRight = targetMargin + "px";
-    }
-
-    if (_wantUpdateInfo) {
-        _wantUpdateInfo = false;
-        updateInfo();
-    }
-
+        updateTooltip(evalText, null, (pos.w ? (pos.m[1] - 1) + '...' : pos.m[1] + '.'), null, event);
+    } else updateTooltip('');
 }
 
 function repaintGraph(event) {
@@ -4879,10 +4819,10 @@ function repaintGraph(event) {
     for (let i = 0; i < data.length; i++)
         if (Math.ceil(Math.abs(data[i])) > yMax) yMax = Math.ceil(Math.abs(data[i]));
     if (data.length > xMax) xMax = data.length;
-    let cw = document.getElementById("graphWrapper").clientWidth;
-    let ch = document.getElementById("graphWrapper").clientHeight;
+    let cw = document.getElementById('graphWrapper').clientWidth;
+    let ch = document.getElementById('graphWrapper').clientHeight;
     if (event != null) {
-        let rect = document.getElementById("graph").getBoundingClientRect();
+        let rect = document.getElementById('graph').getBoundingClientRect();
         let mx = event.clientX - rect.left;
         let my = event.clientY - rect.top;
         var mouseDataPos = null;
@@ -4896,8 +4836,8 @@ function repaintGraph(event) {
         _lastMouseDataPos = mouseDataPos;
     } else _lastMouseDataPos = mouseDataPos;
 
-    let canvas = document.getElementById("graph");
-    let ctx = canvas.getContext("2d");
+    let canvas = document.getElementById('graph');
+    let ctx = canvas.getContext('2d');
     canvas.width = cw;
     canvas.height = ch;
     let yTotal = canvas.height - border1 - border2,
@@ -4915,19 +4855,19 @@ function repaintGraph(event) {
             xStep *= 2;
         }
 
-    ctx.font = "10px Segoe UI";
-    ctx.textAlign = "right";
-    ctx.textBaseline = "middle";
+    ctx.font = '10px Segoe UI';
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
     ctx.lineWidth = 1;
-    ctx.fillStyle = "#a0aab4";
-    ctx.fillText("0", border2 - 6, border1 + yTotal / 2);
+    ctx.fillStyle = '#a0aab4';
+    ctx.fillText('0', border2 - 6, border1 + yTotal / 2);
     ctx.beginPath();
-    ctx.strokeStyle = "#738191";
+    ctx.strokeStyle = '#738191';
     for (let i = yStep; i <= yMax; i += yStep) {
         if (i == 0) continue;
         let y = Math.round(i * yUnit / yStep);
-        ctx.fillText("+" + i, border2 - 6, border1 + yTotal / 2 - y);
-        ctx.fillText("-" + i, border2 - 6, border1 + yTotal / 2 + y);
+        ctx.fillText('+' + i, border2 - 6, border1 + yTotal / 2 - y);
+        ctx.fillText('-' + i, border2 - 6, border1 + yTotal / 2 + y);
         if (i < yMax) {
             ctx.moveTo(border2, border1 + yTotal / 2 - y);
             ctx.lineTo(border2 + xTotal, border1 + yTotal / 2 - y);
@@ -4940,8 +4880,8 @@ function repaintGraph(event) {
     ctx.stroke();
     ctx.beginPath();
 
-    ctx.textAlign = "center";
-    ctx.strokeStyle = "#a0aab4";
+    ctx.textAlign = 'center';
+    ctx.strokeStyle = '#a0aab4';
     for (let i = 0; i <= xMax; i += xStep) {
         let x = Math.round(i * xUnit / xStep);
         ctx.fillText(i / 2, border2 + x, border1 + yTotal + border2 / 2 + 2);
@@ -4970,16 +4910,16 @@ function repaintGraph(event) {
 
     for (let i = 1; i < data.length; i++) {
         if (data[i] != null && data[i - 1] != null) {
-            if (color[i] != "#008800") {
+            if (color[i] != '#008800') {
                 ctx.beginPath();
-                ctx.strokeStyle = color[i] == "#bb0000" ? "red" : "white";
+                ctx.strokeStyle = color[i] == '#bb0000' ? 'red' : 'white';
                 ctx.lineWidth = 1;
                 ctx.moveTo(border2 + i * (xUnit / xStep), border1 + yTotal / 2 - data[i - 1] * (yUnit / yStep));
                 ctx.lineTo(border2 + (i + 1) * (xUnit / xStep), border1 + yTotal / 2 - data[i] * (yUnit / yStep));
                 ctx.stroke();
             } else {
                 ctx.beginPath();
-                ctx.strokeStyle = "black";
+                ctx.strokeStyle = 'black';
                 ctx.lineWidth = 1;
                 ctx.moveTo(border2 + i * (xUnit / xStep), border1 + yTotal / 2 - data[i - 1] * (yUnit / yStep));
                 ctx.lineTo(border2 + (i + 1) * (xUnit / xStep), border1 + yTotal / 2 - data[i] * (yUnit / yStep));
@@ -5021,25 +4961,9 @@ function repaintGraph(event) {
     repaintLastMoveArrow();
 }
 
-function defaultMouseMove(event) {
-    if (_tooltipState) updateTooltipPos(event);
-}
-
-function graphMouseMove(event) {
-    repaintGraph(event);
-    if (_tooltipState) updateTooltipPos(event);
-}
-
-function graphMouseDown(event) {
-    if (_lastMouseDataPos != null) {
-        let i = _lastMouseDataPos;
-        if (i < _history.length && i >= 0 && i != _historyindex) {
-            historyMove(i - _historyindex);
-        }
-    }
-}
-
-// Sidebars
+// ============================
+// Sidebar Functions
+// ============================
 
 function repaintSidebars() {
     let pos = parseFEN(getCurFEN());
@@ -5050,7 +4974,7 @@ function repaintSidebars() {
         for (let y = 0; y < 8; y++) {
             let p = board(pos, x, y).toLowerCase();
             let col = board(pos, x, y) != p;
-            let index = "pnbrqk".indexOf(p);
+            let index = 'pnbrqk'.indexOf(p);
             if (index >= 0) {
                 if (col) whitemat.push(index);
                 else blackmat.push(index);
@@ -5066,13 +4990,13 @@ function repaintSidebars() {
         } else if (whitemat[i] < blackmat[j]) i++;
         else if (whitemat[i] > blackmat[j]) j++;
     }
-    let elem = document.getElementById("materialWrapper");
+    let elem = document.getElementById('materialWrapper');
     while (elem.firstChild) elem.removeChild(elem.firstChild);
     let fmat = function(mat, flip) {
         for (let i = 0; i < mat.length; i++) {
-            let node1 = document.createElement("DIV");
-            node1.className = "pnbrqk" [mat[i]];
-            let d = (mat.length - 1 - i) * 16 + "px";
+            let node1 = document.createElement('DIV');
+            node1.className = 'pnbrqk' [mat[i]];
+            let d = (mat.length - 1 - i) * 16 + 'px';
             if (flip) node1.style.top = d;
             else node1.style.bottom = d;
             elem.appendChild(node1);
@@ -5082,33 +5006,35 @@ function repaintSidebars() {
     fmat(blackmat, !_flip);
     if (points >= 0) fmat(whitemat, _flip);
     if (points != 0) {
-        let node1 = document.createElement("DIV");
-        node1.appendChild(document.createTextNode("+" + Math.abs(points)));
+        let node1 = document.createElement('DIV');
+        node1.appendChild(document.createTextNode('+' + Math.abs(points)));
         let down = points > 0 && !_flip || points < 0 && _flip;
-        let d = (_flip ^ down ? whitemat.length : blackmat.length) * 16 + "px";
+        let d = (_flip ^ down ? whitemat.length : blackmat.length) * 16 + 'px';
         if (down) node1.style.bottom = d;
         else node1.style.top = d;
         elem.appendChild(node1);
     }
 
-    elem = document.getElementById("namesWrapperTop");
+    elem = document.getElementById('namesWrapperTop');
     while (elem.firstChild) elem.removeChild(elem.firstChild);
     elem.appendChild(document.createTextNode(_flip ? _wname : _bname));
-    elem = document.getElementById("namesWrapperBottom");
+    elem = document.getElementById('namesWrapperBottom');
     while (elem.firstChild) elem.removeChild(elem.firstChild);
     elem.appendChild(document.createTextNode(_flip ? _bname : _wname));
 }
 
-// Buttons and menu
+// ============================
+// Buttons and Menu
+// ============================
 
 function refreshButtonRevert() {
     if (_history2 == null) {
-        document.getElementById('buttonRevert').className = "off";
+        document.getElementById('buttonRevert').className = 'off';
         document.getElementById('buttonRevert').onclick = null;
     } else {
-        document.getElementById('buttonRevert').className = "on";
+        document.getElementById('buttonRevert').className = 'on';
         document.getElementById('buttonRevert').onclick = function(e) {
-            command(e.ctrlKey ? "keep" : "revert");
+            command(e.ctrlKey ? 'keep' : 'revert');
         };
     }
 }
@@ -5131,28 +5057,27 @@ function doFlip() {
 }
 
 function showHideWindow(name, targetState) {
-
-    if (_mobile && name != "Chessboard") {
-        let wb = document.getElementById("wb").children;
+    if (_mobile && name != 'Chessboard') {
+        let wb = document.getElementById('wb').children;
         let lparams = [];
         for (let i = 0; i < wb.length; i++) {
             if (wb[i].tagName != 'DIV') continue;
             let wbId = wb[i].id.substring(2);
-            if (wbId == "Chessboard") continue;
-            document.getElementById("w" + wbId).style.display = "none";
-            let wbElem = document.getElementById("wb" + wbId);
-            wbElem.className = wbElem.className.replace(" selected", "");
+            if (wbId == 'Chessboard') continue;
+            document.getElementById('w' + wbId).style.display = 'none';
+            let wbElem = document.getElementById('wb' + wbId);
+            wbElem.className = wbElem.className.replace(' selected', '');
         }
     }
-    let boxElem = document.getElementById("w" + name);
-    let newState = targetState == null ? boxElem.style.display == "none" : targetState;
-    boxElem.style.display = newState ? "" : "none";
-    let wbElem = document.getElementById("wb" + name);
-    wbElem.className = wbElem.className.replace(" selected", "") + (newState ? " selected" : "");
+    let boxElem = document.getElementById('w' + name);
+    let newState = targetState == null ? boxElem.style.display == 'none' : targetState;
+    boxElem.style.display = newState ? '' : 'none';
+    let wbElem = document.getElementById('wb' + name);
+    wbElem.className = wbElem.className.replace(' selected', '') + (newState ? ' selected' : '');
     checkSizes();
-    if ((name == "Edit" || _mobile) && isEdit()) showLegalMoves(null);
-    if (name == "Graph" && document.onmousemove == graphMouseMove) document.getElementById("graphWrapper").onmouseout();
-    if (name == "Static" && newState) repaintStatic();
+    if ((name == 'Edit' || _mobile) && isEdit()) showLegalMoves(null);
+    if (name == 'Graph' && document.onmousemove == graphMouseMove) document.getElementById('graphWrapper').onmouseout();
+    if (name == 'Static' && newState) repaintStatic();
 }
 
 function showHideMenu(state, e) {
@@ -5165,17 +5090,17 @@ function showHideMenu(state, e) {
     if (state) _menu = !_menu;
     else _menu = false;
 
-    let bElem = document.getElementById("buttonMenu");
-    let mElem = document.getElementById("menu");
-    bElem.className = _menu ? "on down" : "on";
-    mElem.style.top = (bElem.getBoundingClientRect().bottom - document.getElementById("container").getBoundingClientRect().top) * _bodyScale + "px";
-    mElem.style.left = (bElem.getBoundingClientRect().left - document.getElementById("container").getBoundingClientRect().left) * _bodyScale + "px";
-    mElem.style.right = "auto";
+    let bElem = document.getElementById('buttonMenu');
+    let mElem = document.getElementById('menu');
+    bElem.className = _menu ? 'on down' : 'on';
+    mElem.style.top = (bElem.getBoundingClientRect().bottom - document.getElementById('container').getBoundingClientRect().top) * _bodyScale + 'px';
+    mElem.style.left = (bElem.getBoundingClientRect().left - document.getElementById('container').getBoundingClientRect().left) * _bodyScale + 'px';
+    mElem.style.right = 'auto';
     if (_mobile) {
-        mElem.style.left = "auto";
-        mElem.style.right = (-bElem.getBoundingClientRect().right + document.getElementById("container").getBoundingClientRect().right - 1) * _bodyScale + "px";
+        mElem.style.left = 'auto';
+        mElem.style.right = (-bElem.getBoundingClientRect().right + document.getElementById('container').getBoundingClientRect().right - 1) * _bodyScale + 'px';
     }
-    mElem.style.display = _menu ? "" : "none";
+    mElem.style.display = _menu ? '' : 'none';
     if (_menu) reloadMenu();
 }
 
@@ -5183,40 +5108,39 @@ function setBoardColor(c) {
     let count = 6;
     if (c < 0) c = count - 1;
     if (c >= count) c = 0;
-    document.getElementById("cbTable").className = "c" + c;
-    document.getElementById("boxBoard").className = "c" + c;
-    document.getElementById("chessboard1").className = "cb c" + c;
-    let elem = document.getElementById("icolor");
-    if (elem != null) elem.className = "c" + c;
+    document.getElementById('cbTable').className = 'c' + c;
+    document.getElementById('boxBoard').className = 'c' + c;
+    document.getElementById('chessboard1').className = 'cb c' + c;
+    let elem = document.getElementById('icolor');
+    if (elem != null) elem.className = 'c' + c;
     _color = c;
 }
 
 function setEngineValue(elem) {
-    setElemText(elem, _engine != null && _engine.ready ? _engine.depth : "0");
+    setElemText(elem, _engine != null && _engine.ready ? _engine.depth : '0');
     if (_engine != null && _engine.ready && _play != null) {
         let table = [0, 1000, 1100, 1200, 1300, 1450, 1600, 1750, 1900, 2050, 2150, 2250, 2350, 2450, 2550, 2650, 2700, 2800, 2900];
-        elem.title = _engine.depth == 0 ? "Random play" : _engine.depth >= table.length ? "ELO: 3000+" : "ELO: " + table[_engine.depth];
-    } else elem.removeAttribute("title");
+        elem.title = _engine.depth == 0 ? 'Random play' : _engine.depth >= table.length ? 'ELO: 3000+' : 'ELO: ' + table[_engine.depth];
+    } else elem.removeAttribute('title');
 }
 
 function reloadMenu() {
-
-    let parent = document.getElementById("menu");
+    let parent = document.getElementById('menu');
     while (parent.firstChild) parent.removeChild(parent.firstChild);
     let addMenuLine = function() {
         let div = document.createElement('div');
-        div.className = "menuLine";
+        div.className = 'menuLine';
         parent.appendChild(div);
     }
     let addMenuItem = function(className, text, key, enabled, func) {
         let div = document.createElement('div');
-        div.className = "menuItem " + className;
-        if (!enabled) div.className += " disabled";
+        div.className = 'menuItem ' + className;
+        if (!enabled) div.className += ' disabled';
         let span1 = document.createElement('span');
         setElemText(span1, text);
         div.appendChild(span1);
         let span2 = document.createElement('span');
-        span2.className = "key";
+        span2.className = 'key';
         if (key != null) setElemText(span2, key);
         div.appendChild(span2);
         if (enabled) div.onclick = func;
@@ -5224,34 +5148,34 @@ function reloadMenu() {
     }
     let addMenuItemEngine = function(className, text) {
         let div = document.createElement('div');
-        div.className = "menuItem " + className;
+        div.className = 'menuItem ' + className;
         let span1 = document.createElement('span');
         setElemText(span1, text);
         div.appendChild(span1);
         let span2 = document.createElement('span');
-        span2.id = "buttonEnginePlus";
+        span2.id = 'buttonEnginePlus';
         span2.onclick = function() {
-            if (_engine != null && _engine.ready) command("depth " + Math.min(max_depth, _engine.depth + 1));
+            if (_engine != null && _engine.ready) command('depth ' + Math.min(MAX_DEPTH, _engine.depth + 1));
             showBoard(false, true);
-            setEngineValue(document.getElementById("buttonEngineValue"));
+            setEngineValue(document.getElementById('buttonEngineValue'));
         }
         div.appendChild(span2);
         let span3 = document.createElement('span');
-        span3.id = "buttonEngineValue";
+        span3.id = 'buttonEngineValue';
         span3.onclick = function() {
-            if (_engine != null && _engine.ready) command("depth " + (_engine.depth != 0 ? "0" : "20"));
+            if (_engine != null && _engine.ready) command('depth ' + (_engine.depth != 0 ? '0' : '30'));
             showBoard(false, true);
-            setEngineValue(document.getElementById("buttonEngineValue"));
+            setEngineValue(document.getElementById('buttonEngineValue'));
         }
         setEngineValue(span3);
 
         div.appendChild(span3);
         let span4 = document.createElement('span');
-        span4.id = "buttonEngineMinus";
+        span4.id = 'buttonEngineMinus';
         span4.onclick = function() {
-            if (_engine != null && _engine.ready) command("depth " + Math.max(0, _engine.depth - 1));
+            if (_engine != null && _engine.ready) command('depth ' + Math.max(0, _engine.depth - 1));
             showBoard(false, true);
-            setEngineValue(document.getElementById("buttonEngineValue"));
+            setEngineValue(document.getElementById('buttonEngineValue'));
         }
         div.appendChild(span4);
         parent.appendChild(div);
@@ -5259,50 +5183,50 @@ function reloadMenu() {
 
     let addMenuItemColor = function(className, text) {
         let div = document.createElement('div');
-        div.className = "menuItem " + className;
+        div.className = 'menuItem ' + className;
         let span1 = document.createElement('span');
         setElemText(span1, text);
         div.appendChild(span1);
 
         let span2 = document.createElement('span');
-        span2.id = "buttonColorNext";
+        span2.id = 'buttonColorNext';
         span2.onclick = function() {
             setBoardColor(_color + 1);
         }
 
         div.appendChild(span2);
         let div1 = document.createElement('div');
-        div1.id = "icolor";
-        div1.className = "c" + _color;
+        div1.id = 'icolor';
+        div1.className = 'c' + _color;
         div1.onclick = function() {
             setBoardColor(0);
         };
         let div2, div3 = document.createElement('div');
         div2 = document.createElement('div');
-        div2.style.left = "0px";
-        div2.style.top = "0px";
-        div2.className = "l";
+        div2.style.left = '0px';
+        div2.style.top = '0px';
+        div2.className = 'l';
         div3.appendChild(div2);
         div2 = document.createElement('div');
-        div2.style.left = "0px";
-        div2.style.top = "5px";
-        div2.className = "d";
+        div2.style.left = '0px';
+        div2.style.top = '5px';
+        div2.className = 'd';
         div3.appendChild(div2);
         div2 = document.createElement('div');
-        div2.style.left = "5px";
-        div2.style.top = "0px";
-        div2.className = "d";
+        div2.style.left = '5px';
+        div2.style.top = '0px';
+        div2.className = 'd';
         div3.appendChild(div2);
         div2 = document.createElement('div');
-        div2.style.left = "5px";
-        div2.style.top = "5px";
-        div2.className = "l";
+        div2.style.left = '5px';
+        div2.style.top = '5px';
+        div2.className = 'l';
         div3.appendChild(div2);
         div1.appendChild(div3);
         div.appendChild(div1);
 
         let span4 = document.createElement('span');
-        span4.id = "buttonColorPrev";
+        span4.id = 'buttonColorPrev';
         span4.onclick = function() {
             setBoardColor(_color - 1);
         }
@@ -5311,69 +5235,72 @@ function reloadMenu() {
         parent.appendChild(div);
     }
 
-    addMenuItem("menuAnalysisMode", "Mode 1: Analyze Board", 1, _gameMode != 1, function(e) {
+    addMenuItem('menuAnalysisMode', 'Mode 1: Analyze Board', 1, _gameMode != 1, function(e) {
         menuAnalysisMode()
     });
-    addMenuItem("menuPlayEngine", "Mode 2: Player (White) vs. Engine (Black)", 2, _gameMode != 2, function(e) {
+    addMenuItem('menuPlayEngine', 'Mode 2: Player (White) vs. Engine (Black)', 2, _gameMode != 2, function(e) {
         menuPlayEngineWhite()
     });
-    addMenuItem("menuPlayEngine", "Mode 3: Engine (White) vs. Player (Black)", 3, _gameMode != 3, function(e) {
+    addMenuItem('menuPlayEngine', 'Mode 3: Engine (White) vs. Player (Black)', 3, _gameMode != 3, function(e) {
         menuPlayEngineBlack()
     });
-    addMenuItem("menuTwoPlayerMode", "Mode 4: Player vs. Player", 4, _gameMode != 4, function(e) {
+    addMenuItem('menuTwoPlayerMode', 'Mode 4: Player vs. Player', 4, _gameMode != 4, function(e) {
         menuTwoPlayerMode()
     });
     addMenuLine();
-    addMenuItemEngine("menuEngine", _play != null ? "Engine level" : "Engine depth");
+    addMenuItemEngine('menuEngine', _play != null ? 'Engine level' : 'Engine depth');
     addMenuLine();
-    addMenuItem("menuPromote", "Pawn Promotion: Queen", "P", true, function() {
+    addMenuItem('menuPromote', 'Pawn Promotion: Queen', 'P', true, function() {
         togglePromotionPiece();
     });
     addMenuLine();
-    addMenuItem("menuKeep", "Keep Changes", "K", document.getElementById("buttonRevert").className == "on", function() {
-        command("keep");
+    addMenuItem('menuKeep', 'Keep Changes', 'K', document.getElementById('buttonRevert').className == 'on', function() {
+        command('keep');
         showHideMenu(false);
     });
-    addMenuItem("menuRevert", "Revert Changes", "ESC", document.getElementById("buttonRevert").className == "on", function() {
-        command("revert");
-        showHideMenu(false);
-    });
-    addMenuLine();
-    addMenuItem("menuFlip", "Flip Board", "F", true, function() {
-        command("flip");
-        showHideMenu(false);
-    });
-    addMenuItem("menuStm", "Change Side To Move", "T", true, function() {
-        command("sidetomove");
+    addMenuItem('menuRevert', 'Revert Changes', 'ESC', document.getElementById('buttonRevert').className == 'on', function() {
+        command('revert');
         showHideMenu(false);
     });
     addMenuLine();
-    addMenuItem("menuStart", "Go To First Move", "Home", document.getElementById("buttonBack").className == "on", function() {
+    addMenuItem('menuFlip', 'Flip Board', 'F', true, function() {
+        command('flip');
+        showHideMenu(false);
+    });
+    addMenuItem('menuStm', 'Change Side To Move', 'T', true, function() {
+        command('sidetomove');
+        showHideMenu(false);
+    });
+    addMenuLine();
+    addMenuItem('menuStart', 'Go To First Move', 'Home', document.getElementById('buttonBack').className == 'on', function() {
         historyMove(-1, null, true);
         showHideMenu(false);
     });
-    addMenuItem("menuEnd", "Go To Last Move", "End", document.getElementById("buttonForward").className == "on", function() {
+    addMenuItem('menuEnd', 'Go To Last Move', 'End', document.getElementById('buttonForward').className == 'on', function() {
         historyMove(+1, null, true);
         showHideMenu(false);
     });
-    addMenuItem("menuReset", "Reset Game", "0", true, function() {
-        command("reset");
+    addMenuItem('menuReset', 'Reset Game', '0', true, function() {
+        command('reset');
         showHideMenu(false);
     });
     addMenuLine();
-    addMenuItemColor("menuColor", "Chessboard Theme");
-    addMenuItem("menuWindow", "Open Board In New Window", null, true, function() {
-        command("window");
+    addMenuItemColor('menuColor', 'Chessboard Theme');
+    addMenuItem('menuWindow', 'Open Board In New Window', 'N', true, function() {
+        command('window');
         showHideMenu(false);
     });
 }
 
+// ============================
 // Menu Functions
+// ============================
 
 function menuAnalysisMode() {
     _gameMode = 1;
     _play = null;
     _engine.kill = false;
+    _engine.send('setoption name Skill Level value 20');
     showBoard(false);
     showHideMenu(false);
     historySave();
@@ -5408,50 +5335,54 @@ function menuTwoPlayerMode() {
     historySave();
 }
 
-// URL paramenters
+// ============================
+// URL Parameters
+// ============================
 
 function getParameterByName(name, url) {
     if (!url) url = window.location.href;
-    name = name.replace(/[\[\]]/g, "\\$&");
-    let regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+    name = name.replace(/[\[\]]/g, '\\$&');
+    let regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
         results = regex.exec(url);
-    if (!results || !results[2]) return "";
-    return decodeURIComponent(results[2].replace(/\+/g, " "));
+    if (!results || !results[2]) return '';
+    return decodeURIComponent(results[2].replace(/\+/g, ' '));
 }
 
-// Initialization
+// ============================
+// Setup Functions
+// ============================
 
 function setupBoxes() {
-    let elems = [document.getElementById("colLeft"), document.getElementById("colRight")];
+    let elems = [document.getElementById('colLeft'), document.getElementById('colRight')];
     for (let j = 0; j < elems.length; j++)
         for (let i = 0; i < elems[j].children.length; i++) {
             let div = elems[j].children[i];
             if (div.tagName != 'DIV') continue;
-            if (div.className != "box") continue;
+            if (div.className != 'box') continue;
             if (!_mobile) {
                 setupDragElement(div);
                 let divCloseIcon = document.createElement('div');
-                divCloseIcon.className = "closeIcon";
+                divCloseIcon.className = 'closeIcon';
                 divCloseIcon.onclick = function() {
                     let boxElem = this.parentElement;
                     showHideWindow(boxElem.id.substring(1));
                 }
                 div.appendChild(divCloseIcon);
             }
-            if (!_mobile || div.id != "wChessboard") {
+            if (!_mobile || div.id != 'wChessboard') {
                 let divBoxIcon = document.createElement('div');
-                divBoxIcon.className = "boxIcon icon" + div.id.substring(1);
+                divBoxIcon.className = 'boxIcon icon' + div.id.substring(1);
                 div.appendChild(divBoxIcon);
             }
             let wbIcon = document.createElement('div');
-            wbIcon.id = "wb" + div.id.substring(1);
-            wbIcon.className = "wbButton icon" + div.id.substring(1);
-            if (div.style.display != "none") wbIcon.className += " selected";
+            wbIcon.id = 'wb' + div.id.substring(1);
+            wbIcon.className = 'wbButton icon' + div.id.substring(1);
+            if (div.style.display != 'none') wbIcon.className += ' selected';
 
             wbIcon.onclick = function() {
                 showHideWindow(this.id.substring(2));
             }
-            document.getElementById("wb").appendChild(wbIcon);
+            document.getElementById('wb').appendChild(wbIcon);
         }
 }
 
@@ -5461,26 +5392,26 @@ function setupDragElement(elmnt) {
         pos3 = 0,
         pos4 = 0;
     oldDisplay = elmnt.style.display;
-    elmnt.style.display = "";
-    elmnt.originalWidth = elmnt.style.width = (elmnt.getBoundingClientRect().width - 2) + "px";
-    elmnt.originalHeight = elmnt.style.height = (elmnt.getBoundingClientRect().height - 2) + "px";
+    elmnt.style.display = '';
+    elmnt.originalWidth = elmnt.style.width = (elmnt.getBoundingClientRect().width - 2) + 'px';
+    elmnt.originalHeight = elmnt.style.height = (elmnt.getBoundingClientRect().height - 2) + 'px';
     elmnt.style.display = oldDisplay;
     elmnt.firstElementChild.onmousedown = startBoxDrag;
     elmnt.firstElementChild.ondblclick = function() {
         elmnt.style.width = elmnt.originalWidth;
         elmnt.style.height = elmnt.originalHeight;
-        elmnt.style.left = "";
-        elmnt.style.top = "";
-        elmnt.style.position = "";
-        elmnt.style.zIndex = "4";
+        elmnt.style.left = '';
+        elmnt.style.top = '';
+        elmnt.style.position = '';
+        elmnt.style.zIndex = '4';
     };
     setupTouchEvents(elmnt.firstElementChild, startBoxDrag, moveBoxDrag, endBoxDrag);
 
     let resizeSquare = document.createElement('div');
-    resizeSquare.style.position = "absolute";
-    resizeSquare.style.bottom = resizeSquare.style.right = "0";
-    resizeSquare.style.width = resizeSquare.style.height = "12px";
-    resizeSquare.style.cursor = "nw-resize";
+    resizeSquare.style.position = 'absolute';
+    resizeSquare.style.bottom = resizeSquare.style.right = '0';
+    resizeSquare.style.width = resizeSquare.style.height = '12px';
+    resizeSquare.style.cursor = 'nw-resize';
     resizeSquare.onmousedown = startBoxResize;
     resizeSquare.ondblclick = function() {
         elmnt.style.width = elmnt.originalWidth;
@@ -5501,31 +5432,31 @@ function setupDragElement(elmnt) {
     function moveBoxDrag(e) {
         e = e || window.event;
         if (e && e.preventDefault) e.preventDefault();
-        if (elmnt.style.position != "absolute") {
-            elmnt.style.width = (elmnt.getBoundingClientRect().width - 2) + "px";
-            elmnt.style.height = (elmnt.getBoundingClientRect().height - 2) + "px";
-            elmnt.style.left = (elmnt.getBoundingClientRect().left - document.getElementById("container").getBoundingClientRect().left) + "px";
-            elmnt.style.top = (elmnt.getBoundingClientRect().top - document.getElementById("container").getBoundingClientRect().top - 8) + "px";
-            elmnt.style.position = "absolute";
+        if (elmnt.style.position != 'absolute') {
+            elmnt.style.width = (elmnt.getBoundingClientRect().width - 2) + 'px';
+            elmnt.style.height = (elmnt.getBoundingClientRect().height - 2) + 'px';
+            elmnt.style.left = (elmnt.getBoundingClientRect().left - document.getElementById('container').getBoundingClientRect().left) + 'px';
+            elmnt.style.top = (elmnt.getBoundingClientRect().top - document.getElementById('container').getBoundingClientRect().top - 8) + 'px';
+            elmnt.style.position = 'absolute';
         }
 
         pos1 = pos3 - e.clientX;
         pos2 = pos4 - e.clientY;
         pos3 = e.clientX;
         pos4 = e.clientY;
-        let x0 = parseFloat(elmnt.style.left.replace("px", "")) || 0;
-        let y0 = parseFloat(elmnt.style.top.replace("px", "")) || 0;
-        elmnt.style.left = (x0 - pos1) + "px";
-        elmnt.style.top = (y0 - pos2) + "px";
-        elmnt.style.zIndex = "5";
-        elmnt.style.cursor = "move";
+        let x0 = parseFloat(elmnt.style.left.replace('px', '')) || 0;
+        let y0 = parseFloat(elmnt.style.top.replace('px', '')) || 0;
+        elmnt.style.left = (x0 - pos1) + 'px';
+        elmnt.style.top = (y0 - pos2) + 'px';
+        elmnt.style.zIndex = '5';
+        elmnt.style.cursor = 'move';
     }
 
     function endBoxDrag() {
         document.onmouseup = onMouseUp;
         document.onmousemove = defaultMouseMove;
-        elmnt.style.zIndex = "4";
-        elmnt.style.cursor = "";
+        elmnt.style.zIndex = '4';
+        elmnt.style.cursor = '';
     }
 
     function startBoxResize(e) {
@@ -5533,8 +5464,8 @@ function setupDragElement(elmnt) {
         if (e && e.preventDefault) e.preventDefault();
         pos3 = e.clientX;
         pos4 = e.clientY;
-        elmnt.style.width = (elmnt.getBoundingClientRect().width - 2) + "px";
-        elmnt.style.height = (elmnt.getBoundingClientRect().height - 2) + "px";
+        elmnt.style.width = (elmnt.getBoundingClientRect().width - 2) + 'px';
+        elmnt.style.height = (elmnt.getBoundingClientRect().height - 2) + 'px';
         document.onmouseup = endBoxDrag;
         document.onmousemove = moveBoxResize;
     }
@@ -5546,17 +5477,133 @@ function setupDragElement(elmnt) {
         pos2 = pos4 - e.clientY;
         pos3 = e.clientX;
         pos4 = e.clientY;
-        let x0 = parseFloat(elmnt.style.width.replace("px", "")) || 0;
-        let y0 = parseFloat(elmnt.style.height.replace("px", "")) || 0;
-        elmnt.style.width = (x0 - pos1) + "px";
-        elmnt.style.height = (y0 - pos2) + "px";
-        elmnt.style.zIndex = "5";
-        elmnt.style.cursor = "nw-resize";
+        let x0 = parseFloat(elmnt.style.width.replace('px', '')) || 0;
+        let y0 = parseFloat(elmnt.style.height.replace('px', '')) || 0;
+        elmnt.style.width = (x0 - pos1) + 'px';
+        elmnt.style.height = (y0 - pos2) + 'px';
+        elmnt.style.zIndex = '5';
+        elmnt.style.cursor = 'nw-resize';
     }
 }
 
-let _staticEvalListCache = [],
-    _staticEvalListCacheSize = 20;
+function setupTouchEvents(elem, funcStart, funcMove, funcEnd) {
+    let onTouch = function(e) {
+        if (e.cancelable) e.preventDefault();
+        if (e.touches.length > 1 || e.type == 'touchend' && e.touches.length > 0) return;
+        switch (e.type) {
+            case 'touchstart':
+                funcStart(e.changedTouches[0]);
+                break;
+            case 'touchmove':
+                funcMove(e.changedTouches[0]);
+                break;
+            case 'touchend':
+                funcEnd(e.changedTouches[0]);
+                break;
+        }
+    }
+    elem.addEventListener('touchstart', onTouch, false);
+    elem.addEventListener('touchend', onTouch, false);
+    elem.addEventListener('touchcancel', onTouch, false);
+    elem.addEventListener('touchmove', onTouch, false);
+}
+
+function showBoard(noeval, refreshhistory, keepcontent) {
+    let pos = parseFEN(getCurFEN());
+    let dragElem = document.getElementById('dragPiece');
+    while (dragElem.firstChild) dragElem.removeChild(dragElem.firstChild);
+    let elem = document.getElementById('chessboard1');
+    if (keepcontent && elem.children.length != 64) keepcontent = false;
+    if (!keepcontent)
+        while (elem.firstChild) elem.removeChild(elem.firstChild);
+    let index = 0;
+    for (let x = 0; x < 8; x++)
+        for (let y = 0; y < 8; y++) {
+            let div = keepcontent ? elem.children[index] : document.createElement('div');
+            index++;
+            div.style.left = (_flip ? 7 - x : x) * 40 + 'px';
+            div.style.top = (_flip ? 7 - y : y) * 40 + 'px';
+            div.className = ((x + y) % 2 ? 'd' : 'l');
+            div.className += ' ' + pos.b[x][y];
+            if (pos.b[x][y] == 'K' && isWhiteCheck(pos) ||
+                pos.b[x][y] == 'k' && isWhiteCheck(colorflip(pos))) div.className += ' h2';
+            if (!keepcontent) elem.appendChild(div);
+        }
+    if (_clickFromElem != null && _clickFrom != null && _clickFrom.x >= 0 && _clickFrom.y >= 0) _clickFromElem = null;
+    document.getElementById('searchInput').value = getCurFEN();
+
+    if (!noeval) {
+        refreshMoves();
+        if (refreshhistory)
+            for (let i = 0; i < _history.length; i++)
+                if (_history[i].length > 1 && _history[i][1] != null) _history[i][1].depth = -1;
+        scrollReset('Moves');
+        scrollReset('Opening');
+        scrollReset('Static');
+        if (_engine && !_engine.kill) evalAll();
+
+    }
+    document.getElementById('buttonStm').className = pos.w ? 'white' : 'black';
+
+    setArrow(true);
+    repaintLastMoveArrow();
+    showArrow3(null);
+
+    if (_menu) reloadMenu();
+    repaintGraph();
+    repaintSidebars();
+    updateInfo();
+    repaintStatic();
+    updateTooltip('');
+}
+
+function scrollReset(winId) {
+    let windowElem = document.getElementById('w' + winId);
+    let scrollElem = document.getElementById(winId.toLowerCase());
+    let oldDisplay = windowElem.style.display;
+    windowElem.style.display = '';
+    scrollElem.scrollTop = 0;
+    windowElem.style.display = oldDisplay;
+}
+
+
+function findMoveIndexBySan(san) {
+    for (let i = 0; i < _curmoves.length; i++)
+        if (san == _curmoves[i].san) return i;
+    return null;
+}
+
+
+function defaultMouseMove(event) {
+    if (_tooltipState) updateTooltipPos(event);
+}
+
+function graphMouseMove(event) {
+    repaintGraph(event);
+    if (_tooltipState) updateTooltipPos(event);
+}
+
+function graphMouseDown(event) {
+    if (_lastMouseDataPos != null) {
+        let i = _lastMouseDataPos;
+        if (i < _history.length && i >= 0 && i != _historyindex) {
+            historyMove(i - _historyindex);
+        }
+    }
+}
+
+function getCircleClassName(i) {
+    let cl = 'circle';
+    if (_curmoves[i].eval != null && _curmoves[0].eval != null) {
+        let etop = Math.max(-6, Math.min(6, _curmoves[0].eval / 100));
+        let ecur = Math.max(-6, Math.min(6, _curmoves[i].eval / 100));
+        let lost = Math.abs(etop - ecur);
+        if (lost <= 1.0) cl += ' ok';
+        else if (lost <= 3.0) cl += ' mi';
+        else cl += ' bl';
+    }
+    return cl;
+}
 
 function getStaticEvalList(pos) {
     let posfen = generateFEN(pos);
@@ -5569,51 +5616,51 @@ function getStaticEvalList(pos) {
         endindex = null,
         maincode = null;
     for (let i = 0; i < data.length; i++) {
-        if (data[i].name == "Middle game evaluation") midindex = i;
-        if (data[i].name == "End game evaluation") endindex = i;
-        if (data[i].name == "Main evaluation") maincode = data[i].code;
+        if (data[i].name == 'Middle game evaluation') midindex = i;
+        if (data[i].name == 'End game evaluation') endindex = i;
+        if (data[i].name == 'Main evaluation') maincode = data[i].code;
     }
     if (midindex == null || endindex == null || maincode == null) return;
     let zero = function() {
         return 0;
     };
     for (let i = 0; i < data.length; i++) {
-        let n = data[i].name.toLowerCase().replace(/ /g, "_");
-        while (i != midindex && i != endindex && maincode.indexOf("$" + n + "(") >= 0) {
+        let n = data[i].name.toLowerCase().replace(/ /g, '_');
+        while (i != midindex && i != endindex && maincode.indexOf('$' + n + '(') >= 0) {
             try {
-                maincode = maincode.replace("$" + n + "(", "(function(){return " + eval("$" + n + "(pos)") + ";})(");
+                maincode = maincode.replace('$' + n + '(', '(function(){return ' + eval('$' + n + '(pos)') + ';})(');
             } catch (e) {
                 alert(e.message);
                 return [];
             }
         }
-        if (data[midindex].code.indexOf("$" + n + "(") < 0 &&
-            data[endindex].code.indexOf("$" + n + "(") < 0) continue;
+        if (data[midindex].code.indexOf('$' + n + '(') < 0 &&
+            data[endindex].code.indexOf('$' + n + '(') < 0) continue;
         let code = data[i].code,
             list = [];
         for (let j = 0; j < data.length; j++) {
             if (!data[j].graph || data[j].group != data[i].group || i == j) continue;
-            let n2 = data[j].name.toLowerCase().replace(/ /g, "_");
-            code = code.replace("$" + n2 + "(", "$g-" + n2 + "(").replace("$" + n2 + "(", "$g-" + n2 + "(");
+            let n2 = data[j].name.toLowerCase().replace(/ /g, '_');
+            code = code.replace('$' + n2 + '(', '$g-' + n2 + '(').replace('$' + n2 + '(', '$g-' + n2 + '(');
             list.push(n2);
         }
         if (data[i].graph) list.push(n);
         for (let j = 0; j < list.length; j++) {
             let n2 = list[j];
-            if (code.indexOf("$g-" + n2 + "(") < 0 && !data[i].graph) continue;
+            if (code.indexOf('$g-' + n2 + '(') < 0 && !data[i].graph) continue;
             let mw = 0,
                 mb = 0,
                 ew = 0,
                 eb = 0,
                 func = null;
             try {
-                eval("func = " + code.replace("$g-" + n2 + "(", "$" + n2 + "(")
-                    .replace("$g-" + n2 + "(", "$" + n2 + "(")
-                    .replace(/\$g\-[a-z_]+\(/g, "zero(") + ";");
-                if (data[midindex].code.indexOf("$" + n + "(pos") >= 0) mw = func(pos);
-                if (data[midindex].code.indexOf("$" + n + "(colorflip(pos)") >= 0) mb = func(colorflip(pos));
-                if (data[endindex].code.indexOf("$" + n + "(pos") >= 0) ew = func(pos);
-                if (data[endindex].code.indexOf("$" + n + "(colorflip(pos)") >= 0) eb = func(colorflip(pos));
+                eval('func = ' + code.replace('$g-' + n2 + '(', '$' + n2 + '(')
+                    .replace('$g-' + n2 + '(', '$' + n2 + '(')
+                    .replace(/\$g\-[a-z_]+\(/g, 'zero(') + ';');
+                if (data[midindex].code.indexOf('$' + n + '(pos') >= 0) mw = func(pos);
+                if (data[midindex].code.indexOf('$' + n + '(colorflip(pos)') >= 0) mb = func(colorflip(pos));
+                if (data[endindex].code.indexOf('$' + n + '(pos') >= 0) ew = func(pos);
+                if (data[endindex].code.indexOf('$' + n + '(colorflip(pos)') >= 0) eb = func(colorflip(pos));
             } catch (e) {
                 alert(e.message);
                 return [];
@@ -5640,16 +5687,16 @@ function getStaticEvalList(pos) {
     grouplist.sort(function(a, b) {
         return (a.group > b.group) ? 1 : ((b.group > a.group) ? -1 : 0);
     });
-    maincode = maincode.replace("function $$(pos)", "function $$(PMG,PEG)")
-        .replace("$middle_game_evaluation(pos)", "PMG")
-        .replace("$end_game_evaluation(pos)", "PEG")
-    let mainfunc = eval("(" + maincode + ")");
+    maincode = maincode.replace('function $$(pos)', 'function $$(PMG,PEG)')
+        .replace('$middle_game_evaluation(pos)', 'PMG')
+        .replace('$end_game_evaluation(pos)', 'PEG')
+    let mainfunc = eval('(' + maincode + ')');
     for (let i = 0; i < grouplist.length; i++) {
         grouplist[i].item.push(mainfunc(grouplist[i].item[0], grouplist[i].item[1]) - mainfunc(0, 0));
     }
     grouplist.push({
-        group: "Tempo",
-        elem: "tempo",
+        group: 'Tempo',
+        elem: 'tempo',
         item: [mainfunc(0, 0), mainfunc(0, 0), mainfunc(0, 0)],
         hidden: false,
         mc: pos.m[1]
@@ -5660,99 +5707,102 @@ function getStaticEvalList(pos) {
     return grouplist;
 }
 
-function setupTouchEvents(elem, funcStart, funcMove, funcEnd) {
-    let onTouch = function(e) {
-        if (e.cancelable) e.preventDefault();
-        if (e.touches.length > 1 || e.type == "touchend" && e.touches.length > 0) return;
-        switch (e.type) {
-            case "touchstart":
-                funcStart(e.changedTouches[0]);
-                break;
-            case "touchmove":
-                funcMove(e.changedTouches[0]);
-                break;
-            case "touchend":
-                funcEnd(e.changedTouches[0]);
-                break;
-        }
+function checkSizes() {
+    if (_mobile && (document.activeElement == null || document.activeElement.tagName != 'INPUT')) setupMobileLayout(false);
+
+    // Graph
+    let cw = document.getElementById('graphWrapper').clientWidth;
+    let ch = document.getElementById('graphWrapper').clientHeight;
+    let canvas = document.getElementById('graph');
+    if (canvas.width != cw || canvas.height != ch) repaintGraph();
+
+    // Chessboard
+    let targetScale = Math.round(getCurScale() * 1000) / 1000;
+    let targetMargin = ((document.getElementById('wChessboard').clientWidth - (document.getElementById('boxBoard').clientWidth + 4) * targetScale) / 2) - 0.5;
+    let oldScale = parseFloat(document.getElementById('boxBoard').style.transform.replace('scale(', '').replace(')', ''));
+    let oldMargin = parseFloat(document.getElementById('boxBoardOuter').style.marginLeft.replace('px', ''));
+    if (Math.round(oldScale * 1000) != Math.round(targetScale * 1000) ||
+        Math.round(oldMargin) != Math.round(targetMargin)) {
+        document.getElementById('boxBoard').style.transform = 'scale(' + targetScale + ')';
+        document.getElementById('boxBoardOuter').style.marginLeft =
+            document.getElementById('boxBoardOuter').style.marginRight = targetMargin + 'px';
     }
-    elem.addEventListener("touchstart", onTouch, false);
-    elem.addEventListener("touchend", onTouch, false);
-    elem.addEventListener("touchcancel", onTouch, false);
-    elem.addEventListener("touchmove", onTouch, false);
+
+    if (_wantUpdateInfo) {
+        _wantUpdateInfo = false;
+        updateInfo();
+    }
+
 }
 
-window.onload = function() {
-    document.onmousedown = onMouseDown;
-    document.onmouseup = onMouseUp;
-    document.onmousemove = defaultMouseMove;
-    document.onkeydown = onKeyDown;
-    document.getElementById("chessboard1").oncontextmenu =
-        document.getElementById("chessboard1").parentNode.oncontextmenu =
-        document.getElementById("editWrapper").oncontextmenu = function() {
-            return false;
-        };
-    document.getElementById("chessboard1").parentNode.onwheel =
-        document.getElementById("editWrapper").onwheel = onWheel;
-    document.getElementById("buttonStm").onclick = function() {
-        command("sidetomove");
-    };
-    document.getElementById("buttonFlip").onclick = function() {
-        doFlip();
-    };
-    document.getElementById("buttonBack").onclick = function(event) {
-        historyMove(-1, event);
-    };
-    document.getElementById("buttonForward").onclick = function(event) {
-        historyMove(+1, event);
-    };
-    document.getElementById("buttonMenu").onclick = function(event) {
-        showHideMenu(true, event);
-    };
-    document.getElementById("buttonStaticSortByValue").onclick = function(event) {
-        _staticSortByChange = false;
-        repaintStatic();
-    };
-    document.getElementById("buttonStaticSortByChange").onclick = function(event) {
-        _staticSortByChange = true;
-        repaintStatic();
-    };
-    document.getElementById("buttonMovesPv").onclick = function(event) {
-        _movesPv = !_movesPv;
-        showEvals();
-    };
-    document.getElementById("graphWrapper").onmouseover = function() {
-        if (document.onmousemove == defaultMouseMove) document.onmousemove = graphMouseMove;
-    };
-    document.getElementById("graphWrapper").onmousedown = function(event) {
-        if (document.onmousemove == defaultMouseMove) {
-            document.onmousemove = graphMouseMove;
-            graphMouseMove(event);
-            graphMouseDown(event);
-        }
-    };
-    document.getElementById("graphWrapper").onmouseout = function() {
-        if (document.onmousemove == graphMouseMove) document.onmousemove = defaultMouseMove;
-        repaintGraph();
-        updateTooltip("");
-    };
-    document.getElementById("graphWrapper").onwheel = function(event) {
-        onWheel(event);
-        showGraphTooltip(_historyindex, event);
-    };
+function setupMobileLayout(init) {
+    if (init) {
+        document.getElementById('colLeft').style.width = '300px';
+        document.getElementById('colRight').style.width = '300px';
+        document.getElementById('wChessboard').style.margin = '8px 0 0 0';
+        document.getElementById('wChessboard').style.resize = 'none';
+        document.getElementById('wGraph').style.display = 'none';
+        document.getElementById('wHistory').style.display = 'none';
+        document.getElementById('wMoves').style.height = '121px';
+        document.getElementById('logo').style.height = '30px';
+        document.getElementById('logo').style.padding = '0';
+        document.getElementById('logo').style.transform = 'scale(0.5)';
+        document.getElementById('logo').style.transformOrigin = 'top left';
+        document.getElementById('logotextmain').style.top = '15px';
+        document.getElementById('logotextmain').style.left = '75px';
+        document.getElementById('logotextsub').style.top = '46px';
+        document.getElementById('logotextsub').style.left = '75px';
+        document.getElementById('toolbar').style.transform = 'scale(2.3)';
+        document.getElementById('toolbar').style.transformOrigin = 'top left';
+        document.getElementById('toolbar').style.top = '-2px';
+        document.getElementById('toolbar').style.left = '345px';
+        document.getElementById('toolbar').style.width = '112px';
+        document.getElementById('wb').style.transform = 'scale(2)';
+        document.getElementById('positionInfo').style.display = 'none';
+        document.getElementById('searchWrapper').style.top = '0';
+        document.getElementById('searchWrapper').style.height = '24px';
+        document.getElementById('searchInput').style.padding = '4px 4px 3px 4px';
+        document.getElementById('boxBoardOuter').style.marginTop = '31px';
+        document.getElementById('buttonGo').style.padding = '3px 4px 5px 4px';
+        document.getElementById('buttonGo').style.top = '0';
+    }
+    let winWidth = Math.min(window.innerWidth, window.outerWidth);
+    let winHeight = Math.min(window.innerHeight, window.outerHeight);
+    let horiz = winWidth > winHeight;
+    let width = horiz ? 660 : 320;
+    let scale = winWidth / width;
+    _bodyScale = 1 / scale;
+    let height = horiz ? Math.max(280, Math.min(504, winHeight / scale)) : Math.max(490, winHeight / scale);
+    document.body.style.display = 'flex';
+    document.body.style.transformOrigin = 'top left';
+    document.body.style.transform = 'scale(' + (scale) + ')';
+    document.body.style.width = width + 'px';
+    document.body.style.height = height + 'px';
+    document.body.style.overflowX = 'hidden';
+    document.getElementById('container').style.width = width + 'px';
+    document.getElementById('container').style.height = height + 'px';
+    document.getElementById('logo').style.position = horiz ? 'absolute' : '';
+    document.getElementById('logo').style.top = horiz ? '0' : '';
+    document.getElementById('logo').style.left = horiz ? '355px' : '';
+    document.getElementById('wChessboard').style.width = horiz ? '310px' : '';
+    document.getElementById('wChessboard').style.height = (horiz ? height - 16 : 300) + 'px';
+    document.getElementById('wb').style.top = horiz ? '0' : '329px';
+    document.getElementById('wb').style.right = horiz ? '324px' : '162px';
+    document.getElementById('wb').style.width = horiz ? '21px' : '';
+    document.getElementById('wb').style.height = horiz ? '120px' : '';
+    document.getElementById('colLeft').style.minWidth = horiz ? '300px' : '';
+    document.getElementById('colLeft').style.minHeight = horiz ? '1px' : '338px';
+    document.getElementById('colLeft').style.paddingTop = horiz ? '' : '7px';
+    document.getElementById('colLeft').style.marginLeft = horiz ? '5px' : '10px';
+    document.getElementById('colRight').style.marginLeft = horiz ? '45px' : '10px';
+    document.getElementById('colRight').style.marginTop = horiz ? '29px' : '';
 
-    document.getElementById("arrowWrapper1").style.top = document.getElementById("arrowWrapper2").style.top = document.getElementById("arrowWrapper3").style.top = document.getElementById('chessboard1').getBoundingClientRect().top - document.getElementById("boardWrapper").getBoundingClientRect().top + "px";
-    document.getElementById("arrowWrapper1").style.left = document.getElementById("arrowWrapper2").style.left = document.getElementById("arrowWrapper3").style.left = document.getElementById('chessboard1').getBoundingClientRect().left - document.getElementById("boardWrapper").getBoundingClientRect().left + "px";
-    document.getElementById("arrowWrapper1").style.width = document.getElementById("arrowWrapper2").style.width = document.getElementById("arrowWrapper3").style.width = document.getElementById("arrowWrapper1").style.height = document.getElementById("arrowWrapper2").style.height = document.getElementById("arrowWrapper3").style.height = (40 * 8) + "px";
-
-    if (_mobile) setupMobileLayout(true);
-    setupTouchEvents(document.getElementById("chessboard1"), onMouseDown, onMouseMove, onMouseUp);
-    setupTouchEvents(document.getElementById("editWrapper"), onMouseDown, onMouseMove, onMouseUp);
-    checkSizes();
-    window.setInterval(checkSizes, 500);
-    setupBoxes();
-    setupInput();
-    _engine = loadEngine();
-    showBoard();
-    for (let i = 0; i < 26; i++) command(getParameterByName(String.fromCharCode("a".charCodeAt(0) + i)));
+    let elems = document.getElementById('colRight');
+    for (let i = 0; i < elems.children.length; i++) {
+        let div = elems.children[i];
+        if (div.tagName != 'DIV' || div.className != 'box') continue;
+        div.style.height = (horiz ? 243 + height - 280 : 121 + height - 490) + 'px';
+        div.style.margin = '0';
+        div.style.resize = 'none';
+    }
 }
