@@ -65,6 +65,19 @@ function getCurFEN() {
     return getElemText(document.getElementById('fen'));
 }
 
+function togglePromotionPiece() {
+    let promotionItem = document.querySelector(".menuItem.menuPromote span:first-child");
+    let currentText = promotionItem.innerText;
+    let newText = currentText.includes("Queen") ? "Pawn Promotion: Knight" : "Pawn Promotion: Queen";
+    promotionItem.innerText = newText;
+    localStorage.setItem('promotionPiece', newText.includes("Queen") ? 'Q' : 'N');
+}
+
+function getPromotionPiece() {
+    return localStorage.getItem('promotionPiece') || 'Q';
+}
+
+
 // Opening Book
 let _open = [
     ["A00", "Amar/Paris Opening", "1.Nh3", 43, 0],
@@ -3509,7 +3522,7 @@ function doMove(pos, from, to, promotion) {
         }
     }
     if (pos.b[from.x][from.y] == 'P' && to.y == 0) {
-        r.b[to.x][to.y] = promotion != null ? promotion : 'Q';
+        r.b[to.x][to.y] = promotion != null ? promotion : getPromotionPiece();
     } else if (pos.b[from.x][from.y] == 'P' &&
         pos.e != null && to.x == pos.e[0] && to.y == pos.e[1] &&
         Math.abs(from.x - to.x) == 1) {
@@ -4347,6 +4360,12 @@ function onKeyDown(e) {
         case 'R':
             showBoard(false, true);
             break;
+        case 'P':
+            togglePromotionPiece();
+            break;
+        case 'K':
+            command("keep");
+            break;
         case 'Escape':
             command("revert");
             break;
@@ -4355,6 +4374,9 @@ function onKeyDown(e) {
             break;
         case 'T':
             command("sidetomove");
+            break;
+        case '0':
+            command("reset");
             break;
         case 'C':
             showHideWindow("Chessboard");
@@ -5304,39 +5326,43 @@ function reloadMenu() {
     addMenuLine();
     addMenuItemEngine("menuEngine", _play != null ? "Engine level" : "Engine depth");
     addMenuLine();
-    addMenuItem("menuKeep", "Keep changes", null, document.getElementById("buttonRevert").className == "on", function() {
+    addMenuItem("menuPromote", "Pawn Promotion: Queen", "P", true, function() {
+        togglePromotionPiece();
+    });
+    addMenuLine();
+    addMenuItem("menuKeep", "Keep Changes", "K", document.getElementById("buttonRevert").className == "on", function() {
         command("keep");
         showHideMenu(false);
     });
-    addMenuItem("menuRevert", "Revert changes", "ESC", document.getElementById("buttonRevert").className == "on", function() {
+    addMenuItem("menuRevert", "Revert Changes", "ESC", document.getElementById("buttonRevert").className == "on", function() {
         command("revert");
         showHideMenu(false);
     });
     addMenuLine();
-    addMenuItem("menuFlip", "Flip board", "F", true, function() {
+    addMenuItem("menuFlip", "Flip Board", "F", true, function() {
         command("flip");
         showHideMenu(false);
     });
-    addMenuItem("menuStm", "Change side to move", "T", true, function() {
+    addMenuItem("menuStm", "Change Side To Move", "T", true, function() {
         command("sidetomove");
         showHideMenu(false);
     });
     addMenuLine();
-    addMenuItem("menuStart", "Go to game start", "Home", document.getElementById("buttonBack").className == "on", function() {
+    addMenuItem("menuStart", "Go To First Move", "Home", document.getElementById("buttonBack").className == "on", function() {
         historyMove(-1, null, true);
         showHideMenu(false);
     });
-    addMenuItem("menuEnd", "Go to game end", "End", document.getElementById("buttonForward").className == "on", function() {
+    addMenuItem("menuEnd", "Go To Last Move", "End", document.getElementById("buttonForward").className == "on", function() {
         historyMove(+1, null, true);
         showHideMenu(false);
     });
-    addMenuItem("menuReset", "Reset game/position", null, true, function() {
+    addMenuItem("menuReset", "Reset Game", "0", true, function() {
         command("reset");
         showHideMenu(false);
     });
     addMenuLine();
-    addMenuItemColor("menuColor", "Chessboard color");
-    addMenuItem("menuWindow", "Open in new window...", null, true, function() {
+    addMenuItemColor("menuColor", "Chessboard Theme");
+    addMenuItem("menuWindow", "Open Board In New Window", null, true, function() {
         command("window");
         showHideMenu(false);
     });
