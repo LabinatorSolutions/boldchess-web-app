@@ -2,6 +2,9 @@
 // Global Cosntants
 // ============================
 
+// File Paths
+const NNUE_PATH = './engine/nn-5af11540bbfe.nnue';
+
 // Engine Depth Constants
 const MIN_DEPTH = 1;
 const MAX_DEPTH = 30;
@@ -9,6 +12,29 @@ const DEFAULT_DEPTH = 18;
 
 // Default Starting FEN
 const START = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+
+/* Opening Moves Randomization
+const RAND_OP = {
+    // Initial position
+    'startpos': ['e2e4', 'd2d4', 'c2c4', 'g1f3', 'b1c3', 'f2f4', 'e2e3', 'd2d3'],
+    // After 1. d4
+    'rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq d3 0 1': ['d7d5', 'g8f6', 'e7e6', 'c7c6', 'c7c5', 'g7g6', 'f7f5'],
+    // After 1. e4
+    'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1': ['e7e5', 'c7c5', 'e7e6', 'c7c6', 'd7d6', 'g8f6', 'g7g6'],
+    // After 1. c4
+    'rnbqkbnr/pppppppp/8/8/2P5/8/PP1PPPPP/RNBQKBNR b KQkq c3 0 1': ['e7e5', 'c7c5', 'g8f6', 'e7e6', 'c7c6', 'f7f5', 'd7d5'],
+    // After 1. Nf3
+    'rnbqkbnr/pppppppp/8/8/8/5N2/PPPPPPPP/RNBQKB1R b KQkq - 0 1': ['d7d5', 'g8f6', 'e7e6', 'c7c5', 'g7g6', 'f7f5', 'b7b6'],
+    // After 1. Nc3
+    'rnbqkbnr/pppppppp/8/8/8/2N5/PPPPPPPP/R1BQKBNR b KQkq - 0 1': ['d7d5', 'g8f6', 'e7e6', 'c7c5', 'd7d6', 'g7g6', 'b8c6'],
+    // After 1. f4
+    'rnbqkbnr/pppppppp/8/8/5P2/8/PPPPP1PP/RNBQKBNR b KQkq f3 0 1': ['d7d5', 'e7e5', 'g8f6', 'c7c5', 'g7g6', 'd7d6', 'f7f5'],
+    // After 1. d3
+    'rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq d3 0 1': ['d7d5', 'g8f6', 'e7e6', 'c7c5', 'd7d6', 'g7g6', 'b8c6'],
+    // After 1. e3
+    'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1': ['e7e5', 'd7d5', 'g8f6', 'c7c5', 'e7e6', 'c7c6', 'g7g6'],
+};
+*/
 
 // Opening Names
 const MAX_OPENING_NAMES = 512;
@@ -832,22 +858,18 @@ function command(text) {
     } else if (text.toLowerCase() == 'clear') {
         setCurFEN('8/8/8/8/8/8/8/8 w - - 0 0');
         showBoard();
-        historySave();
     } else if (text.toLowerCase() == 'colorflip') {
         setCurFEN(generateFEN(colorflip(parseFEN(getCurFEN()))));
         showBoard();
-        historySave();
     } else if (text.toLowerCase() == 'sidetomove') {
         setCurFEN(getCurFEN().replace(' w ', ' ! ').replace(' b ', ' w ').replace(' ! ', ' b '));
         showBoard();
-        historySave();
     } else if (text.toLowerCase().indexOf('depth ') == 0) {
         if (_engine != null && _engine.ready) {
             _engine.depth = Math.min(MAX_DEPTH, Math.max(0, parseInt(text.toLowerCase().replace('depth ', ''))));
             if (isNaN(_engine.depth)) _engine.depth = DEFAULT_DEPTH;
         }
         showBoard();
-        historySave();
     } else if (text.toLowerCase() == 'flip') {
         doFlip();
     } else if (text.toLowerCase() == 'window') {
@@ -1082,42 +1104,51 @@ function updateTooltipPos(e) {
 function updateTooltip(text, answerpv, movenumber, cl, e) {
     let state = text.length > 0;
     let tooltip = document.getElementById('tooltip');
-    while (tooltip.firstChild) tooltip.removeChild(tooltip.firstChild);
-    let span1 = document.createElement('span');
-    setElemText(span1, state ? text : '')
-    if (movenumber != null) {
-        let span2 = document.createElement('span');
-        span2.style.color = '#64c4db';
-        setElemText(span2, movenumber + ' ')
-        tooltip.appendChild(span2);
-    }
-    if (cl != null && cl != 'circle') {
-        let span3 = document.createElement('span');
-        span3.className = cl;
-        tooltip.appendChild(span3);
-        span1.style.paddingLeft = '12px';
-    }
-    tooltip.appendChild(span1);
 
-    _tooltipState = state;
-    tooltip.style.display = state ? '' : 'none';
-    if (e != null) updateTooltipPos(e);
+    requestAnimationFrame(() => {
+        while (tooltip.firstChild) tooltip.removeChild(tooltip.firstChild);
 
-    if (answerpv != null && answerpv.length > 0 && (answerpv[0].length == 4 || answerpv[0].length == 5)) {
-        for (let i = 0; i < Math.min(answerpv.length, _movesPv ? 5 : 1); i++) {
-            let move = {
-                from: {
-                    x: 'abcdefgh'.indexOf(answerpv[i][0]),
-                    y: '87654321'.indexOf(answerpv[i][1])
-                },
-                to: {
-                    x: 'abcdefgh'.indexOf(answerpv[i][2]),
-                    y: '87654321'.indexOf(answerpv[i][3])
-                }
-            };
-            showArrow1(move, 1 - (i / 5));
+        let span1 = document.createElement('span');
+        setElemText(span1, state ? text : '');
+
+        if (movenumber != null) {
+            let span2 = document.createElement('span');
+            span2.style.color = '#64c4db';
+            setElemText(span2, movenumber + ' ');
+            tooltip.appendChild(span2);
         }
-    } else setArrow(_arrow);
+
+        if (cl != null && cl != 'circle') {
+            let span3 = document.createElement('span');
+            span3.className = cl;
+            tooltip.appendChild(span3);
+            span1.style.paddingLeft = '12px';
+        }
+
+        tooltip.appendChild(span1);
+
+        _tooltipState = state;
+        tooltip.style.display = state ? '' : 'none';
+        if (e != null) updateTooltipPos(e);
+
+        if (answerpv != null && answerpv.length > 0 && (answerpv[0].length == 4 || answerpv[0].length == 5)) {
+            for (let i = 0; i < Math.min(answerpv.length, _movesPv ? 5 : 1); i++) {
+                let move = {
+                    from: {
+                        x: 'abcdefgh'.indexOf(answerpv[i][0]),
+                        y: '87654321'.indexOf(answerpv[i][1])
+                    },
+                    to: {
+                        x: 'abcdefgh'.indexOf(answerpv[i][2]),
+                        y: '87654321'.indexOf(answerpv[i][3])
+                    }
+                };
+                showArrow1(move, 1 - (i / 5));
+            }
+        } else {
+            setArrow(_arrow);
+        }
+    });
 }
 
 // ============================
@@ -1256,13 +1287,20 @@ function setArrow(state) {
 }
 
 function repaintLastMoveArrow() {
-    let lastmove = (getCurFEN() == _history[_historyindex][0] && _history[_historyindex].length > 2) ? _history[_historyindex][2] : null;
-    if (lastmove != null) {
-        let elem = document.getElementById('arrowWrapper2');
-        if (elem.children[0].children != null)
-            elem.children[0].children[0].children[0].children[0].style.fill = elem.children[0].children[1].style.stroke = getGraphPointColor(_historyindex);
-    }
-    showArrow2(lastmove);
+    requestAnimationFrame(() => {
+        let lastmove = (getCurFEN() == _history[_historyindex][0] && _history[_historyindex].length > 2) ? _history[_historyindex][2] : null;
+        if (lastmove != null) {
+            let elem = document.getElementById('arrowWrapper2');
+            if (elem.children[0].children != null) {
+                const arrowFillColor = getGraphPointColor(_historyindex);
+                requestAnimationFrame(() => {
+                    elem.children[0].children[0].children[0].children[0].style.fill = arrowFillColor;
+                    elem.children[0].children[1].style.stroke = arrowFillColor;
+                });
+            }
+        }
+        showArrow2(lastmove);
+    });
 }
 
 function showArrowInternal(move, wrapperId, opacity = 1) {
@@ -1337,52 +1375,60 @@ function updateInfo() {
         positionInfoText += (pos2.w ? (pos2.m[1] - 1) + '... ' : pos2.m[1] + '. ') + _history[_historyindex][3];
     } else positionInfoText += '-';
     let movesInfoText = (pos.w ? 'White' : 'Black') + ' To Play (' + _curmoves.length + ' Legal Move' + (_curmoves.length == 1 ? '' : 's') + ')';
-    setElemText(document.getElementById('positionInfo'), positionInfoText);
-    setElemText(document.getElementById('movesInfo'), movesInfoText);
+
+    // Batch DOM updates
+    const positionInfoElem = document.getElementById('positionInfo');
+    const movesInfoElem = document.getElementById('movesInfo');
+    positionInfoElem.innerText = positionInfoText;
+    movesInfoElem.innerText = movesInfoText;
 
     // History window
-    let elem = document.getElementById('history'),
-        movesText = '';
-    while (elem.firstChild) elem.removeChild(elem.firstChild);
-    let div = document.createElement('div');
+    const historyElem = document.getElementById('history');
+    while (historyElem.firstChild) historyElem.removeChild(historyElem.firstChild);
+
+    const historyFragment = document.createDocumentFragment();
     let lastmn = null,
         mn = null;
+    let movesText = '';
+
     for (let i = 0; i < _history.length; i++) {
+        mn = parseMoveNumber(_history[i][0]);
         if (mn != lastmn) {
-            let span1 = document.createElement('span');
+            const span1 = document.createElement('span');
             setElemText(span1, mn + '. ');
             span1.style.color = '#64c4db';
-            div.appendChild(span1);
+            historyFragment.appendChild(span1);
             if (i <= _historyindex) movesText += mn + '.';
             lastmn = mn;
         }
-        mn = parseMoveNumber(_history[i][0]);
-        let san = '\u2605';
-        if (_history[i].length > 3 && _history[i][3] != null) san = _history[i][3];
-        let span2 = document.createElement('span');
+        const san = (_history[i].length > 3 && _history[i][3] != null) ? _history[i][3] : '\u2605';
+        const span2 = document.createElement('span');
         setElemText(span2, san);
         span2.className = 'movelink' + (i == _historyindex ? ' selected' : '');
         span2.targetindex = i;
-        let c = getGraphPointColor(i);
+        const c = getGraphPointColor(i);
         if (c != '#008800') span2.style.borderBottomColor = c;
         span2.onclick = function() {
-            let i = this.targetindex;
-            if (i < _history.length && i >= 0 && i != _historyindex) {
-                historyMove(i - _historyindex);
+            const targetIndex = this.targetindex;
+            if (targetIndex < _history.length && targetIndex >= 0 && targetIndex != _historyindex) {
+                historyMove(targetIndex - _historyindex);
             }
-        }
-        div.appendChild(span2);
-        div.appendChild(document.createTextNode(' '));
+        };
+        historyFragment.appendChild(span2);
+        historyFragment.appendChild(document.createTextNode(' '));
         if (i > 0 && i <= _historyindex) movesText += san + ' ';
     }
-    elem.appendChild(div);
+    historyElem.appendChild(historyFragment);
 
     // Opening window
-    elem = document.getElementById('opening');
-    while (elem.firstChild) elem.removeChild(elem.firstChild);
-    let list = [],
-        lengthMatch = 0,
+    const openingElem = document.getElementById('opening');
+    while (openingElem.firstChild) openingElem.removeChild(openingElem.firstChild);
+
+    const openingFragment = document.createDocumentFragment();
+    const list = [];
+    let lengthMatch = 0,
         indexMatch = -1;
+
     for (let i = 0; i < OPENING_NAMES.length; i++) {
         if (movesText.indexOf(OPENING_NAMES[i][2]) == 0 && OPENING_NAMES[i][2].length > lengthMatch) {
             indexMatch = i;
@@ -1407,20 +1453,21 @@ function updateInfo() {
             });
         }
     }
+
     for (let i = 0; i < list.length; i++) {
-        let node1 = document.createElement('DIV');
+        const node1 = document.createElement('DIV');
         node1.className = 'line';
-        let node2 = document.createElement('SPAN');
+        const node2 = document.createElement('SPAN');
         node2.className = 'name';
         node2.appendChild(document.createTextNode(list[i].name));
         node2.title = list[i].name;
-        let node3 = document.createElement('SPAN');
+        const node3 = document.createElement('SPAN');
         node3.className = 'score';
         node3.appendChild(document.createTextNode(list[i].score));
-        let node4 = document.createElement('SPAN');
+        const node4 = document.createElement('SPAN');
         node4.className = 'popularity';
         node4.appendChild(document.createTextNode(list[i].popularity));
-        let node5 = document.createElement('SPAN');
+        const node5 = document.createElement('SPAN');
         node5.className = 'moves';
         node5.appendChild(document.createTextNode(list[i].moves));
         node5.title = list[i].moves;
@@ -1428,24 +1475,26 @@ function updateInfo() {
         node1.appendChild(node3);
         node1.appendChild(node4);
         node1.appendChild(node5);
+
         if (indexMatch >= 0 && i == 0) {
             node1.style.color = '#64c4db';
             node1.targetindex = list[i].moves.split(' ').length;
             node1.onclick = function() {
-                let i = this.targetindex;
-                if (i < _history.length && i >= 0 && i != _historyindex) historyMove(i - _historyindex);
-            }
+                const targetIndex = this.targetindex;
+                if (targetIndex < _history.length && targetIndex >= 0 && targetIndex != _historyindex) historyMove(targetIndex - _historyindex);
+            };
         } else {
             node1.targetmoves = list[i].moves;
             node1.onclick = function() {
-                let savedhistory = _history2 == null ? [_historyindex, JSON.parse(JSON.stringify(_history))] : _history2;
+                const savedHistory = _history2 == null ? [_historyindex, JSON.parse(JSON.stringify(_history))] : _history2;
                 command(this.targetmoves);
-                _history2 = savedhistory;
+                _history2 = savedHistory;
                 refreshButtonRevert();
-            }
+            };
         }
-        elem.appendChild(node1);
+        openingFragment.appendChild(node1);
     }
+    openingElem.appendChild(openingFragment);
 }
 
 // ============================
@@ -1970,60 +2019,56 @@ function checkPosition(pos) {
 // ============================
 
 function refreshMoves() {
-    let pos = parseFEN(getCurFEN());
-    _curmoves = [];
-    setElemText(document.getElementById('moves'), '');
-    let errmsgs = checkPosition(pos);
-    if (errmsgs.length == 0) {
-        let moves = genMoves(pos);
-        for (let i = 0; i < moves.length; i++) {
-            _curmoves.push({
-                move: moves[i],
-                san: sanMove(pos, moves[i], moves),
-                fen: generateFEN(doMove(pos, moves[i].from, moves[i].to, moves[i].p)),
-                w: !pos.w,
-                eval: null,
-                depth: 0
-            });
-        }
-        if (_curmoves.length == 0) {
-            let matecheck = pos.w && isWhiteCheck(pos) || !pos.w && isWhiteCheck(colorflip(pos));
+    requestAnimationFrame(() => {
+        let pos = parseFEN(getCurFEN());
+        _curmoves = [];
+        setElemText(document.getElementById('moves'), '');
+        let errmsgs = checkPosition(pos);
+        if (errmsgs.length == 0) {
+            let moves = genMoves(pos);
+            for (let i = 0; i < moves.length; i++) {
+                _curmoves.push({
+                    move: moves[i],
+                    san: sanMove(pos, moves[i], moves),
+                    fen: generateFEN(doMove(pos, moves[i].from, moves[i].to, moves[i].p)),
+                    w: !pos.w,
+                    eval: null,
+                    depth: 0
+                });
+            }
+            if (_curmoves.length == 0) {
+                let matecheck = pos.w && isWhiteCheck(pos) || !pos.w && isWhiteCheck(colorflip(pos));
+                let fragment = document.createDocumentFragment();
+                let div0 = document.createElement('div');
+                div0.style.padding = '8px 16px';
+                let div = document.createElement('div');
+                div.style.backgroundColor = '#800080';
+                div.className = 'positionStatus';
+                setElemText(div, matecheck ? 'Checkmate' : 'Stalemate');
+                div0.appendChild(div);
+                let ul = document.createElement('ul'),
+                    li = document.createElement('li');
+                setElemText(li, matecheck && pos.w ? 'Black wins' : matecheck ? 'White wins' : 'Draw');
+                ul.appendChild(li);
+                div0.appendChild(ul);
+                fragment.appendChild(div0);
+                document.getElementById('moves').appendChild(fragment);
+            } else {
+                showEvals();
+            }
+        } else {
+            let fragment = document.createDocumentFragment();
             let div0 = document.createElement('div');
             div0.style.padding = '8px 16px';
             let div = document.createElement('div');
-            div.style.backgroundColor = '#800080';
+            div.style.backgroundColor = '#bb0000';
             div.className = 'positionStatus';
-            setElemText(div, matecheck ? 'Checkmate' : 'Stalemate');
+            setElemText(div, 'Illegal position');
             div0.appendChild(div);
-            let ul = document.createElement('ul'),
-                li = document.createElement('li');
-            setElemText(li, matecheck && pos.w ? 'Black wins' : matecheck ? 'White wins' : 'Draw');
-            ul.appendChild(li);
-            div0.appendChild(ul);
-            document.getElementById('moves').appendChild(div0);
-        } else {
-            showEvals();
+            fragment.appendChild(div0);
+            document.getElementById('moves').appendChild(fragment);
         }
-    } else {
-        let div0 = document.createElement('div');
-        div0.style.padding = '8px 16px';
-        let div = document.createElement('div');
-        div.style.backgroundColor = '#bb0000';
-        div.className = 'positionStatus';
-        setElemText(div, 'Illegal position');
-        div0.appendChild(div);
-
-        let ul = document.createElement('ul');
-        for (let i = 0; i < errmsgs.length; i++) {
-            let li = document.createElement('li');
-            setElemText(li, errmsgs[i]);
-            ul.appendChild(li);
-        }
-        div0.appendChild(ul);
-
-        document.getElementById('moves').appendChild(div0);
-
-    }
+    });
 }
 
 // ============================
@@ -2032,10 +2077,6 @@ function refreshMoves() {
 function historyButtons() {
     document.getElementById('buttonBack').className = _historyindex > 0 ? 'on' : 'off';
     document.getElementById('buttonForward').className = _historyindex < _history.length - 1 ? 'on' : 'off';
-}
-
-function historySave() {
-    // Save the current history
 }
 
 function historyAdd(fen, oldhistory, move, san) {
@@ -2055,7 +2096,6 @@ function historyAdd(fen, oldhistory, move, san) {
     _history.length = _historyindex;
     _history.push([fen, c, move, san]);
     historyButtons();
-    historySave();
 }
 
 function historyMove(v, e, ctrl) {
@@ -2070,7 +2110,6 @@ function historyMove(v, e, ctrl) {
     if (v == 0 || (oldindex != _historyindex || getCurFEN() != _history[_historyindex][0])) {
         setCurFEN(_history[_historyindex][0]);
         historyButtons();
-        historySave();
         showBoard();
     }
 }
@@ -2215,8 +2254,10 @@ function doMoveHandler(move, copy) {
         historyAdd(oldfen);
         setCurFEN(generateFEN(pos));
         historyAdd(getCurFEN(), null, move, san);
-        showBoard(getCurFEN() == oldfen);
-        doComputerMove();
+        requestAnimationFrame(() => {
+            showBoard(getCurFEN() == oldfen);
+            doComputerMove();
+        });
     } else if (isEdit() && (move.from.x != move.to.x || move.from.y != move.to.y)) {
         if (copy && bounds(move.to.x, move.to.y)) {
             pos.b[move.to.x][move.to.y] = copy;
@@ -2228,44 +2269,42 @@ function doMoveHandler(move, copy) {
         historyAdd(oldfen);
         setCurFEN(generateFEN(pos));
         historyAdd(getCurFEN());
-        showBoard(getCurFEN() == oldfen);
+        requestAnimationFrame(() => {
+            showBoard(getCurFEN() == oldfen);
+        });
     } else return false;
     return true;
 }
 
 function onMouseMove(e) {
-    defaultMouseMove(e);
-    if (document.onmousemove != onMouseMove && isEdit() && getPaintPiece() != 'S') paintMouse(e, getPaintPiece());
-    if (_dragElement == null) return;
-    if (e == null) e = window.event;
-    if (!_dragActive) {
-        if (Math.abs(e.clientX - _startX) < 8 && Math.abs(e.clientY - _startY) < 8) return;
-        if (_dragLMB > 0) {
-            let x1 = getDragX(_startX),
-                y1 = getDragY(_startY),
-                x2 = getDragX(e.clientX),
-                y2 = getDragY(e.clientY);
-            showArrow3({
-                from: {
-                    x: x1,
-                    y: y1
-                },
-                to: {
-                    x: x2,
-                    y: y2
-                }
-            });
-            _dragLMB = 2;
-            return;
+    requestAnimationFrame(() => {
+        defaultMouseMove(e);
+        if (document.onmousemove != onMouseMove && isEdit() && getPaintPiece() != 'S') paintMouse(e, getPaintPiece());
+        if (_dragElement == null) return;
+        if (e == null) e = window.event;
+        if (!_dragActive) {
+            if (Math.abs(e.clientX - _startX) < 8 && Math.abs(e.clientY - _startY) < 8) return;
+            if (_dragLMB > 0) {
+                let x1 = getDragX(_startX),
+                    y1 = getDragY(_startY),
+                    x2 = getDragX(e.clientX),
+                    y2 = getDragY(e.clientY);
+                showArrow3({
+                    from: { x: x1, y: y1 },
+                    to: { x: x2, y: y2 }
+                });
+                _dragLMB = 2;
+                return;
+            }
+            if ('PNBRQK'.indexOf(_dragElement.className[2].toUpperCase()) < 0) return;
+            dragActivate();
         }
-        if ('PNBRQK'.indexOf(_dragElement.className[2].toUpperCase()) < 0) return;
-        dragActivate();
-    }
 
-    _dragElement.style.left = (e.clientX * _bodyScale - 20) + 'px';
-    _dragElement.style.top = (getClientY(e) - 20) + 'px';
-    _dragElement.style.color = 'transparent';
-    setElemText(_dragElement, '-'); // force browser to refresh pop-up
+        _dragElement.style.left = (e.clientX * _bodyScale - 20) + 'px';
+        _dragElement.style.top = (getClientY(e) - 20) + 'px';
+        _dragElement.style.color = 'transparent';
+        setElemText(_dragElement, '-'); // force browser to refresh pop-up
+    });
 }
 
 function onMouseUp(e) {
@@ -2343,7 +2382,6 @@ function onMouseUp(e) {
                             fixCastling(pos);
                             setCurFEN(generateFEN(pos));
                         }
-                        historySave();
                         showBoard();
                     }
                 }
@@ -2443,7 +2481,6 @@ function paintMouse(e, p) {
         pos.b[x1][y1] = newp;
         fixCastling(pos);
         setCurFEN(generateFEN(pos));
-        historySave();
         showBoard(null, null, true);
         if (p == null) {
             document.onmousemove = function(event) {
@@ -2612,6 +2649,7 @@ function loadEngine() {
             engine.send('isready', function onready(str) {
                 if (str === 'readyok') {
                     engine.ready = true;
+                    engine.send('setoption name EvalFile value ' + NNUE_PATH);
                 }
             });
         }
@@ -2701,7 +2739,6 @@ function evalNext() {
             return;
         }
     }
-    historySave();
 }
 
 function applyEval(m, s, d) {
@@ -2811,6 +2848,19 @@ function evalAll() {
     });
 }
 
+/*
+function getRandomOpeningMove(fen) {
+    console.log('Checking opening move for FEN:', fen);
+    const moves = RAND_OP[fen];
+    if (moves && moves.length > 0) {
+        console.log('Available opening moves:', moves);
+        return moves[Math.floor(Math.random() * moves.length)];
+    }
+    console.log('No opening moves found for FEN:', fen);
+    return null;
+}
+*/
+
 function doComputerMove() {
     if (_play == null) return;
     let fen = getCurFEN();
@@ -2901,8 +2951,9 @@ function repaintStatic() {
     let pos = parseFEN(curfen);
 
     // Static evaluation window
-    window.setTimeout(function() {
+    requestAnimationFrame(() => {
         if (getCurFEN() != curfen) return;
+
         let elem = document.getElementById('static');
         let evalUnit = 213;
         while (elem.firstChild) elem.removeChild(elem.firstChild);
@@ -2910,6 +2961,7 @@ function repaintStatic() {
         let staticEvalList = getStaticEvalList(pos),
             total = 0,
             ci = 5;
+
         for (let i = 0; i < staticEvalList.length; i++) {
             if (i > 0 && staticEvalList[i - 1].group != staticEvalList[i].group) ci++;
             let c1 = 0,
@@ -2927,14 +2979,21 @@ function repaintStatic() {
             staticEvalList[i].bgcol = 'rgb(' + c1 + ',' + c2 + ',' + c3 + ')';
             staticEvalList[i].rel = staticEvalList[i].item[2] - (staticEvalListLast == null ? 0 : staticEvalListLast[i].item[2]);
         }
+
         let sortArray = [];
-        for (let i = 0; i < staticEvalList.length; i++) sortArray.push({
-            value: _staticSortByChange ? staticEvalList[i].rel : staticEvalList[i].item[2],
-            index: i
-        });
+        for (let i = 0; i < staticEvalList.length; i++) {
+            sortArray.push({
+                value: _staticSortByChange ? staticEvalList[i].rel : staticEvalList[i].item[2],
+                index: i
+            });
+        }
+
         sortArray.sort(function(a, b) {
             return (Math.abs(a.value) < Math.abs(b.value)) ? 1 : Math.abs(a.value) > Math.abs(b.value) ? -1 : 0;
         });
+
+        let fragment = document.createDocumentFragment();
+
         for (let j = 0; j < sortArray.length; j++) {
             let i = sortArray[j].index;
             total += staticEvalList[i].item[2];
@@ -2985,7 +3044,7 @@ function repaintStatic() {
                 node7.appendChild(node8);
                 node7.appendChild(node9);
             } else {
-                node3.appendChild(document.createTextNode(rel));
+                node7.appendChild(document.createTextNode(rel));
             }
             node1.appendChild(node0);
             node1.appendChild(node2);
@@ -3018,34 +3077,16 @@ function repaintStatic() {
                     }
                     let sqeval = 0;
                     if (n2 == 'king_danger') {
-                        sqeval = $unsafe_checks(pos, {
-                            x: x,
-                            y: y
-                        });
-                        if (sqeval == 0) sqeval = $unsafe_checks(colorflip(pos), {
-                            x: x,
-                            y: 7 - y
-                        });
-                        if (sqeval == 0) sqeval = $weak_bonus(pos, {
-                            x: x,
-                            y: y
-                        });
-                        if (sqeval == 0) sqeval = $weak_bonus(colorflip(pos), {
-                            x: x,
-                            y: 7 - y
-                        });
+                        sqeval = $unsafe_checks(pos, { x: x, y: y });
+                        if (sqeval == 0) sqeval = $unsafe_checks(colorflip(pos), { x: x, y: 7 - y });
+                        if (sqeval == 0) sqeval = $weak_bonus(pos, { x: x, y: y });
+                        if (sqeval == 0) sqeval = $weak_bonus(colorflip(pos), { x: x, y: 7 - y });
                         let showKDarrows = function(p, flipy) {
                             for (let x2 = 0; x2 < 8; x2++)
                                 for (let y2 = 0; y2 < 8; y2++) {
                                     if ('PNBRQ'.indexOf(board(p, x, y)) < 0) continue;
-                                    let s = {
-                                            x: x,
-                                            y: y
-                                        },
-                                        s2 = {
-                                            x: x2,
-                                            y: y2
-                                        },
+                                    let s = { x: x, y: y },
+                                        s2 = { x: x2, y: y2 },
                                         a = false;
                                     if ($king_ring(p, s2)) {
                                         if ($pawn_attack(p, s2) && Math.abs(x - x2) == 1 && y - y2 == flipy ? 1 : -1 ||
@@ -3059,20 +3100,8 @@ function repaintStatic() {
                                     if (!a && $rook_xray_attack(p, s2, s) && $safe_check(p, s2, 2) > 0) a = true;
                                     if (!a && $queen_attack(p, s2, s) && $safe_check(p, s2, 3) > 0) a = true;
                                     if (a) {
-                                        if (!flipy) showArrow3({
-                                            from: s,
-                                            to: s2
-                                        });
-                                        else showArrow3({
-                                            from: {
-                                                x: x,
-                                                y: 7 - y
-                                            },
-                                            to: {
-                                                x: x2,
-                                                y: 7 - y2
-                                            }
-                                        });
+                                        if (!flipy) showArrow3({ from: s, to: s2 });
+                                        else showArrow3({ from: { x: x, y: 7 - y }, to: { x: x2, y: 7 - y2 } });
                                         finalArrow3();
                                     }
                                 }
@@ -3081,22 +3110,10 @@ function repaintStatic() {
                         showKDarrows(colorflip(pos), true);
                     } else {
                         try {
-                            sqeval = func(pos, {
-                                x: x,
-                                y: y
-                            });
-                            if (sqeval == 0 && sei.forwhite) sqeval = func(colorflip(pos), {
-                                x: x,
-                                y: 7 - y
-                            });
-                            if (sqeval == 0) sqeval = func(pos, {
-                                x: x,
-                                y: y
-                            }, true);
-                            if (sqeval == 0 && sei.forwhite) sqeval = func(colorflip(pos), {
-                                x: x,
-                                y: 7 - y
-                            }, true);
+                            sqeval = func(pos, { x: x, y: y });
+                            if (sqeval == 0 && sei.forwhite) sqeval = func(colorflip(pos), { x: x, y: 7 - y });
+                            if (sqeval == 0) sqeval = func(pos, { x: x, y: y }, true);
+                            if (sqeval == 0 && sei.forwhite) sqeval = func(colorflip(pos), { x: x, y: 7 - y }, true);
                         } catch (e) {}
                     }
                     let c = div.className.split(' ')[0] + ' ' + div.className.split(' ')[1];
@@ -3105,10 +3122,12 @@ function repaintStatic() {
                     div.className = c;
                 }
             };
-            elem.appendChild(node1);
+            fragment.appendChild(node1);
         }
+
+        elem.appendChild(fragment);
         setElemText(document.getElementById('staticInfo'), 'Static evaluation (' + (total / evalUnit).toFixed(2) + ')');
-    }, 50);
+    });
 }
 
 function showEvals() {
@@ -4803,162 +4822,163 @@ function showGraphTooltip(i, event) {
 }
 
 function repaintGraph(event) {
-    let data = [];
-    let color = [];
-    let laste = null;
-    for (let i = 0; i < _history.length; i++) {
-        data.push(getGraphPointData(i));
-        color.push(getGraphPointColor(i));
-    }
-    let border1 = 4.5,
-        border2 = 18.5;
-    let xMax = 40,
-        yMax = 2,
-        xStep = 10,
-        yStep = 1;
-    for (let i = 0; i < data.length; i++)
-        if (Math.ceil(Math.abs(data[i])) > yMax) yMax = Math.ceil(Math.abs(data[i]));
-    if (data.length > xMax) xMax = data.length;
-    let cw = document.getElementById('graphWrapper').clientWidth;
-    let ch = document.getElementById('graphWrapper').clientHeight;
-    if (event != null) {
-        let rect = document.getElementById('graph').getBoundingClientRect();
-        let mx = event.clientX - rect.left;
-        let my = event.clientY - rect.top;
-        var mouseDataPos = null;
-        let b1 = border1 / _bodyScale,
-            b2 = border2 / _bodyScale;
-        let mUnit = (rect.width - b1 - b2) / xMax;
-        if (mx > b2 + mUnit / 2 && mx < rect.width - b1 + mUnit / 2 && my > b1 && my < rect.height - b2) {
-            mouseDataPos = Math.round((mx - b2) / mUnit) - 1;
-        }
-        if (mouseDataPos == _lastMouseDataPos) return;
-        _lastMouseDataPos = mouseDataPos;
-    } else _lastMouseDataPos = mouseDataPos;
-
-    let canvas = document.getElementById('graph');
-    let ctx = canvas.getContext('2d');
-    canvas.width = cw;
-    canvas.height = ch;
-    let yTotal = canvas.height - border1 - border2,
-        xTotal = canvas.width - border1 - border2;
-    let xUnit = xTotal / (xMax / xStep),
-        yUnit = yTotal / (yMax * 2 / yStep);
-    if (yUnit > 0)
-        while (yUnit < 12) {
-            yUnit *= 2;
-            yStep *= 2;
-        }
-    if (xUnit > 0)
-        while (xUnit < 18) {
-            xUnit *= 2;
-            xStep *= 2;
+    requestAnimationFrame(() => {
+        let data = [];
+        let color = [];
+        for (let i = 0; i < _history.length; i++) {
+            data.push(getGraphPointData(i));
+            color.push(getGraphPointColor(i));
         }
 
-    ctx.font = '10px Segoe UI';
-    ctx.textAlign = 'right';
-    ctx.textBaseline = 'middle';
-    ctx.lineWidth = 1;
-    ctx.fillStyle = '#a0aab4';
-    ctx.fillText('0', border2 - 6, border1 + yTotal / 2);
-    ctx.beginPath();
-    ctx.strokeStyle = '#738191';
-    for (let i = yStep; i <= yMax; i += yStep) {
-        if (i == 0) continue;
-        let y = Math.round(i * yUnit / yStep);
-        ctx.fillText('+' + i, border2 - 6, border1 + yTotal / 2 - y);
-        ctx.fillText('-' + i, border2 - 6, border1 + yTotal / 2 + y);
-        if (i < yMax) {
-            ctx.moveTo(border2, border1 + yTotal / 2 - y);
-            ctx.lineTo(border2 + xTotal, border1 + yTotal / 2 - y);
-            ctx.moveTo(border2, border1 + yTotal / 2 + y);
-            ctx.lineTo(border2 + xTotal, border1 + yTotal / 2 + y);
+        let border1 = 4.5,
+            border2 = 18.5;
+        let xMax = 40,
+            yMax = 2,
+            xStep = 10,
+            yStep = 1;
+
+        for (let i = 0; i < data.length; i++) {
+            if (Math.ceil(Math.abs(data[i])) > yMax) yMax = Math.ceil(Math.abs(data[i]));
         }
-    }
-    ctx.moveTo(border2, border1);
-    ctx.lineTo(border2 + xTotal, border1);
-    ctx.stroke();
-    ctx.beginPath();
+        if (data.length > xMax) xMax = data.length;
 
-    ctx.textAlign = 'center';
-    ctx.strokeStyle = '#a0aab4';
-    for (let i = 0; i <= xMax; i += xStep) {
-        let x = Math.round(i * xUnit / xStep);
-        ctx.fillText(i / 2, border2 + x, border1 + yTotal + border2 / 2 + 2);
-        ctx.moveTo(border2 + x, border1 + yTotal);
-        ctx.lineTo(border2 + x, border1 + yTotal + 3);
-    }
-    for (let i = 0; i <= yMax; i += yStep) {
-        let y = Math.round(i * yUnit / yStep);
-        ctx.moveTo(border2 - 3, border1 + yTotal / 2 - y);
-        ctx.lineTo(border2, border1 + yTotal / 2 - y);
-        ctx.moveTo(border2 - 3, border1 + yTotal / 2 + y);
-        ctx.lineTo(border2, border1 + yTotal / 2 + y);
-    }
+        let cw = document.getElementById('graphWrapper').clientWidth;
+        let ch = document.getElementById('graphWrapper').clientHeight;
+        let mouseDataPos = null;
 
-    ctx.stroke();
+        if (event != null) {
+            let rect = document.getElementById('graph').getBoundingClientRect();
+            let mx = event.clientX - rect.left;
+            let my = event.clientY - rect.top;
+            let b1 = border1 / _bodyScale,
+                b2 = border2 / _bodyScale;
+            let mUnit = (rect.width - b1 - b2) / xMax;
+            if (mx > b2 + mUnit / 2 && mx < rect.width - b1 + mUnit / 2 && my > b1 && my < rect.height - b2) {
+                mouseDataPos = Math.round((mx - b2) / mUnit) - 1;
+            }
+            if (mouseDataPos == _lastMouseDataPos) return;
+            _lastMouseDataPos = mouseDataPos;
+        } else {
+            _lastMouseDataPos = mouseDataPos;
+        }
 
-    ctx.beginPath();
-    ctx.moveTo(border2, border1);
-    ctx.lineTo(border2, border1 + yTotal);
-    ctx.moveTo(border2, border1 + yTotal);
-    ctx.lineTo(border2 + xTotal, border1 + yTotal);
-    ctx.moveTo(border2, border1 + yTotal / 2);
-    ctx.lineTo(border2 + xTotal, border1 + yTotal / 2);
+        let canvas = document.getElementById('graph');
+        let ctx = canvas.getContext('2d');
+        canvas.width = cw;
+        canvas.height = ch;
+        let yTotal = canvas.height - border1 - border2,
+            xTotal = canvas.width - border1 - border2;
+        let xUnit = xTotal / (xMax / xStep),
+            yUnit = yTotal / (yMax * 2 / yStep);
 
-    ctx.stroke();
+        if (yUnit > 0) {
+            while (yUnit < 12) {
+                yUnit *= 2;
+                yStep *= 2;
+            }
+        }
+        if (xUnit > 0) {
+            while (xUnit < 18) {
+                xUnit *= 2;
+                xStep *= 2;
+            }
+        }
 
-    for (let i = 1; i < data.length; i++) {
-        if (data[i] != null && data[i - 1] != null) {
-            if (color[i] != '#008800') {
+        ctx.font = '10px Segoe UI';
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'middle';
+        ctx.lineWidth = 1;
+        ctx.fillStyle = '#a0aab4';
+        ctx.fillText('0', border2 - 6, border1 + yTotal / 2);
+        ctx.beginPath();
+        ctx.strokeStyle = '#738191';
+        for (let i = yStep; i <= yMax; i += yStep) {
+            if (i == 0) continue;
+            let y = Math.round(i * yUnit / yStep);
+            ctx.fillText('+' + i, border2 - 6, border1 + yTotal / 2 - y);
+            ctx.fillText('-' + i, border2 - 6, border1 + yTotal / 2 + y);
+            if (i < yMax) {
+                ctx.moveTo(border2, border1 + yTotal / 2 - y);
+                ctx.lineTo(border2 + xTotal, border1 + yTotal / 2 - y);
+                ctx.moveTo(border2, border1 + yTotal / 2 + y);
+                ctx.lineTo(border2 + xTotal, border1 + yTotal / 2 + y);
+            }
+        }
+        ctx.moveTo(border2, border1);
+        ctx.lineTo(border2 + xTotal, border1);
+        ctx.stroke();
+        ctx.beginPath();
+
+        ctx.textAlign = 'center';
+        ctx.strokeStyle = '#a0aab4';
+        for (let i = 0; i <= xMax; i += xStep) {
+            let x = Math.round(i * xUnit / xStep);
+            ctx.fillText(i / 2, border2 + x, border1 + yTotal + border2 / 2 + 2);
+            ctx.moveTo(border2 + x, border1 + yTotal);
+            ctx.lineTo(border2 + x, border1 + yTotal + 3);
+        }
+        for (let i = 0; i <= yMax; i += yStep) {
+            let y = Math.round(i * yUnit / yStep);
+            ctx.moveTo(border2 - 3, border1 + yTotal / 2 - y);
+            ctx.lineTo(border2, border1 + yTotal / 2 - y);
+            ctx.moveTo(border2 - 3, border1 + yTotal / 2 + y);
+            ctx.lineTo(border2, border1 + yTotal / 2 + y);
+        }
+
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(border2, border1);
+        ctx.lineTo(border2, border1 + yTotal);
+        ctx.moveTo(border2, border1 + yTotal);
+        ctx.lineTo(border2 + xTotal, border1 + yTotal);
+        ctx.moveTo(border2, border1 + yTotal / 2);
+        ctx.lineTo(border2 + xTotal, border1 + yTotal / 2);
+        ctx.stroke();
+
+        for (let i = 1; i < data.length; i++) {
+            if (data[i] != null && data[i - 1] != null) {
                 ctx.beginPath();
-                ctx.strokeStyle = color[i] == '#bb0000' ? 'red' : 'white';
-                ctx.lineWidth = 1;
-                ctx.moveTo(border2 + i * (xUnit / xStep), border1 + yTotal / 2 - data[i - 1] * (yUnit / yStep));
-                ctx.lineTo(border2 + (i + 1) * (xUnit / xStep), border1 + yTotal / 2 - data[i] * (yUnit / yStep));
-                ctx.stroke();
-            } else {
-                ctx.beginPath();
-                ctx.strokeStyle = 'black';
+                ctx.strokeStyle = color[i] == '#bb0000' ? 'red' : (color[i] == '#008800' ? 'black' : 'white');
                 ctx.lineWidth = 1;
                 ctx.moveTo(border2 + i * (xUnit / xStep), border1 + yTotal / 2 - data[i - 1] * (yUnit / yStep));
                 ctx.lineTo(border2 + (i + 1) * (xUnit / xStep), border1 + yTotal / 2 - data[i] * (yUnit / yStep));
                 ctx.stroke();
             }
         }
-    }
-    let i;
-    for (i = 0; i < data.length; i++) {
-        if (i != mouseDataPos && i != _historyindex) {
-            ctx.beginPath();
-            ctx.arc(border2 + (i + 1) * (xUnit / xStep), border1 + yTotal / 2 - data[i] * (yUnit / yStep), 2, 0, 2 * Math.PI, false);
-            ctx.fillStyle = 'black';
-            ctx.fill();
+
+        for (let i = 0; i < data.length; i++) {
+            if (i != mouseDataPos && i != _historyindex) {
+                ctx.beginPath();
+                ctx.arc(border2 + (i + 1) * (xUnit / xStep), border1 + yTotal / 2 - data[i] * (yUnit / yStep), 2, 0, 2 * Math.PI, false);
+                ctx.fillStyle = 'black';
+                ctx.fill();
+            }
         }
-    }
 
-    i = _historyindex;
-    ctx.beginPath();
-    ctx.arc(border2 + (i + 1) * (xUnit / xStep), border1 + yTotal / 2 - data[i] * (yUnit / yStep), 4, 0, 2 * Math.PI, false);
-    ctx.fillStyle = 'black';
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(border2 + (i + 1) * (xUnit / xStep), border1 + yTotal / 2 - data[i] * (yUnit / yStep), 2, 0, 2 * Math.PI, false);
-    ctx.fillStyle = '#e1e2e6';
-    ctx.fill();
+        let i = _historyindex;
+        ctx.beginPath();
+        ctx.arc(border2 + (i + 1) * (xUnit / xStep), border1 + yTotal / 2 - data[i] * (yUnit / yStep), 4, 0, 2 * Math.PI, false);
+        ctx.fillStyle = 'black';
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(border2 + (i + 1) * (xUnit / xStep), border1 + yTotal / 2 - data[i] * (yUnit / yStep), 2, 0, 2 * Math.PI, false);
+        ctx.fillStyle = '#e1e2e6';
+        ctx.fill();
 
-    i = mouseDataPos;
-    ctx.beginPath();
-    ctx.arc(border2 + (i + 1) * (xUnit / xStep), border1 + yTotal / 2 - data[i] * (yUnit / yStep), 4, 0, 2 * Math.PI, false);
-    ctx.fillStyle = 'black';
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(border2 + (i + 1) * (xUnit / xStep), border1 + yTotal / 2 - data[i] * (yUnit / yStep), 2, 0, 2 * Math.PI, false);
-    ctx.fillStyle = '#64c4db';
-    ctx.fill();
+        i = mouseDataPos;
+        ctx.beginPath();
+        ctx.arc(border2 + (i + 1) * (xUnit / xStep), border1 + yTotal / 2 - data[i] * (yUnit / yStep), 4, 0, 2 * Math.PI, false);
+        ctx.fillStyle = 'black';
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(border2 + (i + 1) * (xUnit / xStep), border1 + yTotal / 2 - data[i] * (yUnit / yStep), 2, 0, 2 * Math.PI, false);
+        ctx.fillStyle = '#64c4db';
+        ctx.fill();
 
-    if (event) showGraphTooltip(mouseDataPos, event);
-    repaintLastMoveArrow();
+        if (event) showGraphTooltip(mouseDataPos, event);
+        repaintLastMoveArrow();
+    });
 }
 
 // ============================
@@ -4966,61 +4986,74 @@ function repaintGraph(event) {
 // ============================
 
 function repaintSidebars() {
-    let pos = parseFEN(getCurFEN());
-    let whitemat = [],
-        blackmat = [],
-        points = 0;
-    for (let x = 0; x < 8; x++)
-        for (let y = 0; y < 8; y++) {
-            let p = board(pos, x, y).toLowerCase();
-            let col = board(pos, x, y) != p;
-            let index = 'pnbrqk'.indexOf(p);
-            if (index >= 0) {
-                if (col) whitemat.push(index);
-                else blackmat.push(index);
-                points += (col ? 1 : -1) * [1, 3, 3, 5, 9, 0][index];
+    requestAnimationFrame(() => {
+        let pos = parseFEN(getCurFEN());
+        let whitemat = [],
+            blackmat = [],
+            points = 0;
+
+        for (let x = 0; x < 8; x++) {
+            for (let y = 0; y < 8; y++) {
+                let p = board(pos, x, y).toLowerCase();
+                let col = board(pos, x, y) != p;
+                let index = 'pnbrqk'.indexOf(p);
+                if (index >= 0) {
+                    if (col) whitemat.push(index);
+                    else blackmat.push(index);
+                    points += (col ? 1 : -1) * [1, 3, 3, 5, 9, 0][index];
+                }
             }
         }
-    whitemat.sort();
-    blackmat.sort();
-    for (let i = 0, j = 0; i < whitemat.length && j < blackmat.length;) {
-        if (whitemat[i] == blackmat[j]) {
-            whitemat.splice(i, 1);
-            blackmat.splice(j, 1);
-        } else if (whitemat[i] < blackmat[j]) i++;
-        else if (whitemat[i] > blackmat[j]) j++;
-    }
-    let elem = document.getElementById('materialWrapper');
-    while (elem.firstChild) elem.removeChild(elem.firstChild);
-    let fmat = function(mat, flip) {
-        for (let i = 0; i < mat.length; i++) {
+
+        whitemat.sort();
+        blackmat.sort();
+
+        for (let i = 0, j = 0; i < whitemat.length && j < blackmat.length;) {
+            if (whitemat[i] == blackmat[j]) {
+                whitemat.splice(i, 1);
+                blackmat.splice(j, 1);
+            } else if (whitemat[i] < blackmat[j]) i++;
+            else if (whitemat[i] > blackmat[j]) j++;
+        }
+
+        let elem = document.getElementById('materialWrapper');
+        while (elem.firstChild) elem.removeChild(elem.firstChild);
+
+        let fmat = function(mat, flip) {
+            let fragment = document.createDocumentFragment();
+            for (let i = 0; i < mat.length; i++) {
+                let node1 = document.createElement('DIV');
+                node1.className = 'pnbrqk' [mat[i]];
+                let d = (mat.length - 1 - i) * 16 + 'px';
+                if (flip) node1.style.top = d;
+                else node1.style.bottom = d;
+                fragment.appendChild(node1);
+            }
+            elem.appendChild(fragment);
+        }
+
+        if (points < 0) fmat(whitemat, _flip);
+        fmat(blackmat, !_flip);
+        if (points >= 0) fmat(whitemat, _flip);
+
+        if (points != 0) {
             let node1 = document.createElement('DIV');
-            node1.className = 'pnbrqk' [mat[i]];
-            let d = (mat.length - 1 - i) * 16 + 'px';
-            if (flip) node1.style.top = d;
-            else node1.style.bottom = d;
+            node1.appendChild(document.createTextNode('+' + Math.abs(points)));
+            let down = points > 0 && !_flip || points < 0 && _flip;
+            let d = (_flip ^ down ? whitemat.length : blackmat.length) * 16 + 'px';
+            if (down) node1.style.bottom = d;
+            else node1.style.top = d;
             elem.appendChild(node1);
         }
-    }
-    if (points < 0) fmat(whitemat, _flip);
-    fmat(blackmat, !_flip);
-    if (points >= 0) fmat(whitemat, _flip);
-    if (points != 0) {
-        let node1 = document.createElement('DIV');
-        node1.appendChild(document.createTextNode('+' + Math.abs(points)));
-        let down = points > 0 && !_flip || points < 0 && _flip;
-        let d = (_flip ^ down ? whitemat.length : blackmat.length) * 16 + 'px';
-        if (down) node1.style.bottom = d;
-        else node1.style.top = d;
-        elem.appendChild(node1);
-    }
 
-    elem = document.getElementById('namesWrapperTop');
-    while (elem.firstChild) elem.removeChild(elem.firstChild);
-    elem.appendChild(document.createTextNode(_flip ? _wname : _bname));
-    elem = document.getElementById('namesWrapperBottom');
-    while (elem.firstChild) elem.removeChild(elem.firstChild);
-    elem.appendChild(document.createTextNode(_flip ? _bname : _wname));
+        let topElem = document.getElementById('namesWrapperTop');
+        while (topElem.firstChild) topElem.removeChild(topElem.firstChild);
+        topElem.appendChild(document.createTextNode(_flip ? _wname : _bname));
+
+        let bottomElem = document.getElementById('namesWrapperBottom');
+        while (bottomElem.firstChild) bottomElem.removeChild(bottomElem.firstChild);
+        bottomElem.appendChild(document.createTextNode(_flip ? _bname : _wname));
+    });
 }
 
 // ============================
@@ -5053,7 +5086,6 @@ function refreshFlip() {
 function doFlip() {
     _flip = !_flip;
     refreshFlip();
-    historySave();
 }
 
 function showHideWindow(name, targetState) {
@@ -5125,170 +5157,173 @@ function setEngineValue(elem) {
 }
 
 function reloadMenu() {
-    let parent = document.getElementById('menu');
-    while (parent.firstChild) parent.removeChild(parent.firstChild);
-    let addMenuLine = function() {
-        let div = document.createElement('div');
-        div.className = 'menuLine';
-        parent.appendChild(div);
-    }
-    let addMenuItem = function(className, text, key, enabled, func) {
-        let div = document.createElement('div');
-        div.className = 'menuItem ' + className;
-        if (!enabled) div.className += ' disabled';
-        let span1 = document.createElement('span');
-        setElemText(span1, text);
-        div.appendChild(span1);
-        let span2 = document.createElement('span');
-        span2.className = 'key';
-        if (key != null) setElemText(span2, key);
-        div.appendChild(span2);
-        if (enabled) div.onclick = func;
-        parent.appendChild(div);
-    }
-    let addMenuItemEngine = function(className, text) {
-        let div = document.createElement('div');
-        div.className = 'menuItem ' + className;
-        let span1 = document.createElement('span');
-        setElemText(span1, text);
-        div.appendChild(span1);
-        let span2 = document.createElement('span');
-        span2.id = 'buttonEnginePlus';
-        span2.onclick = function() {
-            if (_engine != null && _engine.ready) command('depth ' + Math.min(MAX_DEPTH, _engine.depth + 1));
-            showBoard(false, true);
-            setEngineValue(document.getElementById('buttonEngineValue'));
-        }
-        div.appendChild(span2);
-        let span3 = document.createElement('span');
-        span3.id = 'buttonEngineValue';
-        span3.onclick = function() {
-            if (_engine != null && _engine.ready) command('depth ' + (_engine.depth != 0 ? '0' : '30'));
-            showBoard(false, true);
-            setEngineValue(document.getElementById('buttonEngineValue'));
-        }
-        setEngineValue(span3);
+    requestAnimationFrame(() => {
+        let parent = document.getElementById('menu');
+        while (parent.firstChild) parent.removeChild(parent.firstChild);
 
-        div.appendChild(span3);
-        let span4 = document.createElement('span');
-        span4.id = 'buttonEngineMinus';
-        span4.onclick = function() {
-            if (_engine != null && _engine.ready) command('depth ' + Math.max(0, _engine.depth - 1));
-            showBoard(false, true);
-            setEngineValue(document.getElementById('buttonEngineValue'));
-        }
-        div.appendChild(span4);
-        parent.appendChild(div);
-    }
-
-    let addMenuItemColor = function(className, text) {
-        let div = document.createElement('div');
-        div.className = 'menuItem ' + className;
-        let span1 = document.createElement('span');
-        setElemText(span1, text);
-        div.appendChild(span1);
-
-        let span2 = document.createElement('span');
-        span2.id = 'buttonColorNext';
-        span2.onclick = function() {
-            setBoardColor(_color + 1);
+        let addMenuLine = function() {
+            let div = document.createElement('div');
+            div.className = 'menuLine';
+            parent.appendChild(div);
         }
 
-        div.appendChild(span2);
-        let div1 = document.createElement('div');
-        div1.id = 'icolor';
-        div1.className = 'c' + _color;
-        div1.onclick = function() {
-            setBoardColor(0);
-        };
-        let div2, div3 = document.createElement('div');
-        div2 = document.createElement('div');
-        div2.style.left = '0px';
-        div2.style.top = '0px';
-        div2.className = 'l';
-        div3.appendChild(div2);
-        div2 = document.createElement('div');
-        div2.style.left = '0px';
-        div2.style.top = '5px';
-        div2.className = 'd';
-        div3.appendChild(div2);
-        div2 = document.createElement('div');
-        div2.style.left = '5px';
-        div2.style.top = '0px';
-        div2.className = 'd';
-        div3.appendChild(div2);
-        div2 = document.createElement('div');
-        div2.style.left = '5px';
-        div2.style.top = '5px';
-        div2.className = 'l';
-        div3.appendChild(div2);
-        div1.appendChild(div3);
-        div.appendChild(div1);
-
-        let span4 = document.createElement('span');
-        span4.id = 'buttonColorPrev';
-        span4.onclick = function() {
-            setBoardColor(_color - 1);
+        let addMenuItem = function(className, text, key, enabled, func) {
+            let div = document.createElement('div');
+            div.className = 'menuItem ' + className;
+            if (!enabled) div.className += ' disabled';
+            let span1 = document.createElement('span');
+            setElemText(span1, text);
+            div.appendChild(span1);
+            let span2 = document.createElement('span');
+            span2.className = 'key';
+            if (key != null) setElemText(span2, key);
+            div.appendChild(span2);
+            if (enabled) div.onclick = func;
+            parent.appendChild(div);
         }
-        div.appendChild(span4);
 
-        parent.appendChild(div);
-    }
+        let addMenuItemEngine = function(className, text) {
+            let div = document.createElement('div');
+            div.className = 'menuItem ' + className;
+            let span1 = document.createElement('span');
+            setElemText(span1, text);
+            div.appendChild(span1);
+            let span2 = document.createElement('span');
+            span2.id = 'buttonEnginePlus';
+            span2.onclick = function() {
+                if (_engine != null && _engine.ready) command('depth ' + Math.min(MAX_DEPTH, _engine.depth + 1));
+                showBoard(false, true);
+                setEngineValue(document.getElementById('buttonEngineValue'));
+            }
+            div.appendChild(span2);
+            let span3 = document.createElement('span');
+            span3.id = 'buttonEngineValue';
+            span3.onclick = function() {
+                if (_engine != null && _engine.ready) command('depth ' + (_engine.depth != 0 ? '0' : '30'));
+                showBoard(false, true);
+                setEngineValue(document.getElementById('buttonEngineValue'));
+            }
+            setEngineValue(span3);
+            div.appendChild(span3);
+            let span4 = document.createElement('span');
+            span4.id = 'buttonEngineMinus';
+            span4.onclick = function() {
+                if (_engine != null && _engine.ready) command('depth ' + Math.max(0, _engine.depth - 1));
+                showBoard(false, true);
+                setEngineValue(document.getElementById('buttonEngineValue'));
+            }
+            div.appendChild(span4);
+            parent.appendChild(div);
+        }
 
-    addMenuItem('menuAnalysisMode', 'Mode 1: Analyze Board', 1, _gameMode != 1, function(e) {
-        menuAnalysisMode()
-    });
-    addMenuItem('menuPlayEngine', 'Mode 2: Player (White) vs. Engine (Black)', 2, _gameMode != 2, function(e) {
-        menuPlayEngineWhite()
-    });
-    addMenuItem('menuPlayEngine', 'Mode 3: Engine (White) vs. Player (Black)', 3, _gameMode != 3, function(e) {
-        menuPlayEngineBlack()
-    });
-    addMenuItem('menuTwoPlayerMode', 'Mode 4: Player vs. Player', 4, _gameMode != 4, function(e) {
-        menuTwoPlayerMode()
-    });
-    addMenuLine();
-    addMenuItemEngine('menuEngine', _play != null ? 'Engine level' : 'Engine depth');
-    addMenuLine();
-    addMenuItem('menuPromote', 'Pawn Promotion: Queen', 'P', true, function() {
-        togglePromotionPiece();
-    });
-    addMenuLine();
-    addMenuItem('menuKeep', 'Keep Changes', 'K', document.getElementById('buttonRevert').className == 'on', function() {
-        command('keep');
-        showHideMenu(false);
-    });
-    addMenuItem('menuRevert', 'Revert Changes', 'ESC', document.getElementById('buttonRevert').className == 'on', function() {
-        command('revert');
-        showHideMenu(false);
-    });
-    addMenuLine();
-    addMenuItem('menuFlip', 'Flip Board', 'F', true, function() {
-        command('flip');
-        showHideMenu(false);
-    });
-    addMenuItem('menuStm', 'Change Side To Move', 'T', true, function() {
-        command('sidetomove');
-        showHideMenu(false);
-    });
-    addMenuLine();
-    addMenuItem('menuStart', 'Go To First Move', 'Home', document.getElementById('buttonBack').className == 'on', function() {
-        historyMove(-1, null, true);
-        showHideMenu(false);
-    });
-    addMenuItem('menuEnd', 'Go To Last Move', 'End', document.getElementById('buttonForward').className == 'on', function() {
-        historyMove(+1, null, true);
-        showHideMenu(false);
-    });
-    addMenuItem('menuReset', 'Reset Game', '0', true, function() {
-        command('reset');
-        showHideMenu(false);
-    });
-    addMenuLine();
-    addMenuItemColor('menuColor', 'Chessboard Theme');
-    addMenuItem('menuWindow', 'Open Board In New Window', 'N', true, function() {
-        command('window');
-        showHideMenu(false);
+        let addMenuItemColor = function(className, text) {
+            let div = document.createElement('div');
+            div.className = 'menuItem ' + className;
+            let span1 = document.createElement('span');
+            setElemText(span1, text);
+            div.appendChild(span1);
+
+            let span2 = document.createElement('span');
+            span2.id = 'buttonColorNext';
+            span2.onclick = function() {
+                setBoardColor(_color + 1);
+            }
+            div.appendChild(span2);
+            let div1 = document.createElement('div');
+            div1.id = 'icolor';
+            div1.className = 'c' + _color;
+            div1.onclick = function() {
+                setBoardColor(0);
+            };
+            let div2, div3 = document.createElement('div');
+            div2 = document.createElement('div');
+            div2.style.left = '0px';
+            div2.style.top = '0px';
+            div2.className = 'l';
+            div3.appendChild(div2);
+            div2 = document.createElement('div');
+            div2.style.left = '0px';
+            div2.style.top = '5px';
+            div2.className = 'd';
+            div3.appendChild(div2);
+            div2 = document.createElement('div');
+            div2.style.left = '5px';
+            div2.style.top = '0px';
+            div2.className = 'd';
+            div3.appendChild(div2);
+            div2 = document.createElement('div');
+            div2.style.left = '5px';
+            div2.style.top = '5px';
+            div2.className = 'l';
+            div3.appendChild(div2);
+            div1.appendChild(div3);
+            div.appendChild(div1);
+
+            let span4 = document.createElement('span');
+            span4.id = 'buttonColorPrev';
+            span4.onclick = function() {
+                setBoardColor(_color - 1);
+            }
+            div.appendChild(span4);
+
+            parent.appendChild(div);
+        }
+
+        addMenuItem('menuAnalysisMode', 'Mode 1: Analyze Board', 1, _gameMode != 1, function(e) {
+            menuAnalysisMode()
+        });
+        addMenuItem('menuPlayEngine', 'Mode 2: Player (White) vs. Engine (Black)', 2, _gameMode != 2, function(e) {
+            menuPlayEngineWhite()
+        });
+        addMenuItem('menuPlayEngine', 'Mode 3: Engine (White) vs. Player (Black)', 3, _gameMode != 3, function(e) {
+            menuPlayEngineBlack()
+        });
+        addMenuItem('menuTwoPlayerMode', 'Mode 4: Player vs. Player', 4, _gameMode != 4, function(e) {
+            menuTwoPlayerMode()
+        });
+        addMenuLine();
+        addMenuItemEngine('menuEngine', _play != null ? 'Engine level' : 'Engine depth');
+        addMenuLine();
+        addMenuItem('menuPromote', 'Pawn Promotion: Queen', 'P', true, function() {
+            togglePromotionPiece();
+        });
+        addMenuLine();
+        addMenuItem('menuKeep', 'Keep Changes', 'K', document.getElementById('buttonRevert').className == 'on', function() {
+            command('keep');
+            showHideMenu(false);
+        });
+        addMenuItem('menuRevert', 'Revert Changes', 'ESC', document.getElementById('buttonRevert').className == 'on', function() {
+            command('revert');
+            showHideMenu(false);
+        });
+        addMenuLine();
+        addMenuItem('menuFlip', 'Flip Board', 'F', true, function() {
+            command('flip');
+            showHideMenu(false);
+        });
+        addMenuItem('menuStm', 'Change Side To Move', 'T', true, function() {
+            command('sidetomove');
+            showHideMenu(false);
+        });
+        addMenuLine();
+        addMenuItem('menuStart', 'Go To First Move', 'Home', document.getElementById('buttonBack').className == 'on', function() {
+            historyMove(-1, null, true);
+            showHideMenu(false);
+        });
+        addMenuItem('menuEnd', 'Go To Last Move', 'End', document.getElementById('buttonForward').className == 'on', function() {
+            historyMove(+1, null, true);
+            showHideMenu(false);
+        });
+        addMenuItem('menuReset', 'Reset Game', '0', true, function() {
+            command('reset');
+            showHideMenu(false);
+        });
+        addMenuLine();
+        addMenuItemColor('menuColor', 'Chessboard Theme');
+        addMenuItem('menuWindow', 'Open Board In New Window', 'N', true, function() {
+            command('window');
+            showHideMenu(false);
+        });
     });
 }
 
@@ -5303,7 +5338,6 @@ function menuAnalysisMode() {
     _engine.send('setoption name Skill Level value 20');
     showBoard(false);
     showHideMenu(false);
-    historySave();
 }
 
 function menuPlayEngineWhite() {
@@ -5313,7 +5347,6 @@ function menuPlayEngineWhite() {
     showBoard(true);
     showHideMenu(false);
     doComputerMove();
-    historySave();
 }
 
 function menuPlayEngineBlack() {
@@ -5323,7 +5356,6 @@ function menuPlayEngineBlack() {
     showBoard(true);
     showHideMenu(false);
     doComputerMove();
-    historySave();
 }
 
 function menuTwoPlayerMode() {
@@ -5332,7 +5364,6 @@ function menuTwoPlayerMode() {
     _play = null;
     showBoard(false);
     showHideMenu(false);
-    historySave();
 }
 
 // ============================
@@ -5509,70 +5540,82 @@ function setupTouchEvents(elem, funcStart, funcMove, funcEnd) {
 }
 
 function showBoard(noeval, refreshhistory, keepcontent) {
-    let pos = parseFEN(getCurFEN());
-    let dragElem = document.getElementById('dragPiece');
-    while (dragElem.firstChild) dragElem.removeChild(dragElem.firstChild);
-    let elem = document.getElementById('chessboard1');
-    if (keepcontent && elem.children.length != 64) keepcontent = false;
-    if (!keepcontent)
-        while (elem.firstChild) elem.removeChild(elem.firstChild);
-    let index = 0;
-    for (let x = 0; x < 8; x++)
-        for (let y = 0; y < 8; y++) {
-            let div = keepcontent ? elem.children[index] : document.createElement('div');
-            index++;
-            div.style.left = (_flip ? 7 - x : x) * 40 + 'px';
-            div.style.top = (_flip ? 7 - y : y) * 40 + 'px';
-            div.className = ((x + y) % 2 ? 'd' : 'l');
-            div.className += ' ' + pos.b[x][y];
-            if (pos.b[x][y] == 'K' && isWhiteCheck(pos) ||
-                pos.b[x][y] == 'k' && isWhiteCheck(colorflip(pos))) div.className += ' h2';
-            if (!keepcontent) elem.appendChild(div);
+    requestAnimationFrame(() => {
+        let pos = parseFEN(getCurFEN());
+        let dragElem = document.getElementById('dragPiece');
+        while (dragElem.firstChild) dragElem.removeChild(dragElem.firstChild);
+
+        let elem = document.getElementById('chessboard1');
+        if (keepcontent && elem.children.length != 64) keepcontent = false;
+        if (!keepcontent)
+            while (elem.firstChild) elem.removeChild(elem.firstChild);
+
+        let fragment = document.createDocumentFragment();
+        let index = 0;
+        for (let x = 0; x < 8; x++) {
+            for (let y = 0; y < 8; y++) {
+                let div = keepcontent ? elem.children[index] : document.createElement('div');
+                index++;
+                div.style.left = (_flip ? 7 - x : x) * 40 + 'px';
+                div.style.top = (_flip ? 7 - y : y) * 40 + 'px';
+                div.className = ((x + y) % 2 ? 'd' : 'l') + ' ' + pos.b[x][y];
+                if ((pos.b[x][y] == 'K' && isWhiteCheck(pos)) || (pos.b[x][y] == 'k' && isWhiteCheck(colorflip(pos)))) {
+                    div.className += ' h2';
+                }
+                if (!keepcontent) fragment.appendChild(div);
+            }
         }
-    if (_clickFromElem != null && _clickFrom != null && _clickFrom.x >= 0 && _clickFrom.y >= 0) _clickFromElem = null;
-    document.getElementById('searchInput').value = getCurFEN();
 
-    if (!noeval) {
-        refreshMoves();
-        if (refreshhistory)
-            for (let i = 0; i < _history.length; i++)
-                if (_history[i].length > 1 && _history[i][1] != null) _history[i][1].depth = -1;
-        scrollReset('Moves');
-        scrollReset('Opening');
-        scrollReset('Static');
-        if (_engine && !_engine.kill) evalAll();
+        if (!keepcontent) elem.appendChild(fragment);
 
-    }
-    document.getElementById('buttonStm').className = pos.w ? 'white' : 'black';
+        if (_clickFromElem != null && _clickFrom != null && _clickFrom.x >= 0 && _clickFrom.y >= 0) _clickFromElem = null;
+        document.getElementById('searchInput').value = getCurFEN();
 
-    setArrow(true);
-    repaintLastMoveArrow();
-    showArrow3(null);
+        if (!noeval) {
+            refreshMoves();
+            if (refreshhistory) {
+                for (let i = 0; i < _history.length; i++) {
+                    if (_history[i].length > 1 && _history[i][1] != null) _history[i][1].depth = -1;
+                }
+            }
+            scrollReset('Moves');
+            scrollReset('Opening');
+            scrollReset('Static');
+            if (_engine && !_engine.kill) evalAll();
+        }
 
-    if (_menu) reloadMenu();
-    repaintGraph();
-    repaintSidebars();
-    updateInfo();
-    repaintStatic();
-    updateTooltip('');
+        document.getElementById('buttonStm').className = pos.w ? 'white' : 'black';
+
+        // Batch updates
+        setArrow(true);
+        repaintLastMoveArrow();
+        showArrow3(null);
+
+        if (_menu) reloadMenu();
+        repaintGraph();
+        repaintSidebars();
+        updateInfo();
+        repaintStatic();
+        updateTooltip('');
+    });
 }
 
 function scrollReset(winId) {
-    let windowElem = document.getElementById('w' + winId);
-    let scrollElem = document.getElementById(winId.toLowerCase());
-    let oldDisplay = windowElem.style.display;
-    windowElem.style.display = '';
-    scrollElem.scrollTop = 0;
-    windowElem.style.display = oldDisplay;
+    requestAnimationFrame(() => {
+        let windowElem = document.getElementById('w' + winId);
+        let scrollElem = document.getElementById(winId.toLowerCase());
+        let oldDisplay = windowElem.style.display;
+        windowElem.style.display = '';
+        scrollElem.scrollTop = 0;
+        windowElem.style.display = oldDisplay;
+    });
 }
-
 
 function findMoveIndexBySan(san) {
     for (let i = 0; i < _curmoves.length; i++)
         if (san == _curmoves[i].san) return i;
     return null;
 }
-
 
 function defaultMouseMove(event) {
     if (_tooltipState) updateTooltipPos(event);
@@ -5732,7 +5775,6 @@ function checkSizes() {
         _wantUpdateInfo = false;
         updateInfo();
     }
-
 }
 
 function setupMobileLayout(init) {
