@@ -140,7 +140,7 @@ This project is licensed under the GNU AFFERO GENERAL PUBLIC LICENSE (AGPLv3). F
 
 ## Credits
 
-- [Stockfish](https://github.com/mcostalba/Stockfish)
+- [Stockfish](https://github.com/official-stockfish/Stockfish)
 - [Stockfish.js (nmrugg)](https://github.com/nmrugg/stockfish.js)
 - [TensorFlow](https://github.com/tensorflow/tensorflow)
 - [PeshkaChess](https://github.com/hxim/PeshkaChess)
