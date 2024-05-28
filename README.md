@@ -91,6 +91,21 @@ Our mission is to develop a modern, responsive, free, and open-source web-based 
 
 ---
 
+## HTTP Headers Setup
+
+The app is currently using **Stockfish NNUE 16 JS**, which utilizes the `SharedArrayBuffer`. To ensure the engine functions correctly, you need to enable SharedArrayBuffer support both locally and on your server. This involves setting appropriate HTTP headers.
+
+To enable `SharedArrayBuffer`, you must configure the following HTTP headers:
+
+1. **Cross-Origin-Opener-Policy (COOP)**: This should be set to `same-origin`.
+2. **Cross-Origin-Embedder-Policy (COEP)**: This should be set to `require-corp`.
+
+These headers isolate the context of your page and provide the necessary security guarantees for using `SharedArrayBuffer`. Properly configuring these headers will allow the Stockfish NNUE 16 JS engine to operate efficiently. Alternatively, you can switch to the **Stockfish NNUE 16 Single JS** which does not utilize the `SharedArrayBuffer`.
+
+Read more about `ShreadArrayBuffer` at [this link](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SharedArrayBuffer).
+
+---
+
 ## Server and Deployment
 
 The application is designed for easy deployment in any standard Node.js environment.
