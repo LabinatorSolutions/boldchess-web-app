@@ -1,10 +1,8 @@
 # BoldChess Web App
 
-![Web GUI](https://img.shields.io/badge/Web_GUI-Responsive-526ba2)
-![JavaScript](https://img.shields.io/badge/Language-JavaScript-f0db4f)
-![Node.js Version](https://img.shields.io/badge/Node.js-v22.1.0-339933)
-![Express.js](https://img.shields.io/badge/Express.js-4.19.2-259dff)
-![Stockfish Chess Engine](https://img.shields.io/badge/Stockfish_Version-16-358853)
+![Node.js Version](https://img.shields.io/badge/Node.js-v20.18.0-339933)
+![Express.js](https://img.shields.io/badge/Express.js-4.21.1-259dff)
+![Stockfish Chess Engine](https://img.shields.io/badge/Stockfish_Version-16.1-358853)
 ![Mobile Ready](https://img.shields.io/badge/Mobile_Ready-Yes-985b68)
 ![Issues](https://img.shields.io/github/issues-search/LabinatorSolutions/boldchess-web-app?label=Known%20Bugs&query=is%3Aissue+is%3Aopen+label%3Abug)
 ![License](https://img.shields.io/badge/License-AGPL_v3-663366)
@@ -16,7 +14,7 @@ It is a responsive web GUI for the Stockfish chess engine, offering analysis, ev
 
 ## Mission
 
-Our mission is to develop a modern, responsive, free, and open-source web-based chess app powered by the Stockfish chess engine.
+Our mission is to create a modern, mobile-friendly, free, and open-source web-based chess app, powered by the advanced Stockfish chess engine.
 
 ---
 
@@ -30,30 +28,29 @@ Our mission is to develop a modern, responsive, free, and open-source web-based 
 
 - Load your chess position or game using FEN, PGN, or a move list.
 - Set up pieces manually in edit mode.
-- Browse game history with arrows or mouse wheel.
-- List and show all legal moves on the chessboard.
+- Browse game history using arrows or the mouse wheel.
+- List and display all legal moves on the chessboard.
 - Analyze positions and legal moves using the JavaScript version of Stockfish.
 - Display an evaluation graph with visual indicators for blunders.
 - Open a position or game in a new window via a URL.
-- Play against the computer (Stockfish) and set its difficulty level.
-- Detect opening categories or ECO codes.
-- Customize the styling of the chessboard.
-- Print arrows or mark squares on the chessboard.
-- Visualize relevant squares based on Stockfish's static evaluation terms.
-- Dark interface with a pitch-black background for OLED screens, enhancing battery life and user experience.
+- Play against the Stockfish engine, with the ability to set its rating according to your preference.
+- Activate/Deactivate a special "Coach Mode" to view the best move and evaluation while playing.
+- Customize the appearance of the chessboard.
+- Draw arrows or highlight squares on the chessboard.
+- Visualize relevant squares based on Stockfish's static evaluation.
+- Dark interface with a pitch-black background for OLED screens, improving battery life and user experience.
 - Support for PCs, tablets, smartphones, and touch devices.
 
 ---
 
 ## Available Windows
 
-- Chess Openings
 - Chessboard
-- Edit Board
-- Game History
+- All Moves With Evaluations
+- History of Moves
 - Evaluation Graph
-- List of Moves
 - Static Evaluation
+- Chessboard Editor
 
 ---
 
@@ -93,14 +90,14 @@ Our mission is to develop a modern, responsive, free, and open-source web-based 
 
 ## HTTP Headers Setup
 
-The app is currently using **Stockfish NNUE 16 JS**, which utilizes the `SharedArrayBuffer`. To ensure the engine functions correctly, you need to enable SharedArrayBuffer support both locally and on your server. This involves setting appropriate HTTP headers.
+The app is currently using **Stockfish 16.1 JS**, which utilizes the `SharedArrayBuffer`. To ensure the engine functions correctly, you need to enable SharedArrayBuffer support both locally and on your server. This involves setting appropriate HTTP headers.
 
 To enable `SharedArrayBuffer`, you must configure the following HTTP headers:
 
 1. **Cross-Origin-Opener-Policy (COOP)**: This should be set to `same-origin`.
 2. **Cross-Origin-Embedder-Policy (COEP)**: This should be set to `require-corp`.
 
-These headers isolate the context of your page and provide the necessary security guarantees for using `SharedArrayBuffer`. Properly configuring these headers will allow the Stockfish NNUE 16 JS engine to operate efficiently. Alternatively, you can switch to the **Stockfish NNUE 16 Single JS** which does not utilize the `SharedArrayBuffer`.
+These headers isolate the context of your page and provide the necessary security guarantees for using `SharedArrayBuffer`. Properly configuring these headers will allow the Stockfish 16.1 JS engine to operate efficiently. Alternatively, you can switch to the **Stockfish 16.1 Single JS** which does not utilize the `SharedArrayBuffer`.
 
 Read more about `ShreadArrayBuffer` at [this link](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SharedArrayBuffer).
 
@@ -126,23 +123,22 @@ For a list of important improvements and known issues, visit our [GitHub Issues 
 
 We welcome all developers to contribute by adding features or fixing bugs.
 
-**Current Contributors**:
-
-Visit the [Contributors page](https://github.com/LabinatorSolutions/boldchess-web-app/graphs/contributors) to see the list of contributors.
+Visit the [Contributors page](https://github.com/LabinatorSolutions/boldchess-web-app/graphs/contributors) to see the list of current contributors.
 
 ---
 
 ## License
 
-This project is licensed under the GNU AFFERO GENERAL PUBLIC LICENSE (AGPLv3). For more details, see the [AGPLv3 License](https://www.gnu.org/licenses/agpl-3.0.html).
+This project is licensed under the **GNU AFFERO GENERAL PUBLIC LICENSE (AGPLv3)**. For more details, see the [AGPLv3 License](https://www.gnu.org/licenses/agpl-3.0.html).
 
 ---
 
 ## Credits
 
-- [Stockfish](https://github.com/official-stockfish/Stockfish)
-- [Stockfish.js (nmrugg)](https://github.com/nmrugg/stockfish.js)
+- [Stockfish](https://github.com/mcostalba/Stockfish)
+- [Stockfish.js](https://github.com/nmrugg/stockfish.js)
 - [TensorFlow](https://github.com/tensorflow/tensorflow)
-- [PeshkaChess](https://github.com/hxim/PeshkaChess)
+- [Protobuf](https://github.com/protobufjs/protobuf.js)
+- [Pako](https://github.com/nodeca/pako)
 - [BoldChess](https://boldchess.com/)
 - [Labinator](https://labinator.com/)

@@ -1,5 +1,5 @@
 {
-  "name": "boldchess-android-app",
+  "name": "boldchess-web-app",
   "version": "1.0.0",
   "description": "The official chess web app of BoldChess.com",
   "main": "server.js",
@@ -20,24 +20,24 @@
   "license": "AGPLv3",
   "repository": {
     "type": "git",
-    "url": "https://github.com/LabinatorSolutions/boldchess-web-app"
+    "url": "https://bitbucket.org/labinator-team/boldchess-android-app"
   },
   "dependencies": {
     "express": "^4.21.1",
-    "helmet": "^7.1.0",
+    "helmet": "^8.0.0",
     "morgan": "^1.10.0",
     "compression": "^1.7.4",
-    "express-rate-limit": "^7.2.0",
+    "express-rate-limit": "^7.4.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
-    "cheerio": "^1.0.0-rc.12",
+    "cheerio": "^1.0.0",
     "express-session": "^1.18.1"
   },
   "devDependencies": {
-    "eslint": "^9.3.0",
-    "prettier": "^3.2.5"
+    "eslint": "^9.13.0",
+    "prettier": "^3.3.3"
   },
   "engines": {
-    "node": ">=20.13.1"
+    "node": ">=20.18.0"
   }
 }
