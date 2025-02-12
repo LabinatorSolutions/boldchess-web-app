@@ -35,7 +35,7 @@
   },
   "devDependencies": {
     "eslint": "^9.20.0",
-    "prettier": "^3.4.2"
+    "prettier": "^3.5.0"
   },
   "engines": {
     "node": ">=20.18.0"
