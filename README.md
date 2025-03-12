@@ -18,12 +18,6 @@ Our mission is to create a modern, mobile-friendly, free, and open-source web-ba
 
 ---
 
-## Live Version
-
-- **Live URL**: [app.boldchess.com](https://app.boldchess.com/)
-
----
-
 ## Features
 
 - Load your chess position or game using FEN, PGN, or a move list.
