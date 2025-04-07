@@ -23,7 +23,7 @@
     "url": "https://bitbucket.org/labinator-team/boldchess-android-app"
   },
   "dependencies": {
-    "express": "^4.21.2",
+    "express": "^5.1.0",
     "helmet": "^8.0.0",
     "morgan": "^1.10.0",
     "compression": "^1.7.5",
