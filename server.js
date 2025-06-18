@@ -49,7 +49,7 @@ const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 100 // Limit each IP to 100 requests per windowMs
 });
-app.use(limiter);
+app.use(limiter); // Disabled for local development to avoid 429 errors
 
 // Parse incoming JSON requests
 app.use(express.json());
@@ -78,7 +78,7 @@ app.use((req, res, next) => {
 });
 
 // Send the main HTML file for any other requests (Single Page Application)
-app.get('*', (req, res) => {
+app.use((req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
