@@ -78,7 +78,7 @@ app.use((req, res, next) => {
 });
 
 // Send the main HTML file for any other requests (Single Page Application)
-app.get('*', (req, res) => {
+app.use((req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
