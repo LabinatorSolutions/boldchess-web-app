@@ -39,11 +39,12 @@ export class ChessEngine {
 
   /**
    * Create or get analysis engine instance
+   * @param {Function} onReady - Callback when engine is ready
    * @returns {ChessEngine}
    */
-  static getAnalysisEngine() {
+  static getAnalysisEngine(onReady = null) {
     if (!ChessEngine.#analysisInstance) {
-      ChessEngine.#analysisInstance = new ChessEngine();
+      ChessEngine.#analysisInstance = new ChessEngine(onReady);
     }
     return ChessEngine.#analysisInstance;
   }
@@ -104,13 +105,15 @@ export class ChessEngine {
    * @private
    */
   #initializeUCI() {
-    this.send('uci', (response) => {
-      if (response === 'uciok') {
-        this.send('isready', (readyResponse) => {
-          if (readyResponse === 'readyok') {
+    // Send UCI initialization commands
+    this.send('uci', (data) => {
+      if (data.includes('uciok')) {
+        this.send('setoption name Hash value 128');
+        this.send('setoption name Threads value 1');
+        this.send('setoption name UCI_Chess960 value false');
+        this.send('isready', (readyData) => {
+          if (readyData.includes('readyok')) {
             this.#ready = true;
-            this.send(`setoption name EvalFile value ${ENGINE_CONFIG.NNUE_PATH}`);
-            
             if (this.#onReadyCallback) {
               this.#onReadyCallback(this);
             }
@@ -121,7 +124,7 @@ export class ChessEngine {
   }
 
   /**
-   * Send command to engine
+   * Send UCI command to engine
    * @param {string} command - UCI command
    * @param {Function} messageHandler - Response handler
    */
@@ -150,207 +153,109 @@ export class ChessEngine {
         return;
       }
 
+      this.#fen = fen;
+      let evaluation = {
+        score: null,
+        depth: 0,
+        nodes: 0,
+        bestMove: null,
+        pv: []
+      };
+
       this.send(`position fen ${fen}`);
-      this.send(`go depth ${this.#depth}`, (response) => {
-        const progressMatch = response.match(/depth (\d+) .*score (cp|mate) ([-\d]+) .*nodes (\d+) .*pv (.+)/);
-        const simpleMatch = response.match(/depth (\d+) .*score (cp|mate) ([-\d]+).*/);
-        
-        if (progressMatch || simpleMatch) {
-          const matches = progressMatch || simpleMatch;
-          
-          // Reset tracking on new position
-          if (this.#lastNodes === 0) this.#fen = fen;
-          
-          // Handle node count for position tracking
-          if (matches.length > 4) {
-            const nodes = Number(matches[4]);
-            if (nodes < this.#lastNodes) this.#fen = fen;
-            this.#lastNodes = nodes;
-          }
+      this.send(`go depth ${this.#depth}`, (data) => {
+        if (data.includes('info')) {
+          // Parse evaluation info
+          const scoreMatch = data.match(/score cp (-?\d+)/);
+          const depthMatch = data.match(/depth (\d+)/);
+          const nodesMatch = data.match(/nodes (\d+)/);
+          const pvMatch = data.match(/pv (.+)/);
 
-          const depth = Number(matches[1]);
-          const scoreType = matches[2];
-          let score = Number(matches[3]);
-          
-          // Convert mate scores
-          if (scoreType === 'mate') {
-            score = (1000000 - Math.abs(score)) * (score <= 0 ? -1 : 1);
-          }
-          
-          this.#score = score;
+          if (scoreMatch) evaluation.score = parseInt(scoreMatch[1]);
+          if (depthMatch) evaluation.depth = parseInt(depthMatch[1]);
+          if (nodesMatch) evaluation.nodes = parseInt(nodesMatch[1]);
+          if (pvMatch) evaluation.pv = pvMatch[1].split(' ');
 
-          // Handle principal variation
-          if (matches.length > 5 && onProgress && this.#fen === fen) {
-            const pv = matches[5].split(' ');
-            onProgress(depth, score, pv);
-          }
+          if (onProgress) onProgress(evaluation);
         }
 
-        // Check for completion
-        if (response.includes('bestmove') || response.includes('mate 0') || response === 'info depth 0 score cp 0') {
-          if (this.#fen === fen) {
-            const result = {
-              bestmove: this.#extractBestMove(response),
-              score: this.#score,
-              depth: this.#depth,
-              fen: fen
-            };
-            
-            if (onComplete) onComplete(response);
-            resolve(result);
-            this.#lastNodes = 0;
+        if (data.includes('bestmove')) {
+          const bestMoveMatch = data.match(/bestmove (\w+)/);
+          if (bestMoveMatch) {
+            evaluation.bestMove = bestMoveMatch[1];
           }
+          
+          if (onComplete) onComplete(evaluation);
+          resolve(evaluation);
         }
       });
     });
   }
 
   /**
-   * Extract best move from engine response
-   * @param {string} response - Engine response
-   * @returns {Object|null} Parsed move object
-   * @private
-   */
-  #extractBestMove(response) {
-    const matches = response.match(/^bestmove\s(\S+)(?:\sponder\s(\S+))?/);
-    if (matches && matches.length > 1) {
-      return this.#parseBestMove(matches[1]);
-    }
-    return null;
-  }
-
-  /**
-   * Parse UCI move notation to move object
-   * @param {string} moveString - UCI move string (e.g., 'e2e4')
-   * @returns {Object|null} Move object with from, to, and optional promotion
-   * @private
-   */
-  #parseBestMove(moveString) {
-    if (!moveString || moveString.length < 4) return null;
-
-    const from = {
-      x: 'abcdefgh'.indexOf(moveString[0]),
-      y: '87654321'.indexOf(moveString[1])
-    };
-
-    const to = {
-      x: 'abcdefgh'.indexOf(moveString[2]),
-      y: '87654321'.indexOf(moveString[3])
-    };
-
-    // Handle promotion
-    if (moveString.length > 4) {
-      const promotionIndex = 'nbrq'.indexOf(moveString[4]);
-      if (promotionIndex >= 0) {
-        return {
-          from,
-          to,
-          p: 'NBRQ'[promotionIndex]
-        };
-      }
-    }
-
-    return { from, to };
-  }
-
-  /**
-   * Configure engine with UCI options
-   * @param {string} option - Option name
-   * @param {string|number} value - Option value
-   */
-  setOption(option, value) {
-    this.send(`setoption name ${option} value ${value}`);
-  }
-
-  /**
-   * Set engine skill level
-   * @param {number} level - Skill level (0-20)
-   */
-  setSkillLevel(level) {
-    this.setOption('Skill Level', Math.max(0, Math.min(20, level)));
-  }
-
-  /**
-   * Configure UCI Elo rating
-   * @param {number} rating - ELO rating
-   */
-  setEloRating(rating) {
-    this.setOption('UCI_LimitStrength', 'true');
-    this.setOption('UCI_Elo', rating);
-  }
-
-  /**
-   * Stop current analysis
+   * Stop current evaluation
    */
   stop() {
-    this.send('stop');
+    if (this.#worker && this.#ready) {
+      this.send('stop');
+    }
   }
 
   /**
-   * Start new game
+   * Terminate the engine worker
    */
-  newGame() {
-    this.send('ucinewgame');
-    this.#lastNodes = 0;
-    this.#score = null;
-    this.#fen = null;
-  }
-
-  /**
-   * Kill the engine
-   */
-  destroy() {
-    this.#kill = true;
+  terminate() {
     if (this.#worker) {
       this.#worker.terminate();
       this.#worker = null;
+      this.#ready = false;
     }
-    this.#ready = false;
   }
 
-  // Getters
+  // Getters for backward compatibility
   get ready() { return this.#ready; }
   get kill() { return this.#kill; }
   get waiting() { return this.#waiting; }
   get depth() { return this.#depth; }
-  get score() { return this.#score; }
   get lastNodes() { return this.#lastNodes; }
+  get fen() { return this.#fen; }
+  get score() { return this.#score; }
 
-  // Setters
+  // Setters for backward compatibility
   set kill(value) { this.#kill = value; }
   set waiting(value) { this.#waiting = value; }
-  set depth(value) { 
-    this.#depth = Math.max(ENGINE_CONFIG.MIN_DEPTH, Math.min(ENGINE_CONFIG.MAX_DEPTH, value));
-  }
+  set depth(value) { this.#depth = value; }
+  set lastNodes(value) { this.#lastNodes = value; }
+  set fen(value) { this.#fen = value; }
   set score(value) { this.#score = value; }
 }
 
 /**
- * Legacy function compatibility layer
- * These will be gradually replaced with direct class usage
+ * Computer Move Manager for future expansion
  */
+export class ComputerMoveManager {
+  static #instance = null;
 
-// Global engine instances (for backward compatibility)
-let _legacyAnalysisEngine = null;
-let _legacyPlayEngine = null;
+  static getInstance() {
+    if (!ComputerMoveManager.#instance) {
+      ComputerMoveManager.#instance = new ComputerMoveManager();
+    }
+    return ComputerMoveManager.#instance;
+  }
 
-/**
- * Legacy loadEngine function - use ChessEngine.getAnalysisEngine() or ChessEngine.getPlayEngine() instead
- * @param {Function} onReady - Callback when engine is ready
- * @returns {Object} Legacy engine object
- * @deprecated Use ChessEngine class instead
- */
-export function loadEngine(onReady = null) {
-  if (onReady) {
-    // This is for the play engine
-    _legacyPlayEngine = ChessEngine.getPlayEngine(onReady);
-    return createLegacyWrapper(_legacyPlayEngine);
-  } else {
-    // This is for the analysis engine
-    _legacyAnalysisEngine = ChessEngine.getAnalysisEngine();
-    return createLegacyWrapper(_legacyAnalysisEngine);
+  async calculateMove(fen, difficulty = 'normal') {
+    const engine = ChessEngine.getPlayEngine();
+    if (!engine.ready) {
+      throw new Error('Chess engine not ready');
+    }
+
+    return engine.evaluate(fen);
   }
 }
+
+// Legacy compatibility layer
+let _legacyAnalysisEngine = null;
+let _legacyPlayEngine = null;
 
 /**
  * Create a legacy wrapper object for backward compatibility
@@ -359,226 +264,186 @@ export function loadEngine(onReady = null) {
  * @private
  */
 function createLegacyWrapper(engine) {
-  return {
+  const wrapper = {
     get ready() { return engine.ready; },
     get kill() { return engine.kill; },
-    get waiting() { return engine.waiting; },
-    get depth() { return engine.depth; },
-    get score() { return engine.score; },
-    get lastnodes() { return engine.lastNodes; },
-    
     set kill(value) { engine.kill = value; },
+    get waiting() { return engine.waiting; },
     set waiting(value) { engine.waiting = value; },
+    get depth() { return engine.depth; },
     set depth(value) { engine.depth = value; },
-    set score(value) { engine.score = value; },
+    get lastNodes() { return engine.lastNodes; },
+    set lastNodes(value) { engine.lastNodes = value; },
+    get fen() { return engine.fen; },
+    set fen(value) { engine.fen = value; },
+    score: null, // This will be updated by evaluate
+    send: (command, handler) => engine.send(command, handler),
+    stop: () => engine.stop(),
+    terminate: () => engine.terminate(),
+    
+    // Legacy evaluate method that mimics the old behavior
+    evaluate: (fen, onComplete, onProgress) => {
+      wrapper.score = null;
+      
+      engine.send(`position fen ${fen}`);
+      engine.send(`go depth ${engine.depth}`, (data) => {
+        if (data.includes('info')) {
+          // Parse evaluation info and update wrapper properties
+          const scoreMatch = data.match(/score cp (-?\d+)/);
+          const mateMatch = data.match(/score mate (-?\d+)/);
+          const depthMatch = data.match(/depth (\d+)/);
+          const nodesMatch = data.match(/nodes (\d+)/);
+          const pvMatch = data.match(/pv (.+)/);
 
-    send: (cmd, handler) => engine.send(cmd, handler),
-    evaluate: (fen, done, info) => engine.evaluate(fen, done, info)
+          if (scoreMatch) {
+            wrapper.score = parseInt(scoreMatch[1]);
+          } else if (mateMatch) {
+            // Convert mate in X to a high score
+            const mateIn = parseInt(mateMatch[1]);
+            wrapper.score = mateIn > 0 ? (1000000 - Math.abs(mateIn)) : -(1000000 - Math.abs(mateIn));
+          }
+          
+          if (depthMatch) {
+            // Don't override the engine's global depth setting
+            const infoDepth = parseInt(depthMatch[1]);
+          }
+          if (nodesMatch) {
+            engine.lastNodes = parseInt(nodesMatch[1]);
+          }
+
+          // Call the info callback with legacy format if provided
+          if (onProgress && (scoreMatch || mateMatch) && depthMatch && pvMatch) {
+            const score = wrapper.score;
+            const depth = parseInt(depthMatch[1]);
+            const pv = pvMatch[1].split(' ');
+            onProgress(depth, score, pv);
+          }
+        }
+
+        if (data.includes('bestmove')) {
+          // Call completion callback with raw engine response for legacy parsing
+          if (onComplete) {
+            onComplete(data);
+          }
+        }
+      });
+    }
   };
+  
+  return wrapper;
 }
 
 /**
- * Parse UCI move notation - standalone utility function
- * @param {string} moveString - UCI move string (e.g., 'e2e4')
- * @returns {Object|null} Move object with from, to, and optional promotion
+ * Legacy loadEngine function for backward compatibility
+ * @param {Function} onReady - Callback when engine is ready
+ * @returns {Object} Legacy engine object
+ * @deprecated Use ChessEngine class instead
+ */
+export function loadEngine(onReady = null) {
+  if (onReady) {
+    // Check if this should be a play engine or analysis engine
+    // If _legacyAnalysisEngine doesn't exist, this is the analysis engine
+    if (!_legacyAnalysisEngine) {
+      // This is for the analysis engine
+      _legacyAnalysisEngine = ChessEngine.getAnalysisEngine(onReady);
+      return createLegacyWrapper(_legacyAnalysisEngine);
+    } else {
+      // This is for the play engine
+      _legacyPlayEngine = ChessEngine.getPlayEngine(onReady);
+      return createLegacyWrapper(_legacyPlayEngine);
+    }
+  } else {
+    // This is for the analysis engine (legacy call without callback)
+    _legacyAnalysisEngine = ChessEngine.getAnalysisEngine();
+    return createLegacyWrapper(_legacyAnalysisEngine);
+  }
+}
+
+/**
+ * Parse best move from UCI engine response
+ * @param {string} moveString - UCI move string
+ * @returns {Object|null} Parsed move object
  */
 export function parseBestMove(moveString) {
-  if (!moveString || moveString.length < 4) return null;
+  if (!moveString || typeof moveString !== 'string') {
+    return null;
+  }
+
+  const cleanMove = moveString.trim();
+  if (cleanMove.length < 4) {
+    return null;
+  }
 
   const from = {
-    x: 'abcdefgh'.indexOf(moveString[0]),
-    y: '87654321'.indexOf(moveString[1])
+    x: cleanMove.charCodeAt(0) - 97, // a-h to 0-7
+    y: 8 - parseInt(cleanMove[1])     // 1-8 to 7-0
   };
 
   const to = {
-    x: 'abcdefgh'.indexOf(moveString[2]),
-    y: '87654321'.indexOf(moveString[3])
+    x: cleanMove.charCodeAt(2) - 97, // a-h to 0-7  
+    y: 8 - parseInt(cleanMove[3])     // 1-8 to 7-0
   };
 
-  // Handle promotion
-  if (moveString.length > 4) {
-    const promotionIndex = 'nbrq'.indexOf(moveString[4]);
-    if (promotionIndex >= 0) {
-      return {
-        from,
-        to,
-        p: 'NBRQ'[promotionIndex]
-      };
-    }
+  // Check for promotion
+  let promotion = null;
+  if (cleanMove.length > 4) {
+    promotion = cleanMove[4];
   }
 
-  return { from, to };
+  return {
+    from: from,
+    to: to,
+    p: promotion
+  };
 }
 
-// Export the main class as default
-export default ChessEngine;
-
 /**
- * Computer move handling and evaluation utilities
- * These functions bridge the engine with the game state
- */
-
-/**
- * Add evaluation to history entry
+ * Add evaluation data to history
  * @param {Array} history - Game history array
  * @param {number} index - History index
  * @param {number} score - Evaluation score
  * @param {number} depth - Search depth
  * @param {Object} move - Move object
+ * @returns {boolean} Whether history was updated
  */
 export function addHistoryEval(history, index, score, depth, move) {
-  if (!history[index] || history[index].length < 2 || 
-      !history[index][1] || history[index][1].depth < depth) {
-    
-    const isBlackToMove = history[index][0].includes(' b ');
-    const evaluationInfo = { 
-      score, 
-      depth, 
-      black: isBlackToMove, 
-      move 
-    };
-    
-    if (history[index].length >= 2) {
-      history[index][1] = evaluationInfo;
-    } else {
-      history[index].push(evaluationInfo);
-      history[index].push(null);
-    }
-    
-    return true; // Indicates history was updated
-  }
-  return false;
-}
-
-/**
- * Computer move manager class
- */
-export class ComputerMoveManager {
-  #playEngine = null;
-  #isPlayerWhite = true;
-  #gameMode = null;
-  #getCurrentFEN = null;
-  #setCurrentFEN = null;
-  #historyAdd = null;
-  #parseFEN = null;
-  #doMove = null;
-  #generateFEN = null;
-  #sanMove = null;
-  #genMoves = null;
-  #showBoard = null;
-  #updateTooltip = null;
-
-  /**
-   * Initialize computer move manager
-   * @param {Object} dependencies - Required game functions
-   */
-  constructor(dependencies) {
-    this.#getCurrentFEN = dependencies.getCurrentFEN;
-    this.#setCurrentFEN = dependencies.setCurrentFEN;
-    this.#historyAdd = dependencies.historyAdd;
-    this.#parseFEN = dependencies.parseFEN;
-    this.#doMove = dependencies.doMove;
-    this.#generateFEN = dependencies.generateFEN;
-    this.#sanMove = dependencies.sanMove;
-    this.#genMoves = dependencies.genMoves;
-    this.#showBoard = dependencies.showBoard;
-    this.#updateTooltip = dependencies.updateTooltip;
-  }
-
-  /**
-   * Set the play engine instance
-   * @param {ChessEngine} engine - Engine instance
-   */
-  setEngine(engine) {
-    this.#playEngine = engine;
-  }
-
-  /**
-   * Set game state
-   * @param {boolean} isPlayerWhite - Whether player is white
-   * @param {number} gameMode - Current game mode
-   */
-  setGameState(isPlayerWhite, gameMode) {
-    this.#isPlayerWhite = isPlayerWhite;
-    this.#gameMode = gameMode;
-  }
-
-  /**
-   * Execute computer move
-   * @returns {Promise<boolean>} Success status
-   */
-  async executeComputerMove() {
-    if (this.#gameMode === null) return false;
-    
-    const fen = this.#getCurrentFEN();
-    
-    // Check if it's the computer's turn
-    if (this.#isPlayerWhite && fen.includes(' w ')) return false;
-    if (!this.#isPlayerWhite && fen.includes(' b ')) return false;
-
-    // Wait for engine to be ready
-    if (!this.#playEngine || !this.#playEngine.ready) {
-      setTimeout(() => this.executeComputerMove(), 100);
-      return false;
-    }
-
-    // Handle engine busy state
-    if (!this.#playEngine.waiting) {
-      this.#playEngine.kill = true;
-      setTimeout(() => this.executeComputerMove(), 50);
-      return false;
-    }
-
-    try {
-      // Prepare engine for new move
-      this.#playEngine.kill = false;
-      this.#playEngine.waiting = false;
-      this.#playEngine.stop();
-      this.#playEngine.newGame();
-      this.#playEngine.score = null;
-
-      // Get computer move
-      const result = await this.#playEngine.evaluate(fen);
-      this.#playEngine.waiting = true;
-
-      // Verify position hasn't changed
-      if (fen !== this.#getCurrentFEN()) return false;
-
-      if (result.bestmove) {
-        const move = result.bestmove;
-        const fenBeforeMove = this.#getCurrentFEN();
-        
-        // Apply the computer's move
-        const pos = this.#doMove(this.#parseFEN(fenBeforeMove), move.from, move.to, move.p);
-        this.#setCurrentFEN(this.#generateFEN(pos));
-        
-        // Compute SAN notation
-        const san = this.#sanMove(this.#parseFEN(fenBeforeMove), move, this.#genMoves(this.#parseFEN(fenBeforeMove)));
-        
-        // Add to history
-        this.#historyAdd(this.#getCurrentFEN(), null, move, san);
-        
-        // Update UI
-        this.#updateTooltip('');
-        this.#showBoard(false);
-        
-        return true;
-      }
-    } catch (error) {
-      console.error('Computer move failed:', error);
-      this.#playEngine.waiting = true;
-    }
-
+  if (!history || index < 0 || index >= history.length) {
     return false;
   }
-}
 
-/**
- * Legacy doComputerMove function for backward compatibility
- * @param {Object} gameState - Game state object
- * @deprecated Use ComputerMoveManager class instead
- */
-export function doComputerMove(gameState) {
-  // This will be implemented when we integrate with main.js
-  console.warn('doComputerMove: Use ComputerMoveManager class for new code');
+  const historyEntry = history[index];
+  if (!historyEntry) {
+    return false;
+  }
+
+  // Ensure we have at least 4 elements: [fen, evalData, move, san]
+  while (historyEntry.length < 4) {
+    historyEntry.push(null);
+  }
+
+  // Initialize or update evaluation data object at index [1]
+  if (!historyEntry[1]) {
+    historyEntry[1] = {};
+  }
+
+  // Store evaluation data in the evaluation data object
+  if (score !== null) {
+    historyEntry[1].score = score;
+    // Determine if this is from black's perspective
+    // This is a simple heuristic - you might need to adjust based on your FEN parsing
+    const fen = historyEntry[0];
+    const fenParts = fen ? fen.split(' ') : [];
+    historyEntry[1].black = fenParts.length > 1 && fenParts[1] === 'b';
+  }
+  
+  if (depth !== null) {
+    historyEntry[1].depth = depth;
+  }
+
+  // Don't overwrite the move object if it already exists and we're not providing a new one
+  if (move && (!historyEntry[2] || !historyEntry[2].from)) {
+    historyEntry[2] = move;
+  }
+
+  return true;
 }

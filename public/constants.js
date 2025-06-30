@@ -14,7 +14,7 @@ export const ENGINE_CONFIG = {
   // Engine Depth Constants
   MIN_DEPTH: 1,
   MAX_DEPTH: 28,
-  DEFAULT_DEPTH: 18,
+  DEFAULT_DEPTH: 12, // Reduced from 18 for faster evaluation
 };
 
 // ============================

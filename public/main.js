@@ -12,6 +12,27 @@ import {
 
 import { setElemText, getElemText, setCurFEN, getCurFEN } from './dom-utils.js';
 import { loadEngine, parseBestMove, addHistoryEval as addHistoryEvalBase } from './chess-engine.js';
+import { 
+    bounds, board, colorflip, sum, parseMoveNumber, parseFEN, generateFEN, 
+    isWhiteCheck, doMove, isLegal, genMoves, sanMove, checkPosition, parseMove
+} from './chess-core.js';
+
+// Make chess core functions available globally for eval'd code
+// This is necessary for evaluation functions that use eval() with these functions
+window.bounds = bounds;
+window.board = board;
+window.colorflip = colorflip;
+window.sum = sum;
+window.parseMoveNumber = parseMoveNumber;
+window.parseFEN = parseFEN;
+window.generateFEN = generateFEN;
+window.isWhiteCheck = isWhiteCheck;
+window.doMove = doMove;
+window.isLegal = isLegal;
+window.genMoves = genMoves;
+window.sanMove = sanMove;
+window.checkPosition = checkPosition;
+window.parseMove = parseMove;
 
 // Wrapper function to maintain current behavior
 function addHistoryEval(history, index, score, depth, move) {
@@ -85,13 +106,32 @@ document.addEventListener('DOMContentLoaded', function(e) {
 });
 
 window.onload = function() {
-    // Load The Analysis & Playing Engines
-    _analysisEngine = loadEngine();
-    _playEngine = loadEngine(function(engine) {
-        // Configure playing engine when it's ready
-        engine.send('setoption name UCI_LimitStrength value true');
-        engine.send('setoption name UCI_Elo value ' + _userUciEloRating);
+    // Load The Analysis Engine first and wait for it to be ready
+    _analysisEngine = loadEngine(function(engine) {
+        // Initial evaluation when engine is ready
+        setTimeout(() => {
+            if (_curmoves.length > 0) {
+                evalAll();
+            } else {
+                // Force refresh moves and then evaluate
+                refreshMoves();
+                setTimeout(() => {
+                    if (_curmoves.length > 0) {
+                        evalAll();
+                    }
+                }, 100);
+            }
+        }, 100); // Small delay to ensure everything is initialized
     });
+    
+    // Load the Playing Engine after a small delay to prevent resource conflicts
+    setTimeout(() => {
+        _playEngine = loadEngine(function(engine) {
+            // Configure playing engine when it's ready
+            engine.send('setoption name UCI_LimitStrength value true');
+            engine.send('setoption name UCI_Elo value ' + _userUciEloRating);
+        });
+    }, 1000); // 1 second delay
 
     document.onmousedown = onMouseDown;
     document.onmouseup = onMouseUp;
@@ -789,6 +829,15 @@ function showArrowInternal(move, wrapperId, opacity = 1) {
         elem.style.display = 'none';
         return;
     }
+    
+    // Safety check: ensure move has required properties
+    if (!move || !move.from || !move.to || 
+        typeof move.from.x !== 'number' || typeof move.from.y !== 'number' ||
+        typeof move.to.x !== 'number' || typeof move.to.y !== 'number') {
+        elem.style.display = 'none';
+        return;
+    }
+    
     if (elem.children[0].children == null) return;
     let line = elem.children[0].children[1];
     line.setAttribute('x1', 20 + (_flip ? 7 - move.from.x : move.from.x) * 40);
@@ -907,533 +956,16 @@ function updateInfo() {
 }
 
 // ============================
-// Position and Moves
+// Chess Core Logic Functions
 // ============================
+// NOTE: Core chess logic functions (bounds, board, colorflip, sum, parseMoveNumber, 
+// parseFEN, generateFEN, isWhiteCheck, doMove, isLegal) have been moved to chess-core.js 
+// and are imported at the top of this file.
 
-function bounds(x, y) {
-    return x >= 0 && x <= 7 && y >= 0 && y <= 7;
-}
+// Additional chess functions that remain in main.js
 
-function board(pos, x, y) {
-    if (x >= 0 && x <= 7 && y >= 0 && y <= 7) return pos.b[x][y];
-    return 'x';
-}
 
-function colorflip(pos) {
-    let board = new Array(8);
-    for (let i = 0; i < 8; i++) board[i] = new Array(8);
-    for (let x = 0; x < 8; x++)
-        for (let y = 0; y < 8; y++) {
-            board[x][y] = pos.b[x][7 - y];
-            let color = board[x][y].toUpperCase() == board[x][y];
-            board[x][y] = color ? board[x][y].toLowerCase() : board[x][y].toUpperCase();
-        }
-    return {
-        b: board,
-        c: [pos.c[2], pos.c[3], pos.c[0], pos.c[1]],
-        e: pos.e == null ? null : [pos.e[0], 7 - pos.e[1]],
-        w: !pos.w,
-        m: [pos.m[0], pos.m[1]]
-    };
-}
 
-function sum(pos, func, param) {
-    let sum = 0;
-    for (let x = 0; x < 8; x++)
-        for (let y = 0; y < 8; y++) sum += func(pos, { x: x, y: y }, param);
-    return sum;
-}
-
-function parseMoveNumber(fen) {
-    let a = fen.replace(/^\s+/, '').split(' ');
-    return (a.length > 5 && !isNaN(a[5]) && a[5] != '') ? parseInt(a[5]) : 1;
-}
-
-function parseFEN(fen) {
-    let board = new Array(8);
-    for (let i = 0; i < 8; i++) board[i] = new Array(8);
-    let a = fen.replace(/^\s+/, '').split(' '),
-        s = a[0];
-    let x, y;
-    for (x = 0; x < 8; x++)
-        for (y = 0; y < 8; y++) {
-            board[x][y] = '-';
-        }
-    x = 0, y = 0;
-    for (let i = 0; i < s.length; i++) {
-        if (s[i] == ' ') break;
-        if (s[i] == '/') {
-            x = 0;
-            y++;
-        } else {
-            if (!bounds(x, y)) continue;
-            if ('KQRBNP'.indexOf(s[i].toUpperCase()) != -1) {
-                board[x][y] = s[i];
-                x++;
-            } else if ('0123456789'.indexOf(s[i]) != -1) {
-                x += parseInt(s[i]);
-            } else x++;
-        }
-    }
-    let castling, enpassant, whitemove = !(a.length > 1 && a[1] == 'b');
-    if (a.length > 2) {
-        castling = [a[2].indexOf('K') != -1, a[2].indexOf('Q') != -1,
-            a[2].indexOf('k') != -1, a[2].indexOf('q') != -1
-        ];
-    } else {
-        castling = [true, true, true, true];
-    }
-    if (a.length > 3 && a[3].length == 2) {
-        let ex = 'abcdefgh'.indexOf(a[3][0]);
-        let ey = '87654321'.indexOf(a[3][1]);
-        enpassant = (ex >= 0 && ey >= 0) ? [ex, ey] : null;
-    } else {
-        enpassant = null;
-    }
-    let movecount = [(a.length > 4 && !isNaN(a[4]) && a[4] != '') ? parseInt(a[4]) : 0,
-        (a.length > 5 && !isNaN(a[5]) && a[5] != '') ? parseInt(a[5]) : 1
-    ];
-    return {
-        b: board,
-        c: castling,
-        e: enpassant,
-        w: whitemove,
-        m: movecount
-    };
-}
-
-function generateFEN(pos) {
-    let s = '',
-        f = 0,
-        castling = pos.c,
-        enpassant = pos.e,
-        board = pos.b;
-    for (let y = 0; y < 8; y++) {
-        for (let x = 0; x < 8; x++) {
-            if (board[x][y] == '-') {
-                f++;
-            } else {
-                if (f > 0) s += f, f = 0;
-                s += board[x][y];
-            }
-        }
-        if (f > 0) s += f, f = 0;
-        if (y < 7) s += '/';
-    }
-    s += ' ' + (pos.w ? 'w' : 'b') +
-        ' ' + ((castling[0] || castling[1] || castling[2] || castling[3]) ?
-            ((castling[0] ? 'K' : '') + (castling[1] ? 'Q' : '') +
-                (castling[2] ? 'k' : '') + (castling[3] ? 'q' : '')) :
-            '-') +
-        ' ' + (enpassant == null ? '-' : ('abcdefgh' [enpassant[0]] + '87654321' [enpassant[1]])) +
-        ' ' + pos.m[0] + ' ' + pos.m[1];
-    return s;
-}
-
-function isWhiteCheck(pos) {
-    let kx = null,
-        ky = null;
-    for (let x = 0; x < 8; x++) {
-        for (let y = 0; y < 8; y++) {
-            if (pos.b[x][y] == 'K') {
-                kx = x;
-                ky = y;
-            }
-        }
-    }
-    if (kx == null || ky == null) return false;
-    if (board(pos, kx + 1, ky - 1) == 'p' ||
-        board(pos, kx - 1, ky - 1) == 'p' ||
-        board(pos, kx + 2, ky + 1) == 'n' ||
-        board(pos, kx + 2, ky - 1) == 'n' ||
-        board(pos, kx + 1, ky + 2) == 'n' ||
-        board(pos, kx + 1, ky - 2) == 'n' ||
-        board(pos, kx - 2, ky + 1) == 'n' ||
-        board(pos, kx - 2, ky - 1) == 'n' ||
-        board(pos, kx - 1, ky + 2) == 'n' ||
-        board(pos, kx - 1, ky - 2) == 'n' ||
-        board(pos, kx - 1, ky - 1) == 'k' ||
-        board(pos, kx, ky - 1) == 'k' ||
-        board(pos, kx + 1, ky - 1) == 'k' ||
-        board(pos, kx - 1, ky) == 'k' ||
-        board(pos, kx + 1, ky) == 'k' ||
-        board(pos, kx - 1, ky + 1) == 'k' ||
-        board(pos, kx, ky + 1) == 'k' ||
-        board(pos, kx + 1, ky + 1) == 'k') return true;
-    for (let i = 0; i < 8; i++) {
-        let ix = (i + (i > 3)) % 3 - 1;
-        let iy = (((i + (i > 3)) / 3) << 0) - 1;
-        for (let d = 1; d < 8; d++) {
-            let b = board(pos, kx + d * ix, ky + d * iy);
-            let line = ix == 0 || iy == 0;
-            if (b == 'q' || b == 'r' && line || b == 'b' && !line) return true;
-            if (b != '-') break;
-        }
-    }
-    return false;
-}
-
-function doMove(pos, from, to, promotion) {
-    if (!pos.b ||
-        typeof pos.b[from.x] === 'undefined' ||
-        typeof pos.b[from.x][from.y] === 'undefined' ||
-        typeof pos.b[to.x] === 'undefined' ||
-        typeof pos.b[to.x][to.y] === 'undefined') {
-        return pos; // Return the original position without changes
-    }
-    if (pos.b[from.x][from.y].toUpperCase() != pos.b[from.x][from.y]) {
-        let r = colorflip(doMove(colorflip(pos), {
-            x: from.x,
-            y: 7 - from.y
-        }, {
-            x: to.x,
-            y: 7 - to.y
-        }, promotion));
-        r.m[1]++;
-        return r;
-    }
-    let r = colorflip(colorflip(pos));
-    r.w = !r.w;
-    if (from.x == 7 && from.y == 7) r.c[0] = false;
-    if (from.x == 0 && from.y == 7) r.c[1] = false;
-    if (to.x == 7 && to.y == 0) r.c[2] = false;
-    if (to.x == 0 && to.y == 0) r.c[3] = false;
-    if (from.x == 4 && from.y == 7) r.c[0] = r.c[1] = false;
-    r.e = pos.b[from.x][from.y] == 'P' && from.y == 6 && to.y == 4 ? [from.x, 5] : null;
-    if (pos.b[from.x][from.y] == 'K') {
-        if (Math.abs(from.x - to.x) > 1) {
-            r.b[from.x][from.y] = '-';
-            r.b[to.x][to.y] = 'K';
-            r.b[to.x > 4 ? 5 : 3][to.y] = 'R';
-            r.b[to.x > 4 ? 7 : 0][to.y] = '-';
-            return r;
-        }
-    }
-    if (pos.b[from.x][from.y] == 'P' && to.y == 0) {
-        r.b[to.x][to.y] = promotion != null ? promotion : getPromotionPiece();
-    } else if (pos.b[from.x][from.y] == 'P' &&
-        pos.e != null && to.x == pos.e[0] && to.y == pos.e[1] &&
-        Math.abs(from.x - to.x) == 1) {
-        r.b[to.x][from.y] = '-';
-        r.b[to.x][to.y] = pos.b[from.x][from.y];
-
-    } else {
-        r.b[to.x][to.y] = pos.b[from.x][from.y];
-    }
-    r.b[from.x][from.y] = '-';
-    r.m[0] = (pos.b[from.x][from.y] == 'P' || pos.b[to.x][to.y] != '-') ? 0 : r.m[0] + 1;
-    return r;
-}
-
-function isLegal(pos, from, to) {
-    if (!bounds(from.x, from.y)) return false;
-    if (!bounds(to.x, to.y)) return false;
-    if (from.x == to.x && from.y == to.y) return false;
-    if (pos.b[from.x][from.y] != pos.b[from.x][from.y].toUpperCase()) {
-        return isLegal(colorflip(pos), {
-            x: from.x,
-            y: 7 - from.y
-        }, {
-            x: to.x,
-            y: 7 - to.y
-        })
-    }
-    if (!pos.w) return false;
-    let pfrom = pos.b[from.x][from.y];
-    let pto = pos.b[to.x][to.y];
-    if (pto.toUpperCase() == pto && pto != '-') return false;
-    if (pfrom == '-') {
-        return false;
-    } else if (pfrom == 'P') {
-        let enpassant = pos.e != null && to.x == pos.e[0] && to.y == pos.e[1];
-        if (!((from.x == to.x && from.y == to.y + 1 && pto == '-') ||
-                (from.x == to.x && from.y == 6 && to.y == 4 && pto == '-' && pos.b[to.x][5] == '-') ||
-                (Math.abs(from.x - to.x) == 1 && from.y == to.y + 1 && (pto != '-' || enpassant))
-            )) return false;
-    } else if (pfrom == 'N') {
-        if (Math.abs(from.x - to.x) < 1 || Math.abs(from.x - to.x) > 2) return false;
-        if (Math.abs(from.y - to.y) < 1 || Math.abs(from.y - to.y) > 2) return false;
-        if (Math.abs(from.x - to.x) + Math.abs(from.y - to.y) != 3) return false;
-    } else if (pfrom == 'K') {
-        let castling = true;
-        if (from.y != 7 || to.y != 7) castling = false;
-        if (from.x != 4 || (to.x != 2 && to.x != 6)) castling = false;
-        if (to.x == 6 && !pos.c[0] || to.x == 2 && !pos.c[1]) castling = false;
-        if (to.x == 2 && pos.b[0][7] + pos.b[1][7] + pos.b[2][7] + pos.b[3][7] != 'R---') castling = false;
-        if (to.x == 6 && pos.b[5][7] + pos.b[6][7] + pos.b[7][7] != '--R') castling = false;
-        if ((Math.abs(from.x - to.x) > 1 || Math.abs(from.y - to.y) > 1) && !castling) return false;
-        if (castling && isWhiteCheck(pos)) return false;
-        if (castling && isWhiteCheck(doMove(pos, from, {
-                x: to.x == 2 ? 3 : 5,
-                y: 7
-            }))) return false;
-    }
-    if (pfrom == 'B' || pfrom == 'R' || pfrom == 'Q') {
-        let a = from.x - to.x,
-            b = from.y - to.y;
-        let line = a == 0 || b == 0;
-        let diag = Math.abs(a) == Math.abs(b);
-        if (!line && !diag) return false;
-        if (pfrom == 'R' && !line) return false;
-        if (pfrom == 'B' && !diag) return false;
-        let count = Math.max(Math.abs(a), Math.abs(b));
-        let ix = a > 0 ? -1 : a < 0 ? 1 : 0,
-            iy = b > 0 ? -1 : b < 0 ? 1 : 0;
-        for (let i = 1; i < count; i++) {
-            if (pos.b[from.x + ix * i][from.y + iy * i] != '-') return false;
-        }
-    }
-    if (isWhiteCheck(doMove(pos, from, to))) return false;
-    return true;
-}
-
-function parseMove(pos, s) {
-    let promotion = null;
-    s = s.replace(/[\+|#|\?|!|x]/g, '');
-    if (s.length >= 2 && s[s.length - 2] == '=') {
-        promotion = s[s.length - 1]
-        s = s.substring(0, s.length - 2);
-    }
-    if (s.length >= 3 && 'NBRQ'.indexOf(s[s.length - 1]) >= 0) {
-        promotion = s[s.length - 1]
-        s = s.substring(0, s.length - 1);
-    }
-    if (s == 'O-O' || s == 'O-O-O') {
-        let from = {
-                x: 4,
-                y: pos.w ? 7 : 0
-            },
-            to = {
-                x: s == 'O-O' ? 6 : 2,
-                y: pos.w ? 7 : 0
-            };
-        if (isLegal(pos, from, to)) return {
-            from: from,
-            to: to
-        };
-        else return null;
-    } else {
-        let p;
-        if ('PNBRQK'.indexOf(s[0]) < 0) {
-            p = 'P';
-        } else {
-            p = s[0];
-            s = s.substring(1);
-        }
-        if (s.length < 2 || s.length > 4) return null;
-        let xto = 'abcdefgh'.indexOf(s[s.length - 2]);
-        let yto = '87654321'.indexOf(s[s.length - 1]);
-        let xfrom = -1,
-            yfrom = -1;
-        if (s.length > 2) {
-            xfrom = 'abcdefgh'.indexOf(s[0]);
-            yfrom = '87654321'.indexOf(s[s.length - 3]);
-        }
-        for (let x = 0; x < 8; x++) {
-            for (let y = 0; y < 8; y++) {
-                if (xfrom != -1 && xfrom != x) continue;
-                if (yfrom != -1 && yfrom != y) continue;
-                if (pos.b[x][y] == (pos.w ? p : p.toLowerCase()) && isLegal(pos, {
-                        x: x,
-                        y: y
-                    }, {
-                        x: xto,
-                        y: yto
-                    })) {
-                    xfrom = x;
-                    yfrom = y;
-                }
-            }
-        }
-        if (xto < 0 || yto < 0 || xfrom < 0 || yfrom < 0) return null;
-        return {
-            from: {
-                x: xfrom,
-                y: yfrom
-            },
-            to: {
-                x: xto,
-                y: yto
-            },
-            p: promotion
-        };
-    }
-}
-
-function genMoves(pos) {
-    let moves = [];
-    for (let x1 = 0; x1 < 8; x1++)
-        for (let y1 = 0; y1 < 8; y1++)
-            for (let x2 = 0; x2 < 8; x2++)
-                for (let y2 = 0; y2 < 8; y2++) {
-                    if (isLegal(pos, {
-                            x: x1,
-                            y: y1
-                        }, {
-                            x: x2,
-                            y: y2
-                        })) {
-                        if ((y2 == 0 || y2 == 7) && pos.b[x1][y1].toUpperCase() == 'P') {
-                            moves.push({
-                                from: {
-                                    x: x1,
-                                    y: y1
-                                },
-                                to: {
-                                    x: x2,
-                                    y: y2
-                                },
-                                p: 'N'
-                            });
-                            moves.push({
-                                from: {
-                                    x: x1,
-                                    y: y1
-                                },
-                                to: {
-                                    x: x2,
-                                    y: y2
-                                },
-                                p: 'B'
-                            });
-                            moves.push({
-                                from: {
-                                    x: x1,
-                                    y: y1
-                                },
-                                to: {
-                                    x: x2,
-                                    y: y2
-                                },
-                                p: 'R'
-                            });
-                            moves.push({
-                                from: {
-                                    x: x1,
-                                    y: y1
-                                },
-                                to: {
-                                    x: x2,
-                                    y: y2
-                                },
-                                p: 'Q'
-                            });
-                        } else moves.push({
-                            from: {
-                                x: x1,
-                                y: y1
-                            },
-                            to: {
-                                x: x2,
-                                y: y2
-                            }
-                        });
-                    }
-                }
-    return moves;
-}
-
-function sanMove(pos, move, moves) {
-    let s = '';
-    if (move.from.x == 4 && move.to.x == 6 && pos.b[move.from.x][move.from.y].toLowerCase() == 'k') {
-        s = 'O-O';
-    } else if (move.from.x == 4 && move.to.x == 2 && pos.b[move.from.x][move.from.y].toLowerCase() == 'k') {
-        s = 'O-O-O';
-    } else {
-        if (!pos.b ||
-            typeof pos.b[move.from.x] === 'undefined' ||
-            typeof pos.b[move.from.x][move.from.y] === 'undefined') {
-            return s; // Return the original position without changes
-        }
-        let piece = pos.b[move.from.x][move.from.y].toUpperCase();
-        if (piece != 'P') {
-            let a = 0,
-                sx = 0,
-                sy = 0;
-            for (let i = 0; i < moves.length; i++) {
-                if (pos.b[moves[i].from.x][moves[i].from.y] == pos.b[move.from.x][move.from.y] &&
-                    (moves[i].from.x != move.from.x || moves[i].from.y != move.from.y) &&
-                    (moves[i].to.x == move.to.x && moves[i].to.y == move.to.y)) {
-                    a++;
-                    if (moves[i].from.x == move.from.x) sx++;
-                    if (moves[i].from.y == move.from.y) sy++;
-                }
-            }
-            s += piece;
-            if (a > 0) {
-                if (sx > 0 && sy > 0) s += 'abcdefgh' [move.from.x] + '87654321' [move.from.y];
-                else if (sx > 0) s += '87654321' [move.from.y];
-                else s += 'abcdefgh' [move.from.x];
-            }
-        }
-        if (pos.b[move.to.x][move.to.y] != '-' || piece == 'P' && move.to.x != move.from.x) {
-            if (piece == 'P') s += 'abcdefgh' [move.from.x];
-            s += 'x';
-        }
-        s += 'abcdefgh' [move.to.x] + '87654321' [move.to.y];
-        if (piece == 'P' && (move.to.y == 0 || move.to.y == 7)) s += '=' + (move.p == null ? 'Q' : move.p);
-    }
-    let pos2 = doMove(pos, move.from, move.to, move.p);
-    if (isWhiteCheck(pos2) || isWhiteCheck(colorflip(pos2))) s += genMoves(pos2).length == 0 ? '#' : '+';
-    return s;
-}
-
-function fixCastling(pos) {
-    pos.c[0] &= !(pos.b[7][7] != 'R' || pos.b[4][7] != 'K');
-    pos.c[1] &= !(pos.b[0][7] != 'R' || pos.b[4][7] != 'K');
-    pos.c[2] &= !(pos.b[7][0] != 'r' || pos.b[4][0] != 'k');
-    pos.c[3] &= !(pos.b[0][0] != 'r' || pos.b[4][0] != 'k');
-}
-
-function checkPosition(pos) {
-    let errmsgs = [];
-    let wk = 0, bk = 0,
-        wp = 0, bp = 0,
-        wpr = 0, bpr = 0,
-        wn = 0, wb1 = 0, wb2 = 0, wr = 0, wq = 0,
-        bn = 0, bb1 = 0, bb2 = 0, br = 0, bq = 0;
-    for (let x = 0; x < 8; x++) {
-        for (let y = 0; y < 8; y++) {
-            let c = ((x + y) % 2) == 0;
-            if (pos.b[x][y] == 'K') wk++;
-            if (pos.b[x][y] == 'k') bk++;
-            if (pos.b[x][y] == 'P') wp++;
-            if (pos.b[x][y] == 'p') bp++;
-            if (pos.b[x][y] == 'N') wn++;
-            if (pos.b[x][y] == 'n') bn++;
-            if (c && pos.b[x][y] == 'B') wb1++;
-            if (c && pos.b[x][y] == 'b') bb1++;
-            if (!c && pos.b[x][y] == 'B') wb2++;
-            if (!c && pos.b[x][y] == 'b') bb2++;
-            if (pos.b[x][y] == 'R') wr++;
-            if (pos.b[x][y] == 'r') br++;
-            if (pos.b[x][y] == 'Q') wq++;
-            if (pos.b[x][y] == 'q') bq++;
-            if (pos.b[x][y] == 'P' && (y == 0 || y == 7)) wpr++;
-            if (pos.b[x][y] == 'p' && (y == 0 || y == 7)) bpr++;
-        }
-    }
-    if (wk == 0) errmsgs.push('Missing white king');
-    if (bk == 0) errmsgs.push('Missing black king');
-    if (wk > 1) errmsgs.push('Two white kings');
-    if (bk > 1) errmsgs.push('Two black kings');
-    let wcheck = isWhiteCheck(pos);
-    let bcheck = isWhiteCheck(colorflip(pos));
-    if (pos.w && bcheck || !pos.w && wcheck) errmsgs.push('Non-active color is in check');
-    if (wp > 8) errmsgs.push('Too many white pawns');
-    if (bp > 8) errmsgs.push('Too many black pawns');
-    if (wpr > 0) errmsgs.push('White pawns in first or last rank');
-    if (bpr > 0) errmsgs.push('Black pawns in first or last rank');
-    let we = Math.max(0, wq - 1) + Math.max(0, wr - 2) + Math.max(0, wb1 - 1) + Math.max(0, wb2 - 1) + Math.max(0, wn - 2);
-    let be = Math.max(0, bq - 1) + Math.max(0, br - 2) + Math.max(0, bb1 - 1) + Math.max(0, bb2 - 1) + Math.max(0, bn - 2);
-    if (we > Math.max(0, 8 - wp)) errmsgs.push('Too many extra white pieces');
-    if (be > Math.max(0, 8 - bp)) errmsgs.push('Too many extra black pieces');
-    if ((pos.c[0] && (pos.b[7][7] != 'R' || pos.b[4][7] != 'K')) ||
-        (pos.c[1] && (pos.b[0][7] != 'R' || pos.b[4][7] != 'K'))) errmsgs.push('White has castling rights and king or rook not in their starting position');
-    if ((pos.c[2] && (pos.b[7][0] != 'r' || pos.b[4][0] != 'k')) ||
-        (pos.c[3] && (pos.b[0][0] != 'r' || pos.b[4][0] != 'k'))) errmsgs.push('Black has castling rights and king or rook not in their starting position');
-    return errmsgs;
-}
 
 // ============================
 // Move List Functions
@@ -1674,9 +1206,8 @@ function doMoveHandler(move, copy) {
     let legal = copy == null && isLegal(pos, move.from, move.to) && _curmoves.length > 0;
     if (legal) {
         let san = getCurSan(move); // Get the SAN notation of the move
-        if (pos.w != _play) {
-            pos = doMove(pos, move.from, move.to, move.p); // Apply the move to the position
-        }
+        // Always apply the move when it's legal - the condition below was incorrect
+        pos = doMove(pos, move.from, move.to, move.p); // Apply the move to the position
         setCurFEN(generateFEN(pos)); // Update the current FEN to the new position
         // Store the new position along with the move and SAN notation in history
         historyAdd(getCurFEN(), null, move, san);
