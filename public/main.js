@@ -10,6 +10,8 @@ import {
     BOARD_CONFIG 
 } from './constants.js';
 
+import { setElemText, getElemText, setCurFEN, getCurFEN } from './dom-utils.js';
+
 // ============================
 // Global Variables
 // ============================
@@ -158,23 +160,7 @@ window.onload = function() {
 // ============================
 // Helper Functions
 // ============================
-
-function setElemText(elem, value) {
-    while (elem.firstChild) elem.removeChild(elem.firstChild);
-    elem.appendChild(document.createTextNode(value));
-}
-
-function getElemText(elem) {
-    return elem.textContent;
-}
-
-function setCurFEN(fen) {
-    setElemText(document.getElementById('fen'), fen);
-}
-
-function getCurFEN() {
-    return getElemText(document.getElementById('fen'));
-}
+// DOM utilities moved to dom-utils.js module
 
 // ============================
 // Promotion Piece Functions
