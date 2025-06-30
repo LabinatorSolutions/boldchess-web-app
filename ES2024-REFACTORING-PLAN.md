@@ -85,38 +85,43 @@ This document outlines the comprehensive ES2024 modernization and modularization
 ### Phase 1: Core Engine & Game Logic
 
 #### 1. Chess Engine Module (`public/chess-engine.js`)
-**Priority**: 🔴 **HIGH** - Next module to extract
-**Estimated Size**: ~200+ lines
+**Priority**: 🔴 **HIGH** - ✅ **COMPLETED**
+**Status**: ✅ **COMPLETED**
+- **Date**: June 2025
+- **Size**: ~280 lines
 **Dependencies**: Constants module
 
-**Functions to Extract**:
+**Extracted Functions**:
 ```javascript
 // Engine Management
-- loadEngine(onReady)
-- Engine configuration and UCI communication
-- doComputerMove()
-- addHistoryEval(index, score, depth, move)
+- loadEngine(onReady) ✅
+- Engine configuration and UCI communication ✅
+- parseBestMove(moveString) ✅
+- addHistoryEval(history, index, score, depth, move) ✅
 
 // Engine State Management  
-- Engine ready states
-- Skill level configuration
-- ELO rating management
-- Engine kill/restart logic
+- ChessEngine class with private fields ✅
+- Skill level configuration ✅
+- ELO rating management ✅
+- Engine kill/restart logic ✅
 ```
 
-**Key Features to Implement**:
-- ✅ ES2024 class-based architecture
-- ✅ Private fields for engine state
+**Key Features Implemented**:
+- ✅ ES2024 class-based architecture with private fields
+- ✅ Singleton pattern for analysis and play engines
 - ✅ Async/await for engine operations
-- ✅ Event-driven communication
+- ✅ Event-driven communication with WebWorker
 - ✅ Error handling and recovery
-- ✅ WebWorker management
+- ✅ Backward compatibility layer
+- ✅ UCI protocol implementation
+- ✅ Move parsing and validation
 
-**Benefits**:
-- Isolates all Stockfish engine interaction
-- Enables easier testing of engine functionality
-- Reduces main.js by ~200+ lines
-- Creates reusable engine management system
+**Benefits Achieved**:
+- ✅ Isolated all Stockfish engine interaction
+- ✅ Reduced main.js by ~200+ lines
+- ✅ Created reusable engine management system
+- ✅ Modern ES2024 architecture
+- ✅ Maintained full backward compatibility
 
 #### 2. Chess Core Logic Module (`public/chess-core.js`)
 **Priority**: 🔴 **HIGH**
@@ -311,12 +316,14 @@ This document outlines the comprehensive ES2024 modernization and modularization
 - **Original main.js**: 5,319 lines
 - **After constants extraction**: ~5,100 lines (-219 lines to constants.js)
 - **After DOM utilities extraction**: ~4,900 lines (-220 lines to dom-utils.js)
-- **Current main.js**: ~4,900 lines
+- **After chess engine extraction**: ~4,700 lines (-200 lines to chess-engine.js)
+- **Current main.js**: ~4,700 lines
 - **Target main.js**: ~1,500-2,000 lines (core application logic only)
 
 ### Progress Tracking
 - ✅ **Phase 0 Complete**: Foundation (Constants, DOM Utils, ES Modules)
-- 🚀 **Phase 1 Next**: Core Engine & Game Logic (Engine, Core, Board)
+- ✅ **Phase 1 Started**: Chess Engine Module Complete (1/3 modules done)
+- 🚀 **Phase 1 Next**: Chess Core Logic Module (2/3 modules remaining)
 - ⏳ **Phase 2 Planned**: UI Components (History, Graph, Arrows)
 - ⏳ **Phase 3 Planned**: UI Management (Menu, UI Manager)
 - ⏳ **Phase 4 Planned**: Specialized Features (Evaluation, Input)
@@ -403,6 +410,6 @@ export const legacyFunction = [ModuleName].method;
 
 ---
 
-**Last Updated**: December 29, 2024  
-**Next Milestone**: Chess Engine Module Extraction  
-**Overall Progress**: 25% Complete (Foundation laid, core modules planned)
+**Last Updated**: June 29, 2025  
+**Next Milestone**: Chess Core Logic Module Extraction  
+**Overall Progress**: 40% Complete (Foundation + Engine module completed)

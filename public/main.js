@@ -11,6 +11,16 @@ import {
 } from './constants.js';
 
 import { setElemText, getElemText, setCurFEN, getCurFEN } from './dom-utils.js';
+import { loadEngine, parseBestMove, addHistoryEval as addHistoryEvalBase } from './chess-engine.js';
+
+// Wrapper function to maintain current behavior
+function addHistoryEval(history, index, score, depth, move) {
+    const updated = addHistoryEvalBase(history, index, score, depth, move);
+    if (updated) {
+        repaintGraph();
+        _wantUpdateInfo = true;
+    }
+}
 
 // ============================
 // Global Variables
@@ -2010,85 +2020,9 @@ function onKeyDown(e) {
 // Evaluation Engine
 // ============================
 
-function loadEngine(onReady) {
-    let engine = {
-        ready: false,
-        kill: false,
-        waiting: true,
-        depth: ENGINE_CONFIG.DEFAULT_DEPTH,
-        lastnodes: 0
-    };
-
-    let wasmSupported = typeof WebAssembly === 'object' && WebAssembly.validate(Uint8Array.of(0x0, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00));
-    if (typeof(Worker) === 'undefined') return engine;
-    try {
-        var worker = new Worker('./engine/stockfish-16.1.js');
-    } catch (err) {
-        return engine;
-    }
-    worker.onmessage = function(e) {
-        if (engine.messagefunc) engine.messagefunc(e.data);
-    }
-    engine.send = function send(cmd, message) {
-        cmd = String(cmd).trim();
-        engine.messagefunc = message;
-        worker.postMessage(cmd);
-    };
-    engine.evaluate = function evaluate(fen, done, info) {
-        engine.send('position fen ' + fen);
-        engine.send('go depth ' + engine.depth, function message(str) {
-            let matches = str.match(/depth (\d+) .*score (cp|mate) ([-\d]+) .*nodes (\d+) .*pv (.+)/);
-            if (!matches) matches = str.match(/depth (\d+) .*score (cp|mate) ([-\d]+).*/);
-            if (matches) {
-                if (engine.lastnodes == 0) engine.fen = fen;
-                if (matches.length > 4) {
-                    let nodes = Number(matches[4]);
-                    if (nodes < engine.lastnodes) engine.fen = fen;
-                    engine.lastnodes = nodes;
-                }
-                let depth = Number(matches[1]);
-                let type = matches[2];
-                let score = Number(matches[3]);
-                if (type == 'mate') score = (1000000 - Math.abs(score)) * (score <= 0 ? -1 : 1);
-                engine.score = score;
-                if (matches.length > 5) {
-                    let pv = matches[5].split(' ');
-                    if (info != null && engine.fen == fen) info(depth, score, pv);
-                }
-            }
-            if (str.indexOf('bestmove') >= 0 || str.indexOf('mate 0') >= 0 || str == 'info depth 0 score cp 0') {
-                if (engine.fen == fen) done(str);
-                engine.lastnodes = 0;
-            }
-        });
-    };
-    engine.send('uci', function onuci(str) {
-        if (str === 'uciok') {
-            engine.send('isready', function onready(str) {
-                if (str === 'readyok') {
-                    engine.ready = true;
-                    engine.send('setoption name EvalFile value ' + ENGINE_CONFIG.NNUE_PATH);
-                    if (onReady) onReady(engine);
-                }
-            });
-        }
-    });
-    return engine;
-}
-
-function addHistoryEval(index, score, depth, move) {
-    if (_history[index].length < 2 || _history[index][1] == null || (_history[index][1] != null && _history[index][1].depth < depth)) {
-        let black = _history[index][0].indexOf(' b ') > 0;
-        let ei = { score: score, depth: depth, black: black, move: move };
-        if (_history[index].length >= 2) _history[index][1] = ei;
-        else {
-            _history[index].push(ei);
-            _history[index].push(null);
-        }
-        repaintGraph();
-        _wantUpdateInfo = true;
-    }
-}
+// ============================
+// Computer Move Execution
+// ============================
 
 function evalNext() {
     for (let i = 0; i < _curmoves.length; i++) {
@@ -2133,14 +2067,14 @@ function evalNext() {
             return;
         }
     }
-    if (_curmoves.length > 0 && _history[_historyindex][0] == getCurFEN()) addHistoryEval(_historyindex, _curmoves[0].w ? -_curmoves[0].eval : _curmoves[0].eval, _analysisEngine.depth, _curmoves[0].move);
+    if (_curmoves.length > 0 && _history[_historyindex][0] == getCurFEN()) addHistoryEval(_history, _historyindex, _curmoves[0].w ? -_curmoves[0].eval : _curmoves[0].eval, _analysisEngine.depth, _curmoves[0].move);
     for (let i = _history.length - 1; i >= 0; i--) {
         if (_history[i].length < 2 || _history[i][1] == null || (_history[i][1] != null && _history[i][1].depth < _analysisEngine.depth - 1)) {
             let curpos = _history[i][0];
             _analysisEngine.score = null;
             if (!_analysisEngine.waiting) return;
             if (checkPosition(parseFEN(curpos)).length > 0) {
-                addHistoryEval(i, null, _analysisEngine.depth - 1);
+                addHistoryEval(_history, i, null, _analysisEngine.depth - 1);
                 if (!_analysisEngine.kill) evalNext();
             } else {
                 _analysisEngine.waiting = false;
@@ -2150,7 +2084,7 @@ function evalNext() {
                     if (_analysisEngine.score != null) {
                         let m = str.match(/^bestmove\s(\S+)(?:\sponder\s(\S+))?/);
                         let answer = (m && m.length > 1 && (m[1].length == 4 || m[1].length == 5)) ? m[1] : null;
-                        addHistoryEval(i, _analysisEngine.score, _analysisEngine.depth - 1, parseBestMove(answer));
+                        addHistoryEval(_history, i, _analysisEngine.score, _analysisEngine.depth - 1, parseBestMove(answer));
                     }
                     if (!_analysisEngine.kill) evalNext();
                 });
@@ -2175,28 +2109,6 @@ function applyEval(m, s, d) {
             break;
         }
     }
-}
-
-function parseBestMove(m) {
-    if (m == null || m.length < 4) return null;
-    let from = {
-        x: 'abcdefgh'.indexOf(m[0]),
-        y: '87654321'.indexOf(m[1])
-    };
-    let to = {
-        x: 'abcdefgh'.indexOf(m[2]),
-        y: '87654321'.indexOf(m[3])
-    };
-    let p = m.length > 4 ? 'nbrq'.indexOf(m[4]) : -1;
-    if (p < 0) return {
-        from: from,
-        to: to
-    };
-    return {
-        from: from,
-        to: to,
-        p: 'NBRQ' [p]
-    };
 }
 
 function updateSkillLevelBasedOnDepth(depth) {
@@ -2259,13 +2171,13 @@ function evalAll() {
         let matches = str.match(/^bestmove\s(\S+)(?:\sponder\s(\S+))?/);
         if (matches && matches.length > 1) {
             applyEval(matches[1], _analysisEngine.score, _analysisEngine.depth - 1);
-            if (_history[_historyindex][0] == fen) addHistoryEval(_historyindex, _analysisEngine.score, _analysisEngine.depth - 1, parseBestMove(matches[1]));
+            if (_history[_historyindex][0] == fen) addHistoryEval(_history, _historyindex, _analysisEngine.score, _analysisEngine.depth - 1, parseBestMove(matches[1]));
         }
         if (!_analysisEngine.kill) evalNext();
     }, function info(depth, score, pv) {
         if (fen != getCurFEN() || depth <= 10) return;
         applyEval(pv[0], score, depth - 1);
-        if (_history[_historyindex][0] == fen) addHistoryEval(_historyindex, score, depth - 1, parseBestMove(pv[0]));
+        if (_history[_historyindex][0] == fen) addHistoryEval(_history, _historyindex, score, depth - 1, parseBestMove(pv[0]));
     });
 }
 
