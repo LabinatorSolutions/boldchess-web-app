@@ -1,17 +1,14 @@
 // ============================
-// Global Cosntants
+// ES2024 Module Imports
 // ============================
 
-// File Paths
-const NNUE_PATH = './engine/nn-b1a57edbea57.nnue';
-
-// Engine Depth Constants
-const MIN_DEPTH = 1;
-const MAX_DEPTH = 28;
-const DEFAULT_DEPTH = 18;
-
-// Default Starting FEN
-const START = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+import { 
+    ENGINE_CONFIG, 
+    CHESS_CONFIG, 
+    UI_CONFIG, 
+    GAME_MODES, 
+    BOARD_CONFIG 
+} from './constants.js';
 
 // ============================
 // Global Variables
@@ -21,7 +18,7 @@ let _analysisEngine;
 let _playEngine;
 let _curmoves = [];
 let _history = [
-        [START]
+        [CHESS_CONFIG.START_FEN]
     ],
     _history2 = null,
     _historyindex = 0;
@@ -36,21 +33,21 @@ let _dragElement = null,
     _startX, _startY, _dragCtrl, _dragLMB, _clickFrom, _clickFromElem;
 let _tooltipState = false,
     _wantUpdateInfo = true;
-let _wname = 'White',
-    _bname = 'Black',
-    _color = 0,
+let _wname = CHESS_CONFIG.DEFAULT_WHITE_NAME,
+    _bname = CHESS_CONFIG.DEFAULT_BLACK_NAME,
+    _color = BOARD_CONFIG.WHITE,
     _bodyScale = 1;
 let _nncache = null,
-    _gameMode = 1,
+    _gameMode = GAME_MODES.ANALYSIS,
     _isPlayerWhite = true;
 let _staticSortByChange = false,
     _movesPv = false;
 let _lastMouseDataPos = null;
 let _staticEvalListCache = [],
-    _staticEvalListCacheSize = 20;
+    _staticEvalListCacheSize = UI_CONFIG.STATIC_EVAL_CACHE_SIZE;
 let _coachMode = false;
-let _coachModeLabel = "Active Coach Mode";
-let _userUciEloRating = 2200;
+let _coachModeLabel = UI_CONFIG.COACH_MODE_ACTIVE_LABEL;
+let _userUciEloRating = CHESS_CONFIG.DEFAULT_UCI_ELO_RATING;
 
 // ============================
 // Initialization
@@ -354,7 +351,7 @@ function command(text) {
     } else if (text.toLowerCase().indexOf('depth ') == 0) {
         if (_analysisEngine != null && _analysisEngine.ready) {
             _analysisEngine.depth = Math.min(MAX_DEPTH, Math.max(0, parseInt(text.toLowerCase().replace('depth ', ''))));
-            if (isNaN(_analysisEngine.depth)) _analysisEngine.depth = DEFAULT_DEPTH;
+            if (isNaN(_analysisEngine.depth)) _analysisEngine.depth = ENGINE_CONFIG.DEFAULT_DEPTH;
         }
         showBoard();
     } else if (text.toLowerCase() == 'flip') {
@@ -412,7 +409,7 @@ function command(text) {
         let url = [location.protocol, '//', location.host, location.pathname].join('');
         let params = [];
         if (_color > 0) params.push('col' + _color);
-        if (_analysisEngine != null && _analysisEngine.ready && _analysisEngine.depth != DEFAULT_DEPTH) params.push('depth ' + _analysisEngine.depth);
+        if (_analysisEngine != null && _analysisEngine.ready && _analysisEngine.depth != ENGINE_CONFIG.DEFAULT_DEPTH) params.push('depth ' + _analysisEngine.depth);
         if (lparamsstr != 'c m h g') params.push('layout ' + (lparamsstr.length == 0 ? '-' : lparamsstr));
         if (encoded.length > 0) params.push('~' + encoded);
         else if (getCurFEN() != START) params.push(getCurFEN());
@@ -929,8 +926,8 @@ function board(pos, x, y) {
 function colorflip(pos) {
     let board = new Array(8);
     for (let i = 0; i < 8; i++) board[i] = new Array(8);
-    for (x = 0; x < 8; x++)
-        for (y = 0; y < 8; y++) {
+    for (let x = 0; x < 8; x++)
+        for (let y = 0; y < 8; y++) {
             board[x][y] = pos.b[x][7 - y];
             let color = board[x][y].toUpperCase() == board[x][y];
             board[x][y] = color ? board[x][y].toLowerCase() : board[x][y].toUpperCase();
@@ -960,8 +957,8 @@ function parseFEN(fen) {
     let board = new Array(8);
     for (let i = 0; i < 8; i++) board[i] = new Array(8);
     let a = fen.replace(/^\s+/, '').split(' '),
-        s = a[0],
-        x, y;
+        s = a[0];
+    let x, y;
     for (x = 0; x < 8; x++)
         for (y = 0; y < 8; y++) {
             board[x][y] = '-';
@@ -1394,11 +1391,11 @@ function fixCastling(pos) {
 
 function checkPosition(pos) {
     let errmsgs = [];
-    let wk = bk = 0,
-        wp = bp = 0,
-        wpr = bpr = 0,
-        wn = wb1 = wb2 = wr = wq = 0,
-        bn = bb1 = bb2 = br = bq = 0;
+    let wk = 0, bk = 0,
+        wp = 0, bp = 0,
+        wpr = 0, bpr = 0,
+        wn = 0, wb1 = 0, wb2 = 0, wr = 0, wq = 0,
+        bn = 0, bb1 = 0, bb2 = 0, br = 0, bq = 0;
     for (let x = 0; x < 8; x++) {
         for (let y = 0; y < 8; y++) {
             let c = ((x + y) % 2) == 0;
@@ -1592,7 +1589,8 @@ function getCurSan(move) {
 function onMouseDown(e) {
     if (_menu) showHideMenu(false, e);
     if (e == null) e = window.event;
-    let elem = target = e.target != null ? e.target : e.srcElement;
+    let elem = e.target != null ? e.target : e.srcElement;
+    let target = elem;
     if (document.onmousemove == graphMouseMove && target != null && target.id != 'graphWrapper' && target.id != 'graph') {
         document.getElementById('graphWrapper').onmouseout();
     } else if (document.onmousemove == graphMouseMove) {
@@ -1895,7 +1893,8 @@ function isEdit() {
 
 function paintMouse(e, p) {
     if (e == null) e = window.event;
-    let elem = target = e.target != null ? e.target : e.srcElement;
+    let elem = e.target != null ? e.target : e.srcElement;
+    let target = elem;
     if (elem.parentNode == null || elem.parentNode.id != 'chessboard1') return;
     let w = elem.getBoundingClientRect().width;
     let h = elem.getBoundingClientRect().height;
@@ -1934,7 +1933,7 @@ function onKeyDown(e) {
     switch (key) {
         case '`':
         case '*':
-            if (engineReady) command('depth ' + (_analysisEngine.depth !== 0 ? '0' : DEFAULT_DEPTH));
+            if (engineReady) command('depth ' + (_analysisEngine.depth !== 0 ? '0' : ENGINE_CONFIG.DEFAULT_DEPTH));
             break;
         case '+':
             if (engineReady) command('depth ' + Math.min(MAX_DEPTH, _analysisEngine.depth + 1));
@@ -2030,7 +2029,7 @@ function loadEngine(onReady) {
         ready: false,
         kill: false,
         waiting: true,
-        depth: DEFAULT_DEPTH,
+        depth: ENGINE_CONFIG.DEFAULT_DEPTH,
         lastnodes: 0
     };
 
@@ -2049,7 +2048,7 @@ function loadEngine(onReady) {
         engine.messagefunc = message;
         worker.postMessage(cmd);
     };
-    engine.eval = function eval(fen, done, info) {
+    engine.evaluate = function evaluate(fen, done, info) {
         engine.send('position fen ' + fen);
         engine.send('go depth ' + engine.depth, function message(str) {
             let matches = str.match(/depth (\d+) .*score (cp|mate) ([-\d]+) .*nodes (\d+) .*pv (.+)/);
@@ -2082,7 +2081,7 @@ function loadEngine(onReady) {
             engine.send('isready', function onready(str) {
                 if (str === 'readyok') {
                     engine.ready = true;
-                    engine.send('setoption name EvalFile value ' + NNUE_PATH);
+                    engine.send('setoption name EvalFile value ' + ENGINE_CONFIG.NNUE_PATH);
                     if (onReady) onReady(engine);
                 }
             });
@@ -2114,7 +2113,7 @@ function evalNext() {
             _analysisEngine.waiting = false;
             let initialdepth = _analysisEngine.depth;
             let savedpv = [];
-            _analysisEngine.eval(curpos, function done(str) {
+            _analysisEngine.evaluate(curpos, function done(str) {
                 _analysisEngine.waiting = true;
                 if (i >= _curmoves.length || _curmoves[i].fen != curpos) return;
                 if (_analysisEngine.score != null && _analysisEngine.depth == initialdepth) {
@@ -2159,7 +2158,7 @@ function evalNext() {
                 if (!_analysisEngine.kill) evalNext();
             } else {
                 _analysisEngine.waiting = false;
-                _analysisEngine.eval(curpos, function done(str) {
+                _analysisEngine.evaluate(curpos, function done(str) {
                     _analysisEngine.waiting = true;
                     if (i >= _history.length || _history[i][0] != curpos) return;
                     if (_analysisEngine.score != null) {
@@ -2268,7 +2267,7 @@ function evalAll() {
         if (!_analysisEngine.kill) evalNext();
         return;
     }
-    _analysisEngine.eval(fen, function done(str) {
+    _analysisEngine.evaluate(fen, function done(str) {
         _analysisEngine.waiting = true;
         if (fen != getCurFEN()) return;
         let matches = str.match(/^bestmove\s(\S+)(?:\sponder\s(\S+))?/);
@@ -2304,7 +2303,7 @@ function doComputerMove() {
         _playEngine.send('stop');
         _playEngine.send('ucinewgame');
         _playEngine.score = null;
-        _playEngine.eval(fen, function done(str) {
+        _playEngine.evaluate(fen, function done(str) {
             _playEngine.waiting = true;
             if (fen != getCurFEN()) return;
             let matches = str.match(/^bestmove\s(\S+)(?:\sponder\s(\S+))?/);
@@ -2618,7 +2617,7 @@ function showEvals() {
     updateLegalMoves();
 }
 
-_staticEvalData = (function() {
+let _staticEvalData = (function() {
     let data = [],
         curindex = null;
     data.push({
@@ -4197,7 +4196,15 @@ _staticEvalData = (function() {
         "graph": false,
         "elo": null
     });
-    for (let i = 0; i < data.length; i++) eval("$" + data[i].name.toLowerCase().replace(/ /g, "_") + " = " + data[i].code + ";");
+    for (let i = 0; i < data.length; i++) {
+        // Create global functions using window object instead of eval in strict mode
+        const functionName = "$" + data[i].name.toLowerCase().replace(/ /g, "_");
+        try {
+            window[functionName] = new Function('return ' + data[i].code)();
+        } catch (e) {
+            console.warn(`Failed to create function ${functionName}:`, e);
+        }
+    }
     return data;
 })();
 
@@ -4222,7 +4229,7 @@ function getGraphPointData(i) {
 function getGraphPointColor(i) {
     let e = getGraphPointData(i),
         laste = getGraphPointData(i - 1);
-    black = i >= 0 && i < _history.length && _history[i].length >= 2 && _history[i][1] != null && _history[i][1].score != null && _history[i][1].black;
+    let black = i >= 0 && i < _history.length && _history[i].length >= 2 && _history[i][1] != null && _history[i][1].score != null && _history[i][1].black;
     let lost = laste == null || e == null ? 0 : black ? (laste - e) : (e - laste);
     return lost <= 1.0 ? '#008800' : lost <= 3.0 ? '#bb8800' : '#bb0000';
 }
@@ -4899,7 +4906,7 @@ function setupDragElement(elmnt) {
         pos2 = 0,
         pos3 = 0,
         pos4 = 0;
-    oldDisplay = elmnt.style.display;
+    let oldDisplay = elmnt.style.display;
     elmnt.style.display = '';
     elmnt.originalWidth = elmnt.style.width = (elmnt.getBoundingClientRect().width - 2) + 'px';
     elmnt.originalHeight = elmnt.style.height = (elmnt.getBoundingClientRect().height - 2) + 'px';
