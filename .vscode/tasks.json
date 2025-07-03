@@ -1,0 +1,13 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "shell",
+			"label": "Run server.js",
+			"command": "node server.js",
+			"group": "build",
+			"isBackground": false,
+			"problemMatcher": []
+		}
+	]
+}
