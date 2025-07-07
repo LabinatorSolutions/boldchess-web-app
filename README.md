@@ -82,6 +82,39 @@ Our mission is to create a modern, mobile-friendly, free, and open-source web-ba
 
 ---
 
+## Docker Installation (Alternative)
+
+If you prefer to use Docker for easy deployment:
+
+### Prerequisites
+- Install Docker and Docker Compose on your system
+- Download from [Docker official website](https://docs.docker.com/get-docker/)
+
+### Quick Start with Docker
+
+1. **Using Docker Compose (Recommended)**:
+   ```bash
+   docker compose up --build
+   ```
+
+2. **Using Docker directly**:
+   ```bash
+   # Build the image
+   docker build -t boldchess-web-app .
+   
+   # Run the container
+   docker run -p 3000:3000 boldchess-web-app
+   ```
+
+3. **Access the application** at `http://localhost:3000` in your browser.
+
+### Docker Commands
+- **Stop**: `docker compose down`
+- **Run in background**: `docker compose up -d`
+- **View logs**: `docker compose logs`
+
+---
+
 ## HTTP Headers Setup
 
 The app is currently using **Stockfish 16.1 JS**, which utilizes the `SharedArrayBuffer`. To ensure the engine functions correctly, you need to enable SharedArrayBuffer support both locally and on your server. This involves setting appropriate HTTP headers.
