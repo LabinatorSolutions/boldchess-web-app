@@ -62,23 +62,59 @@ Our mission is to create a modern, mobile-friendly, free, and open-source web-ba
 
 1. **Prerequisites**:
    - Ensure Node.js is installed. If not, download and install it from the [Node.js official website](https://nodejs.org/).
+   - **Alternatively, you can use Docker (see below).**
 
 2. **Repository Setup**:
    - Clone the repository to your local machine.
    - Navigate to the project directory.
 
-3. **Dependency Installation**:
+3. **Dependency Installation (Node.js only)**:
    - Install the project dependencies:
      ```bash
      npm install
      ```
 
-4. **Local Server**:
+4. **Local Server (Node.js only)**:
    - Start the local development server:
      ```bash
      npm run start
      ```
    - Access the application at `http://localhost:3000` in a web browser.
+
+---
+
+### Running with Docker (Alternative to Node.js install)
+
+You can run the BoldChess Web App in a Docker container for easy local development, testing, and deployment.
+
+1. **Build the Docker Image**
+
+   ```bash
+   docker build -t boldchess-web-app .
+   ```
+
+2. **Run the Docker Container**
+
+   ```bash
+   docker run -p 3000:3000 boldchess-web-app
+   ```
+
+   The app will be available at [http://localhost:3000](http://localhost:3000).
+
+3. **Using Docker Compose (Optional)**
+
+   If you prefer using Docker Compose, you can start the app with:
+
+   ```bash
+   docker compose up --build
+   ```
+
+   This will build and run the app as defined in `docker-compose.yml`.
+
+4. **Development Notes**
+
+   - The `.dockerignore` file is used to exclude unnecessary files from the Docker build context.
+   - The default container runs in production mode. For development, you may adjust the Dockerfile or Compose file as needed.
 
 ---
 
