@@ -159,6 +159,47 @@ window.onload = function () {
 // Helper Functions
 // ============================
 
+function getFENPos(fen) {
+    if (!fen) return '';
+    return fen.split(' ').slice(0, 4).join(' ');
+}
+
+function isInsufficientMaterial(pos) {
+    let pieces = [];
+    for (let x = 0; x < 8; x++) {
+        for (let y = 0; y < 8; y++) {
+            if (pos.b[x][y] != '-') {
+                pieces.push(pos.b[x][y]);
+            }
+        }
+    }
+    if (pieces.length == 2) return true;
+    if (pieces.length == 3) {
+        for (let i = 0; i < pieces.length; i++) {
+            let p = pieces[i].toLowerCase();
+            if (p == 'n' || p == 'b') return true;
+        }
+    }
+    return false;
+}
+
+function isFiftyMoveRule(pos) {
+    return pos.m[0] >= 100;
+}
+
+function isThreefoldRepetition(fen) {
+    let pos = getFENPos(fen || getCurFEN());
+    let count = 0;
+    for (let i = 0; i < _history.length; i++) {
+        if (getFENPos(_history[i][0]) == pos) count++;
+    }
+    // If the current position is not yet in history (depends on call timing), 
+    // we might need to add 1. However, typically history is updated on move.
+    // If we are checking the *current* state which is already valid, 
+    // standard repetition requires the position to appear 3 times.
+    return count >= 3;
+}
+
 function setElemText(elem, value) {
     while (elem.firstChild) elem.removeChild(elem.firstChild);
     elem.appendChild(document.createTextNode(value));
@@ -1461,7 +1502,30 @@ function refreshMoves() {
                     depth: 0
                 });
             }
-            if (_curmoves.length == 0) {
+
+            let drawReason = null;
+            if (isInsufficientMaterial(pos)) drawReason = "Draw - Insufficient Material";
+            else if (isFiftyMoveRule(pos)) drawReason = "Draw - 50-Move Rule";
+            else if (isThreefoldRepetition()) drawReason = "Draw - Threefold Repetition";
+
+            if (drawReason != null) {
+                _curmoves = []; // Clear legal moves to prevent further play
+                let fragment = document.createDocumentFragment();
+                let div0 = document.createElement('div');
+                div0.style.padding = '8px 16px';
+                let div = document.createElement('div');
+                div.style.backgroundColor = '#894e00'; // distinct color for draw
+                div.className = 'positionStatus';
+                setElemText(div, drawReason);
+                div0.appendChild(div);
+                let ul = document.createElement('ul'),
+                    li = document.createElement('li');
+                setElemText(li, 'Draw');
+                ul.appendChild(li);
+                div0.appendChild(ul);
+                fragment.appendChild(div0);
+                document.getElementById('moves').appendChild(fragment);
+            } else if (_curmoves.length == 0) {
                 let matecheck = pos.w && isWhiteCheck(pos) || !pos.w && isWhiteCheck(colorflip(pos));
                 let fragment = document.createDocumentFragment();
                 let div0 = document.createElement('div');
