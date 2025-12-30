@@ -1,6 +1,6 @@
 {
   "name": "boldchess-web-app",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "The official chess web app of BoldChess.com",
   "main": "server.js",
   "scripts": {

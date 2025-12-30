@@ -4,8 +4,8 @@
 
 // Engine Depth Constants
 const MIN_DEPTH = 1;
-const MAX_DEPTH = 28;
-const DEFAULT_DEPTH = 18;
+const MAX_DEPTH = 24;
+const DEFAULT_DEPTH = 16;
 
 // Default Starting FEN
 const START = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
@@ -47,7 +47,7 @@ let _staticEvalListCache = [],
     _staticEvalListCacheSize = 20;
 let _coachMode = false;
 let _coachModeLabel = "Active Coach Mode";
-let _userUciEloRating = 2200;
+let _userUciEloRating = 2000;
 
 // ============================
 // Initialization
@@ -2046,7 +2046,7 @@ function loadEngine(onReady) {
         engine.messagefunc = message;
         worker.postMessage(cmd);
     };
-    engine.eval = function eval(fen, done, info) {
+    engine.eval = function evaluate(fen, done, info) {
         engine.send('position fen ' + fen);
         engine.send('go depth ' + engine.depth, function message(str) {
             let matches = str.match(/depth (\d+) .*score (cp|mate) ([-\d]+) .*nodes (\d+) .*pv (.+)/);
@@ -4845,7 +4845,7 @@ function menuTwoPlayerMode() {
 
 function getParameterByName(name, url) {
     if (!url) url = window.location.href;
-    name = name.replace(/[\[\]]/g, '\\$&');
+    name = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     let regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
         results = regex.exec(url);
     if (!results || !results[2]) return '';
