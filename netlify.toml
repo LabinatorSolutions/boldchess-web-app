@@ -1,0 +1,14 @@
+## Configuration for Netlify deployment
+
+[build]
+  # Directory to publish (the static files)
+  publish = "public"
+  
+  # No build command needed since this is a static site
+  command = "echo 'No build required - serving static files'"
+
+## Redirect all requests to index.html for SPA routing
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

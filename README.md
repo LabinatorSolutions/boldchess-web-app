@@ -1,8 +1,8 @@
 # BoldChess Web App
 
-![Node.js Version](https://img.shields.io/badge/Node.js-v20.18.0-339933)
-![Express.js](https://img.shields.io/badge/Express.js-4.21.1-259dff)
-![Stockfish Chess Engine](https://img.shields.io/badge/Stockfish_Version-16.1-358853)
+![Node.js Version](https://img.shields.io/badge/Node.js-v24.12.0-339933)
+![Express.js](https://img.shields.io/badge/Express.js-5.2.1-259dff)
+![Stockfish Chess Engine](https://img.shields.io/badge/Stockfish_Version-17.1-358853)
 ![Mobile Ready](https://img.shields.io/badge/Mobile_Ready-Yes-985b68)
 ![Issues](https://img.shields.io/github/issues-search/LabinatorSolutions/boldchess-web-app?label=Known%20Bugs&query=is%3Aissue+is%3Aopen+label%3Abug)
 ![License](https://img.shields.io/badge/License-AGPL_v3-663366)
@@ -15,6 +15,12 @@ It is a responsive web GUI for the Stockfish chess engine, offering analysis, ev
 ## Mission
 
 Our mission is to create a modern, mobile-friendly, free, and open-source web-based chess app, powered by the advanced Stockfish chess engine.
+
+---
+
+## Live Version
+
+- **Live URL**: [app.boldchess.com](https://app.boldchess.com/)
 
 ---
 
@@ -62,19 +68,18 @@ Our mission is to create a modern, mobile-friendly, free, and open-source web-ba
 
 1. **Prerequisites**:
    - Ensure Node.js is installed. If not, download and install it from the [Node.js official website](https://nodejs.org/).
-   - **Alternatively, you can use Docker (see below).**
 
 2. **Repository Setup**:
    - Clone the repository to your local machine.
    - Navigate to the project directory.
 
-3. **Dependency Installation (Node.js only)**:
+3. **Dependency Installation**:
    - Install the project dependencies:
      ```bash
      npm install
      ```
 
-4. **Local Server (Node.js only)**:
+4. **Local Server**:
    - Start the local development server:
      ```bash
      npm run start
@@ -83,53 +88,44 @@ Our mission is to create a modern, mobile-friendly, free, and open-source web-ba
 
 ---
 
-### Running with Docker (Alternative to Node.js install)
-
-You can run the BoldChess Web App in a Docker container for easy local development, testing, and deployment.
-
-1. **Build the Docker Image**
-
-   ```bash
-   docker build -t boldchess-web-app .
-   ```
-
-2. **Run the Docker Container**
-
-   ```bash
-   docker run -p 3000:3000 boldchess-web-app
-   ```
-
-   The app will be available at [http://localhost:3000](http://localhost:3000).
-
-3. **Using Docker Compose (Optional)**
-
-   If you prefer using Docker Compose, you can start the app with:
-
-   ```bash
-   docker compose up --build
-   ```
-
-   This will build and run the app as defined in `docker-compose.yml`.
-
-4. **Development Notes**
-
-   - The `.dockerignore` file is used to exclude unnecessary files from the Docker build context.
-   - The default container runs in production mode. For development, you may adjust the Dockerfile or Compose file as needed.
-
----
-
 ## HTTP Headers Setup
 
-The app is currently using **Stockfish 16.1 JS**, which utilizes the `SharedArrayBuffer`. To ensure the engine functions correctly, you need to enable SharedArrayBuffer support both locally and on your server. This involves setting appropriate HTTP headers.
+The app uses **Stockfish 17.1 JS**, which utilizes `SharedArrayBuffer` for multi-threaded performance. The engine architecture also uses a **multi-part WASM system** (6 parts, ~13MB each) for better browser caching, with the NNUE neural network embedded directly in the WASM files.
 
-To enable `SharedArrayBuffer`, you must configure the following HTTP headers:
+To ensure the engine functions correctly, you must configure the following HTTP headers on your server:
 
-1. **Cross-Origin-Opener-Policy (COOP)**: This should be set to `same-origin`.
-2. **Cross-Origin-Embedder-Policy (COEP)**: This should be set to `require-corp`.
+### Required Headers
 
-These headers isolate the context of your page and provide the necessary security guarantees for using `SharedArrayBuffer`. Properly configuring these headers will allow the Stockfish 16.1 JS engine to operate efficiently. Alternatively, you can switch to the **Stockfish 16.1 Single JS** which does not utilize the `SharedArrayBuffer`.
+1. **Cross-Origin-Opener-Policy (COOP)**: Set to `same-origin`
+2. **Cross-Origin-Embedder-Policy (COEP)**: Set to `require-corp`
+3. **Content-Security-Policy (CSP)**: Must allow `blob:` URLs for the multi-part WASM architecture
+   - `script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:`
+   - `connect-src 'self' blob:`
+   - `worker-src 'self' blob:`
 
-Read more about `ShreadArrayBuffer` at [this link](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SharedArrayBuffer).
+### Why These Headers?
+
+- **COOP/COEP**: These headers enable cross-origin isolation, which is required for `SharedArrayBuffer` to function. This allows Stockfish to use multiple threads for faster analysis.
+- **CSP blob: support**: Stockfish 17.1 fetches the 6 WASM parts, combines them into a single blob, and loads the engine via a `blob:` URL. Without blob URL support in the CSP, the engine will fail to load.
+
+### Example (Express.js with Helmet)
+
+```javascript
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "blob:"],
+            connectSrc: ["'self'", "blob:"],
+            workerSrc: ["'self'", "blob:"],
+            // ... other directives
+        },
+    },
+    crossOriginOpenerPolicy: { policy: "same-origin" },
+    crossOriginEmbedderPolicy: { policy: "require-corp" }
+}));
+```
+
+Read more about `SharedArrayBuffer` at the [MDN documentation](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SharedArrayBuffer).
 
 ---
 

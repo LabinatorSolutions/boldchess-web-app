@@ -1,0 +1,18 @@
+## Custom HTTP headers for Netlify
+## These headers are REQUIRED for Stockfish 17.1 to work correctly
+## Place this file in the public/ directory
+
+/*
+  # Enable cross-origin isolation for SharedArrayBuffer (required for multi-threading)
+  Cross-Origin-Embedder-Policy: require-corp
+  Cross-Origin-Opener-Policy: same-origin
+  
+  # Content Security Policy - CRITICAL for Stockfish 17.1's multi-part WASM
+  # The blob: URLs are required because Stockfish 17.1 combines 6 WASM parts into a blob
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' blob:; font-src 'self' data:; object-src 'none'; worker-src 'self' blob:;
+  
+  # Additional security headers
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
+  Permissions-Policy: camera=(), microphone=(), geolocation=()

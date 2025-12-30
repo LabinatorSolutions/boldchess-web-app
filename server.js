@@ -22,12 +22,13 @@ app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"], // Allow inline scripts and eval
+            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "blob:"], // Allow inline scripts, eval, and blob URLs
             styleSrc: ["'self'", "'unsafe-inline'"],
             imgSrc: ["'self'", "data:"],
-            connectSrc: ["'self'"],
+            connectSrc: ["'self'", "blob:"], // Allow blob URLs for Stockfish WASM loading
             fontSrc: ["'self'", "data:"],
             objectSrc: ["'none'"],
+            workerSrc: ["'self'", "blob:"], // Allow Web Workers from blob URLs
             upgradeInsecureRequests: [],
         },
     },
