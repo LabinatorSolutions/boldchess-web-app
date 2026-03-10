@@ -41,4 +41,5 @@ Thumbs.db
 *.avi
 *.flv
 *.mov
-*.wmv
+*.wmvpublic/libs/
+public/engine/

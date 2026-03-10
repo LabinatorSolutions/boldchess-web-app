@@ -1,10 +1,11 @@
 # BoldChess Web App
 
 ![Node.js Version](https://img.shields.io/badge/Node.js-v24.12.0-339933)
+![Bun](https://img.shields.io/badge/Bun-%23000000.svg?style=flat&logo=bun&logoColor=white)
+![Biome](https://img.shields.io/badge/Biome-60a5fa?style=flat&logo=biome&logoColor=white)
 ![Express.js](https://img.shields.io/badge/Express.js-5.2.1-259dff)
 ![Stockfish Chess Engine](https://img.shields.io/badge/Stockfish_Version-17.1-358853)
 ![Mobile Ready](https://img.shields.io/badge/Mobile_Ready-Yes-985b68)
-![Issues](https://img.shields.io/github/issues-search/LabinatorSolutions/boldchess-web-app?label=Known%20Bugs&query=is%3Aissue+is%3Aopen+label%3Abug)
 ![License](https://img.shields.io/badge/License-AGPL_v3-663366)
 
 The official chess web-based app of [BoldChess.com](https://boldchess.com/).
@@ -15,12 +16,6 @@ It is a responsive web GUI for the Stockfish chess engine, offering analysis, ev
 ## Mission
 
 Our mission is to create a modern, mobile-friendly, free, and open-source web-based chess app, powered by the advanced Stockfish chess engine.
-
----
-
-## Live Version
-
-- **Live URL**: [app.boldchess.com](https://app.boldchess.com/)
 
 ---
 
@@ -64,27 +59,66 @@ Our mission is to create a modern, mobile-friendly, free, and open-source web-ba
 
 ---
 
-## Installation
+## Environment Variables
+
+The application uses an optional `.env` file for configuration.
+
+| Variable | Description | Default |
+| :--- | :--- | :--- |
+| `PORT` | The port the server will listen on. | `3000` |
+
+---
+
+## Installation & Running
+
+This project uses [Bun](https://bun.sh/) for dependency management and as a runtime.
 
 1. **Prerequisites**:
-   - Ensure Node.js is installed. If not, download and install it from the [Node.js official website](https://nodejs.org/).
+    - Ensure [Bun](https://bun.sh/) is installed on your system.
 
 2. **Repository Setup**:
-   - Clone the repository to your local machine.
-   - Navigate to the project directory.
+    - Clone the repository to your local machine.
+    - Navigate to the project directory.
 
 3. **Dependency Installation**:
-   - Install the project dependencies:
-     ```bash
-     npm install
-     ```
+    - Install the project dependencies:
+
+        ```bash
+        bun install
+        ```
 
 4. **Local Server**:
-   - Start the local development server:
-     ```bash
-     npm run start
-     ```
-   - Access the application at `http://localhost:3000` in a web browser.
+    - Start the local development server:
+
+        ```bash
+        bun start
+        ```
+
+    - Access the application at `http://localhost:3000` in a web browser.
+
+---
+
+## Development
+
+We use [Biome](https://biomejs.dev/) for linting and formatting.
+
+- **Check for issues**:
+
+    ```bash
+    bun run lint
+    ```
+
+- **Fix issues**:
+
+    ```bash
+    bun run lint:fix
+    ```
+
+- **Format code**:
+
+    ```bash
+    bun run format
+    ```
 
 ---
 
@@ -99,9 +133,9 @@ To ensure the engine functions correctly, you must configure the following HTTP 
 1. **Cross-Origin-Opener-Policy (COOP)**: Set to `same-origin`
 2. **Cross-Origin-Embedder-Policy (COEP)**: Set to `require-corp`
 3. **Content-Security-Policy (CSP)**: Must allow `blob:` URLs for the multi-part WASM architecture
-   - `script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:`
-   - `connect-src 'self' blob:`
-   - `worker-src 'self' blob:`
+    - `script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:`
+    - `connect-src 'self' blob:`
+    - `worker-src 'self' blob:`
 
 ### Why These Headers?
 
@@ -131,7 +165,7 @@ Read more about `SharedArrayBuffer` at the [MDN documentation](https://developer
 
 ## Server and Deployment
 
-The application is designed for easy deployment in any standard Node.js environment.
+The application is designed for easy deployment in any standard Node.js/Bun environment.
 
 **Running the Server**: The main entry point is `server.js`, which serves the static files in the `public` directory, eliminating the need for a build process. This simplifies deployment and development.
 
@@ -139,23 +173,17 @@ The application is designed for easy deployment in any standard Node.js environm
 
 ---
 
-## Important Improvements & Issues
-
-For a list of important improvements and known issues, visit our [GitHub Issues page](https://github.com/LabinatorSolutions/boldchess-web-app/issues).
-
----
-
 ## Contribution
 
 We welcome all developers to contribute by adding features or fixing bugs.
 
-Visit the [Contributors page](https://github.com/LabinatorSolutions/boldchess-web-app/graphs/contributors) to see the list of current contributors.
+Please report issues via [BitBucket Issues](https://bitbucket.org/labinator-team/boldchess-web-app/issues).
 
 ---
 
 ## License
 
-This project is licensed under the **GNU AFFERO GENERAL PUBLIC LICENSE (AGPLv3)**. For more details, see the [AGPLv3 License](https://www.gnu.org/licenses/agpl-3.0.html).
+This project is licensed under the **GNU AFFERO GENERAL PUBLIC LICENSE (AGPLv3)**. For more details, see the [LICENSE.md](file:///home/kai/Downloads/%5BX%5D%20-%20Portal/BitBucket/BoldChess/boldchess-web-app/LICENSE.md) file.
 
 ---
 

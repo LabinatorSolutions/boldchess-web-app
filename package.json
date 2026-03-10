@@ -1,43 +1,45 @@
 {
-  "name": "boldchess-web-app",
-  "version": "2.0.0",
-  "description": "The official chess web app of BoldChess.com",
-  "main": "server.js",
-  "scripts": {
-    "start": "node server.js",
-    "build": "echo 'No build required'",
-    "test": "echo 'No test specified' && exit 0",
-    "lint": "eslint .",
-    "format": "prettier --write ."
-  },
-  "keywords": [
-    "chess",
-    "game",
-    "nodejs",
-    "express"
-  ],
-  "author": "BoldChess Team",
-  "license": "AGPLv3",
-  "repository": {
-    "type": "git",
-    "url": "https://bitbucket.org/labinator-team/boldchess-android-app"
-  },
-  "dependencies": {
-    "express": "^5.2.1",
-    "helmet": "^8.1.0",
-    "morgan": "^1.10.1",
-    "compression": "^1.8.1",
-    "express-rate-limit": "^8.2.1",
-    "cors": "^2.8.5",
-    "dotenv": "^17.2.3",
-    "cheerio": "^1.1.2",
-    "express-session": "^1.18.2"
-  },
-  "devDependencies": {
-    "eslint": "^9.39.2",
-    "prettier": "^3.7.4"
-  },
-  "engines": {
-    "node": ">=24.12.0"
-  }
+	"name": "boldchess-web-app",
+	"version": "2.0.0",
+	"description": "The official chess web app of BoldChess.com",
+	"main": "server.js",
+	"scripts": {
+		"start": "node server.js",
+		"build": "echo 'No build required'",
+		"test": "echo 'No test specified' && exit 0",
+		"lint": "biome check server.js",
+		"lint:fix": "biome check --write server.js",
+		"format": "biome format --write server.js",
+		"typecheck": "echo 'No typecheck required'",
+		"preview": "bun run start"
+	},
+	"keywords": [
+		"chess",
+		"game",
+		"nodejs",
+		"express"
+	],
+	"author": "BoldChess Team",
+	"license": "AGPLv3",
+	"repository": {
+		"type": "git",
+		"url": "https://bitbucket.org/labinator-team/boldchess-web-app"
+	},
+	"dependencies": {
+		"express": "^5.2.1",
+		"helmet": "^8.1.0",
+		"morgan": "^1.10.1",
+		"compression": "^1.8.1",
+		"express-rate-limit": "^8.3.1",
+		"cors": "^2.8.6",
+		"dotenv": "^17.3.1",
+		"cheerio": "^1.2.0",
+		"express-session": "^1.19.0"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.4.6"
+	},
+	"engines": {
+		"node": ">=24.12.0"
+	}
 }
