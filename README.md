@@ -1,10 +1,8 @@
 # BoldChess Web App
 
-![Node.js Version](https://img.shields.io/badge/Node.js-v24.12.0-339933)
 ![Bun](https://img.shields.io/badge/Bun-%23000000.svg?style=flat&logo=bun&logoColor=white)
 ![Biome](https://img.shields.io/badge/Biome-60a5fa?style=flat&logo=biome&logoColor=white)
-![Express.js](https://img.shields.io/badge/Express.js-5.2.1-259dff)
-![Stockfish Chess Engine](https://img.shields.io/badge/Stockfish_Version-17.1-358853)
+![Stockfish Chess Engine](https://img.shields.io/badge/Stockfish_Version-18-358853)
 ![Mobile Ready](https://img.shields.io/badge/Mobile_Ready-Yes-985b68)
 ![License](https://img.shields.io/badge/License-AGPL_v3-663366)
 
@@ -124,7 +122,7 @@ We use [Biome](https://biomejs.dev/) for linting and formatting.
 
 ## HTTP Headers Setup
 
-The app uses **Stockfish 17.1 JS**, which utilizes `SharedArrayBuffer` for multi-threaded performance. The engine architecture also uses a **multi-part WASM system** (6 parts, ~13MB each) for better browser caching, with the NNUE neural network embedded directly in the WASM files.
+The app uses **Stockfish 18 JS**, which utilizes `SharedArrayBuffer` for multi-threaded performance.
 
 To ensure the engine functions correctly, you must configure the following HTTP headers on your server:
 
@@ -140,7 +138,6 @@ To ensure the engine functions correctly, you must configure the following HTTP 
 ### Why These Headers?
 
 - **COOP/COEP**: These headers enable cross-origin isolation, which is required for `SharedArrayBuffer` to function. This allows Stockfish to use multiple threads for faster analysis.
-- **CSP blob: support**: Stockfish 17.1 fetches the 6 WASM parts, combines them into a single blob, and loads the engine via a `blob:` URL. Without blob URL support in the CSP, the engine will fail to load.
 
 ### Example (Express.js with Helmet)
 

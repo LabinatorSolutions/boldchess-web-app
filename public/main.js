@@ -2546,7 +2546,7 @@ function loadEngine(onReady) {
 		);
 	if (typeof Worker === "undefined") return engine;
 	try {
-		var worker = new Worker("./engine/stockfish-17.1-8e4d048.js");
+		var worker = new Worker("./engine/stockfish-18-lite.js");
 	} catch (err) {
 		return engine;
 	}
