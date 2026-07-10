@@ -17,6 +17,12 @@ Our mission is to create a modern, mobile-friendly, free, and open-source web-ba
 
 ---
 
+## Live Version
+
+A live version is only available for the BoldChess.com paid members. As this is an open-source project, anyone can run it locally without overloading our servers.
+
+---
+
 ## Features
 
 - Load your chess position or game using FEN, PGN, or a move list.
@@ -174,13 +180,11 @@ The application is designed for easy deployment in any standard Node.js/Bun envi
 
 We welcome all developers to contribute by adding features or fixing bugs.
 
-Please report issues via [BitBucket Issues](https://bitbucket.org/labinator-team/boldchess-web-app/issues).
-
 ---
 
 ## License
 
-This project is licensed under the **GNU AFFERO GENERAL PUBLIC LICENSE (AGPLv3)**. For more details, see the [LICENSE.md](file:///home/kai/Downloads/%5BX%5D%20-%20Portal/BitBucket/BoldChess/boldchess-web-app/LICENSE.md) file.
+This project is licensed under the **GNU AFFERO GENERAL PUBLIC LICENSE (AGPLv3)**.
 
 ---
 
