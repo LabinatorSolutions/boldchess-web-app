@@ -4,6 +4,7 @@
 	"description": "The official chess web app of BoldChess.com",
 	"main": "server.js",
 	"scripts": {
+		"ci": "biome ci .",
 		"start": "node server.js",
 		"build": "echo 'No build required'",
 		"test": "echo 'No test specified' && exit 0",
@@ -26,20 +27,20 @@
 		"url": "https://bitbucket.org/labinator-team/boldchess-web-app"
 	},
 	"dependencies": {
-		"baseline-browser-mapping": "^2.10.43",
-		"caniuse-lite": "^1.0.30001805",
+		"baseline-browser-mapping": "^2.11.1",
+		"caniuse-lite": "^1.0.30001806",
 		"cheerio": "^1.2.0",
 		"compression": "^1.8.1",
 		"cors": "^2.8.6",
 		"dotenv": "^17.4.2",
 		"express": "^5.2.1",
-		"express-rate-limit": "^8.5.2",
+		"express-rate-limit": "^8.6.0",
 		"express-session": "^1.19.0",
 		"helmet": "^8.3.0",
 		"morgan": "^1.11.0"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "^2.5.4"
+		"@biomejs/biome": "^2.5.5"
 	},
 	"engines": {
 		"node": ">=24.12.0"
