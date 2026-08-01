@@ -201,7 +201,6 @@ li {
 }
 
 .cb > .l {
-	background-color: rgba(255, 255, 255, 0.6);
 	background: linear-gradient(
 		to bottom right,
 		rgba(255, 255, 255, 0.5),
@@ -210,7 +209,6 @@ li {
 }
 
 .cb > .d {
-	background-color: rgba(255, 255, 255, 0.2);
 	background: linear-gradient(
 		to bottom right,
 		rgba(255, 255, 255, 0.15),
@@ -581,7 +579,6 @@ li {
 	background-repeat: no-repeat;
 	width: 16px;
 	height: 16px;
-	padding: 0px;
 	border-radius: 2px;
 	padding: 4px;
 }
@@ -639,9 +636,9 @@ li {
 	background-color: #ffffff;
 }
 
-#buttonStm.#000000 div,
-#buttonStm.#000000:hover div {
-    background-color: #000000;
+#buttonStm.black div,
+#buttonStm.black:hover div {
+	background-color: #000000;
 }
 
 #buttonStaticSortByValue,
@@ -892,7 +889,6 @@ li {
 }
 
 #editWrapper > .cb > .l {
-	background-color: rgba(255, 255, 255, 0.6);
 	background: linear-gradient(
 		to bottom right,
 		rgba(255, 255, 255, 0.5),
@@ -901,7 +897,6 @@ li {
 }
 
 #editWrapper > .cb > .d {
-	background-color: rgba(255, 255, 255, 0.2);
 	background: linear-gradient(
 		to bottom right,
 		rgba(255, 255, 255, 0.15),
@@ -1154,9 +1149,6 @@ li {
 	background-position: 12px 4px;
 }
 
-.menuItem > span {
-}
-
 .menuItem:hover {
 	background-color: #333a42;
 }
@@ -1304,12 +1296,10 @@ li {
 }
 
 #chessboard1 > .l {
-	background-color: #bdcdd6;
 	background: #bdcdd6;
 }
 
 #chessboard1 > .d {
-	background-color: #708090;
 	background: #708090;
 }
 
@@ -1332,7 +1322,6 @@ li {
 }
 
 #chessboard1.c1 > .l {
-	background-color: #f0f0f0;
 	background: linear-gradient(
 		to bottom right,
 		rgba(225, 225, 217, 1),
@@ -1341,7 +1330,6 @@ li {
 }
 
 #chessboard1.c1 > .d {
-	background-color: #7086b8;
 	background: linear-gradient(
 		to bottom right,
 		rgba(105, 127, 176, 1),
@@ -1374,12 +1362,10 @@ li {
 }
 
 #chessboard1.c2 > .l {
-	background-color: #f0d9b5;
 	background: #f0d9b5;
 }
 
 #chessboard1.c2 > .d {
-	background-color: #b58863;
 	background: #b58863;
 }
 
@@ -1408,12 +1394,10 @@ li {
 }
 
 #chessboard1.c3 > .l {
-	background-color: #eeeed2;
 	background: #eeeed2;
 }
 
 #chessboard1.c3 > .d {
-	background-color: #7b9b5e;
 	background: #7b9b5e;
 }
 
@@ -1442,12 +1426,10 @@ li {
 }
 
 #chessboard1.c4 > .l {
-	background-color: #bdcdd6;
 	background: #bdcdd6;
 }
 
 #chessboard1.c4 > .d {
-	background-color: #985b68;
 	background: #985b68;
 }
 
@@ -1476,7 +1458,6 @@ li {
 }
 
 #chessboard1.c5 > .l {
-	background-color: rgba(255, 255, 255, 0.6);
 	background: linear-gradient(
 		to bottom right,
 		rgba(255, 255, 255, 0.5),
@@ -1485,7 +1466,6 @@ li {
 }
 
 #chessboard1.c5 > .d {
-	background-color: rgba(255, 255, 255, 0.2);
 	background: linear-gradient(
 		to bottom right,
 		rgba(255, 255, 255, 0.15),
@@ -1639,9 +1619,6 @@ li {
 	min-height: 64px;
 }
 
-.boxIn {
-}
-
 .boxTop {
 	text-align: center;
 	font-size: 11px;
@@ -1656,7 +1633,6 @@ li {
 	right: 0;
 	height: 15px;
 	border-bottom: solid 1px #000000;
-	overflow: hidden;
 	text-overflow: ellipsis;
 }
 

@@ -1,12 +1,13 @@
 {
-	"$schema": "https://biomejs.dev/schemas/2.5.0/schema.json",
+	"$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
 	"vcs": {
 		"enabled": true,
 		"clientKind": "git",
 		"useIgnoreFile": true
 	},
 	"files": {
-		"ignoreUnknown": false
+		"ignoreUnknown": false,
+		"includes": ["**", "!public/engine", "!public/libs", "!**/*.svg"]
 	},
 	"formatter": {
 		"enabled": true,
@@ -15,7 +16,8 @@
 	"linter": {
 		"enabled": true,
 		"rules": {
-			"preset": "recommended"
+			"preset": "recommended",
+			"complexity": { "noImportantStyles": "off" }
 		}
 	},
 	"javascript": {

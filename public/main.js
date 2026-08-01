@@ -124,18 +124,18 @@ window.onload = () => {
 		showEvals();
 	};
 	document.getElementById("graphWrapper").onmouseover = () => {
-		if (document.onmousemove == defaultMouseMove)
+		if (document.onmousemove === defaultMouseMove)
 			document.onmousemove = graphMouseMove;
 	};
 	document.getElementById("graphWrapper").onmousedown = (event) => {
-		if (document.onmousemove == defaultMouseMove) {
+		if (document.onmousemove === defaultMouseMove) {
 			document.onmousemove = graphMouseMove;
 			graphMouseMove(event);
 			graphMouseDown(event);
 		}
 	};
 	document.getElementById("graphWrapper").onmouseout = () => {
-		if (document.onmousemove == graphMouseMove)
+		if (document.onmousemove === graphMouseMove)
 			document.onmousemove = defaultMouseMove;
 		repaintGraph();
 		updateTooltip("");
@@ -200,16 +200,16 @@ function isInsufficientMaterial(pos) {
 	const pieces = [];
 	for (let x = 0; x < 8; x++) {
 		for (let y = 0; y < 8; y++) {
-			if (pos.b[x][y] != "-") {
+			if (pos.b[x][y] !== "-") {
 				pieces.push(pos.b[x][y]);
 			}
 		}
 	}
-	if (pieces.length == 2) return true;
-	if (pieces.length == 3) {
+	if (pieces.length === 2) return true;
+	if (pieces.length === 3) {
 		for (let i = 0; i < pieces.length; i++) {
 			const p = pieces[i].toLowerCase();
-			if (p == "n" || p == "b") return true;
+			if (p === "n" || p === "b") return true;
 		}
 	}
 	return false;
@@ -223,7 +223,7 @@ function isThreefoldRepetition(fen) {
 	const pos = getFENPos(fen || getCurFEN());
 	let count = 0;
 	for (let i = 0; i < _history.length; i++) {
-		if (getFENPos(_history[i][0]) == pos) count++;
+		if (getFENPos(_history[i][0]) === pos) count++;
 	}
 	// If the current position is not yet in history (depends on call timing),
 	// we might need to add 1. However, typically history is updated on move.
@@ -274,7 +274,7 @@ function getPromotionPiece() {
 // ============================
 
 function toggleCoachMode() {
-	_coachMode = _coachMode === true ? false : true;
+	_coachMode = _coachMode !== true;
 	const newText =
 		_coachMode === true ? "Deactivate Coach Mode" : "Activate Coach Mode";
 	_coachModeLabel = newText;
@@ -285,7 +285,7 @@ function toggleCoachMode() {
 // ============================
 
 function command(text) {
-	if (text == null || text.length == 0) return;
+	if (text == null || text.length === 0) return;
 	const mvdivs = [
 		'<div class="moves">',
 		'<div class="tview2 tview2-column">',
@@ -342,17 +342,17 @@ function command(text) {
 							.substring(text2.indexOf(h) + h.length, text2.indexOf("</h2>"))
 							.trim() +
 						'"]\n';
-					if (j == 1 && !black) ntext = nm + ntext;
+					if (j === 1 && !black) ntext = nm + ntext;
 					else ntext += nm;
 				}
 			text = text.substring(text.indexOf(mvdivs[i]));
-			if (i == 2)
+			if (i === 2)
 				text = text.replace(
 					/<div class='notationTableInlineElement((?!<\/div>).)*<\/div>/g,
 					"",
 				);
 			text = text.substring(mvdivs[i].length, text.indexOf("</div>"));
-			if (i == 2) {
+			if (i === 2) {
 				text = text
 					.replace(
 						/<dt>\s*(<span[^>]*>)?\s*([^<\s]*)\s*(<\/span>)?\s*<\/dt>/g,
@@ -384,7 +384,7 @@ function command(text) {
 					.replace(/(^|})[^{]*($|{)/g, "");
 		}
 	}
-	if (text.split("/").length == 8 && text.split(".").length == 1) {
+	if (text.split("/").length === 8 && text.split(".").length === 1) {
 		pos = parseFEN(text);
 		setCurFEN(generateFEN(pos));
 		_history = [[getCurFEN()]];
@@ -434,8 +434,8 @@ function command(text) {
 		_historyindex = 0;
 		gm = 0;
 		for (let i = 0; i < moves.length; i++) {
-			if (moves[i].length == 0) continue;
-			if ("*".indexOf(moves[i][0]) == 0) {
+			if (moves[i].length === 0) continue;
+			if ("*".indexOf(moves[i][0]) === 0) {
 				if (i < moves.length - 1) {
 					pos = parseFEN(START);
 					// Add only the new position without move and SAN
@@ -443,14 +443,14 @@ function command(text) {
 					gm++;
 				}
 				continue;
-			} else if (moves[i].indexOf("FEN.") == 0) {
+			} else if (moves[i].indexOf("FEN.") === 0) {
 				pos = parseFEN(moves[i].substring(4).replace(/\./g, " "));
-				if (_history[_historyindex][0] == START) _historyindex--;
+				if (_history[_historyindex][0] === START) _historyindex--;
 				// Add only the new position without move and SAN
 				historyAdd(generateFEN(pos), oldhistory, null, null);
 				continue;
 			}
-			if (moves[i] == "--") {
+			if (moves[i] === "--") {
 				pos.w = !pos.w;
 				// Add only the new position without move and SAN
 				historyAdd(generateFEN(pos), oldhistory, null, null);
@@ -468,20 +468,20 @@ function command(text) {
 		}
 		setCurFEN(generateFEN(pos));
 		historyKeep(whitename, blackname);
-	} else if (text.toLowerCase() == "reset") {
+	} else if (text.toLowerCase() === "reset") {
 		setCurFEN(START);
 		_history = [[getCurFEN()]];
 		_historyindex = 0;
 		historyKeep();
 		_history2 = null;
 		if (_nncache != null) _nncache.clear();
-	} else if (text.toLowerCase() == "clear") {
+	} else if (text.toLowerCase() === "clear") {
 		setCurFEN("8/8/8/8/8/8/8/8 w - - 0 0");
 		showBoard();
-	} else if (text.toLowerCase() == "colorflip") {
+	} else if (text.toLowerCase() === "colorflip") {
 		setCurFEN(generateFEN(colorflip(parseFEN(getCurFEN()))));
 		showBoard();
-	} else if (text.toLowerCase() == "sidetomove") {
+	} else if (text.toLowerCase() === "sidetomove") {
 		setCurFEN(
 			getCurFEN()
 				.replace(" w ", " ! ")
@@ -489,7 +489,7 @@ function command(text) {
 				.replace(" ! ", " b "),
 		);
 		showBoard();
-	} else if (text.toLowerCase().indexOf("depth ") == 0) {
+	} else if (text.toLowerCase().indexOf("depth ") === 0) {
 		if (_analysisEngine != null && _analysisEngine.ready) {
 			_analysisEngine.depth = Math.min(
 				MAX_DEPTH,
@@ -498,11 +498,11 @@ function command(text) {
 			if (isNaN(_analysisEngine.depth)) _analysisEngine.depth = DEFAULT_DEPTH;
 		}
 		showBoard();
-	} else if (text.toLowerCase() == "flip") {
+	} else if (text.toLowerCase() === "flip") {
 		doFlip();
-	} else if (text.toLowerCase() == "window") {
+	} else if (text.toLowerCase() === "window") {
 		let encoded = "";
-		if (_history[0][0] == START) {
+		if (_history[0][0] === START) {
 			let gi = "";
 			for (let i = 1; i < _history.length; i++) {
 				const pos = parseFEN(_history[i - 1][0]);
@@ -511,7 +511,7 @@ function command(text) {
 				for (let j = 0; j < moves.length; j++) {
 					const move = moves[j];
 					const pos2 = doMove(pos, move.from, move.to, move.p);
-					if (generateFEN(pos2) == _history[i][0]) mindex = j;
+					if (generateFEN(pos2) === _history[i][0]) mindex = j;
 				}
 				if (mindex < 0) {
 					gi = "";
@@ -523,13 +523,13 @@ function command(text) {
 				let n = (mindex + 1).toString(2);
 				n = v.substr(n.length) + n;
 				gi += n;
-				if (i == _history.length - 1) gi += v;
+				if (i === _history.length - 1) gi += v;
 			}
 			let cur = "";
 			for (let i = 0; i < gi.length; i++) {
 				cur += gi[i];
-				if (i == gi.length - 1) while (cur.length < 6) cur += "0";
-				if (cur.length == 6) {
+				if (i === gi.length - 1) while (cur.length < 6) cur += "0";
+				if (cur.length === 6) {
 					encoded +=
 						"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"[
 							parseInt(cur, 2)
@@ -541,11 +541,11 @@ function command(text) {
 		const wb = document.getElementById("wb").children;
 		const lparams = [];
 		for (let i = 0; i < wb.length; i++) {
-			if (wb[i].tagName != "DIV") continue;
+			if (wb[i].tagName !== "DIV") continue;
 			const winId = wb[i].id.substring(2);
 			const elem = document.getElementById("w" + winId);
-			if (elem.style.display == "none") continue;
-			if (elem.style.position == "absolute" && !_mobile) {
+			if (elem.style.display === "none") continue;
+			if (elem.style.position === "absolute" && !_mobile) {
 				lparams.push(
 					(
 						winId[0] +
@@ -559,8 +559,8 @@ function command(text) {
 					).replace(/px/g, ""),
 				);
 			} else if (
-				(elem.style.width != elem.originalWidth ||
-					elem.style.height != elem.originalHeight) &&
+				(elem.style.width !== elem.originalWidth ||
+					elem.style.height !== elem.originalHeight) &&
 				!_mobile
 			) {
 				lparams.push(
@@ -580,22 +580,22 @@ function command(text) {
 		if (
 			_analysisEngine != null &&
 			_analysisEngine.ready &&
-			_analysisEngine.depth != DEFAULT_DEPTH
+			_analysisEngine.depth !== DEFAULT_DEPTH
 		)
 			params.push("depth " + _analysisEngine.depth);
-		if (lparamsstr != "c m h g")
-			params.push("layout " + (lparamsstr.length == 0 ? "-" : lparamsstr));
+		if (lparamsstr !== "c m h g")
+			params.push("layout " + (lparamsstr.length === 0 ? "-" : lparamsstr));
 		if (encoded.length > 0) params.push("~" + encoded);
-		else if (getCurFEN() != START) params.push(getCurFEN());
+		else if (getCurFEN() !== START) params.push(getCurFEN());
 		for (let i = 0; i < params.length; i++) {
 			url +=
-				(i == 0 ? "?" : "&") +
+				(i === 0 ? "?" : "&") +
 				String.fromCharCode("a".charCodeAt(0) + i) +
 				"=" +
 				params[i];
 		}
 		window.open(url, "_blank");
-	} else if (text[0] == "~") {
+	} else if (text[0] === "~") {
 		let pos = parseFEN(START);
 		const oldhistory = JSON.parse(JSON.stringify(_history));
 		_history = [[START]];
@@ -618,7 +618,7 @@ function command(text) {
 				i++;
 			}
 			const n = parseInt(cur, 2);
-			if (n == 0 || n >= moves.length + 1) break;
+			if (n === 0 || n >= moves.length + 1) break;
 			const move = moves[n - 1],
 				san = sanMove(pos, move, moves);
 			pos = doMove(pos, move.from, move.to, move.p);
@@ -626,7 +626,7 @@ function command(text) {
 		}
 		setCurFEN(generateFEN(pos));
 		historyKeep();
-	} else if (text.toLowerCase() == "revert") {
+	} else if (text.toLowerCase() === "revert") {
 		if (_history2 != null) {
 			_historyindex = _history2[0];
 			_history = _history2[1];
@@ -635,21 +635,21 @@ function command(text) {
 			refreshButtonRevert();
 			historyMove(0);
 		}
-	} else if (text.toLowerCase() == "keep") {
+	} else if (text.toLowerCase() === "keep") {
 		historyKeep(_wname, _bname);
-	} else if (text.length == 4 && text.toLowerCase().indexOf("col") == 0) {
+	} else if (text.length === 4 && text.toLowerCase().indexOf("col") === 0) {
 		setBoardColor(Math.max(0, text.charCodeAt(3) - "0".charCodeAt(0)));
-	} else if (text.toLowerCase().indexOf("layout ") == 0) {
+	} else if (text.toLowerCase().indexOf("layout ") === 0) {
 		const a = text.toUpperCase().split(" ");
 		a.splice(0, 1);
 		const wb = document.getElementById("wb").children;
 		for (let i = 0; i < wb.length; i++) {
-			if (wb[i].tagName != "DIV") continue;
+			if (wb[i].tagName !== "DIV") continue;
 			const winId = wb[i].id.substring(2);
-			let cur = a.find((x) => x[0] == winId[0]);
+			let cur = a.find((x) => x[0] === winId[0]);
 			if (cur != null && !_mobile) {
 				cur = cur.substring(1);
-				const b = cur.length == 0 ? [] : cur.split(",");
+				const b = cur.length === 0 ? [] : cur.split(",");
 				const elem = document.getElementById("w" + winId);
 				if (elem.firstElementChild.ondblclick != null)
 					elem.firstElementChild.ondblclick();
@@ -668,7 +668,7 @@ function command(text) {
 		}
 	} else {
 		for (let i = 0; i < _curmoves.length; i++)
-			if (_curmoves[i].san == text) {
+			if (_curmoves[i].san === text) {
 				doMoveHandler(_curmoves[i].move);
 				break;
 			}
@@ -685,7 +685,7 @@ function dosearch() {
 
 function showHideButtonGo(state) {
 	if (!document.getElementById("searchInput").focus) state = false;
-	if (state && document.getElementById("searchInput").value == getCurFEN())
+	if (state && document.getElementById("searchInput").value === getCurFEN())
 		state = false;
 	document.getElementById("buttonGo").style.display = state ? "" : "none";
 }
@@ -702,12 +702,15 @@ function setupInput() {
 		this.focuswithmouse = 1;
 	};
 	input.onmouseup = function () {
-		if (this.focuswithmouse == 2 && input.selectionStart == input.selectionEnd)
+		if (
+			this.focuswithmouse === 2 &&
+			input.selectionStart === input.selectionEnd
+		)
 			this.select();
 		this.focuswithmouse = 0;
 	};
 	input.onfocus = function () {
-		if (this.focuswithmouse == 1) this.focuswithmouse = 2;
+		if (this.focuswithmouse === 1) this.focuswithmouse = 2;
 		else {
 			input.select();
 			this.focuswithmouse = 0;
@@ -783,7 +786,7 @@ function updateTooltip(text, answerpv, movenumber, cl, e) {
 			tooltip.appendChild(span2);
 		}
 
-		if (cl != null && cl != "circle") {
+		if (cl != null && cl !== "circle") {
 			const span3 = document.createElement("span");
 			span3.className = cl;
 			tooltip.appendChild(span3);
@@ -799,7 +802,7 @@ function updateTooltip(text, answerpv, movenumber, cl, e) {
 		if (
 			answerpv != null &&
 			answerpv.length > 0 &&
-			(answerpv[0].length == 4 || answerpv[0].length == 5)
+			(answerpv[0].length === 4 || answerpv[0].length === 5)
 		) {
 			for (let i = 0; i < Math.min(answerpv.length, _movesPv ? 5 : 1); i++) {
 				const move = {
@@ -841,7 +844,7 @@ function showLegalMoves(from) {
 	let elem = document.getElementById("chessboard1");
 	for (let i = 0; i < elem.children.length; i++) {
 		const div = elem.children[i];
-		if (div.tagName != "DIV") continue;
+		if (div.tagName !== "DIV") continue;
 		if (div.style.zIndex > 0) continue;
 		let x = parseInt(div.style.left.replace("px", "")) / 40;
 		let y = parseInt(div.style.top.replace("px", "")) / 40;
@@ -855,7 +858,7 @@ function showLegalMoves(from) {
 		div.onmouseover = null;
 		setElemText(div, "");
 		if (from == null || from.x < 0 || from.y < 0) continue;
-		if (from.x == x && from.y == y) {
+		if (from.x === x && from.y === y) {
 			div.className += " h0";
 			_clickFromElem = div;
 		} else if (
@@ -864,18 +867,18 @@ function showLegalMoves(from) {
 				y: y,
 			})
 		) {
-			if (_curmoves.length == 0) continue;
+			if (_curmoves.length === 0) continue;
 			let text = "",
 				san = "",
 				answerpv = null,
 				cl = null;
 			for (let j = 0; j < _curmoves.length; j++) {
 				if (
-					_curmoves[j].move.from.x == from.x &&
-					_curmoves[j].move.from.y == from.y &&
-					_curmoves[j].move.to.x == x &&
-					_curmoves[j].move.to.y == y &&
-					(_curmoves[j].move.p == "Q" || _curmoves[j].move.p == null)
+					_curmoves[j].move.from.x === from.x &&
+					_curmoves[j].move.from.y === from.y &&
+					_curmoves[j].move.to.x === x &&
+					_curmoves[j].move.to.y === y &&
+					(_curmoves[j].move.p === "Q" || _curmoves[j].move.p == null)
 				) {
 					text = getEvalText(_curmoves[j].eval, true);
 					san = _curmoves[j].san;
@@ -902,7 +905,7 @@ function showLegalMoves(from) {
 	elem = document.getElementById("editWrapper").children[0];
 	for (let i = 0; i < elem.children.length; i++) {
 		const div = elem.children[i];
-		if (div.tagName != "DIV") continue;
+		if (div.tagName !== "DIV") continue;
 		if (div.style.zIndex > 0) continue;
 		const x = -parseInt(div.style.left.replace("px", "")) / 40 - 1;
 		const y = -parseInt(div.style.top.replace("px", "")) / 40 - 1;
@@ -910,7 +913,7 @@ function showLegalMoves(from) {
 		div.className = c;
 		setElemText(div, "");
 		if (from == null || from.x >= 0 || from.y >= 0) continue;
-		if (from.x == x && from.y == y) {
+		if (from.x === x && from.y === y) {
 			div.className += " h0";
 			_clickFromElem = div;
 		}
@@ -926,10 +929,10 @@ function updateLegalMoves() {
 	for (let i = 0; i < elem.children.length; i++) {
 		const div = elem.children[i];
 		if (
-			div.tagName != "DIV" ||
+			div.tagName !== "DIV" ||
 			div.style.zIndex > 0 ||
 			div.className.indexOf(" h1") < 0 ||
-			div.cl != "circle"
+			div.cl !== "circle"
 		)
 			continue;
 		let x = parseInt(div.style.left.replace("px", "")) / 40;
@@ -941,7 +944,7 @@ function updateLegalMoves() {
 		let c = div.className.split(" ")[0] + " " + div.className.split(" ")[1];
 		if (div.className.indexOf(" h2") >= 0) c += " h2";
 		for (let j = 0; j < _curmoves.length; j++) {
-			if (div.tooltip == _curmoves[j].san) {
+			if (div.tooltip === _curmoves[j].san) {
 				const text = getEvalText(_curmoves[j].eval, true);
 				const san = _curmoves[j].san;
 				const answerpv = _curmoves[j].answerpv;
@@ -958,7 +961,7 @@ function updateLegalMoves() {
 				};
 				if (
 					_tooltipState &&
-					getElemText(document.getElementById("tooltip").firstChild) ==
+					getElemText(document.getElementById("tooltip").firstChild) ===
 						_curmoves[j].san
 				)
 					updateTooltip(div.tooltip, div.answerpv, null, div.cl, null);
@@ -978,7 +981,7 @@ function setArrow(state) {
 function repaintLastMoveArrow() {
 	requestAnimationFrame(() => {
 		const lastmove =
-			getCurFEN() == _history[_historyindex][0] &&
+			getCurFEN() === _history[_historyindex][0] &&
 			_history[_historyindex].length > 2
 				? _history[_historyindex][2]
 				: null;
@@ -1016,7 +1019,7 @@ function showArrowInternal(move, wrapperId, opacity = 1) {
 function showArrow1(move, opacity) {
 	const elem = document.getElementById("arrowWrapper1");
 	const elem0 = elem.children[0];
-	if (opacity == null || opacity == 1)
+	if (opacity == null || opacity === 1)
 		for (let i = elem0.children.length - 1; i >= 2; i--)
 			elem0.removeChild(elem0.children[i]);
 	else elem.children[0].appendChild(elem0.children[1].cloneNode(false));
@@ -1034,7 +1037,7 @@ function showArrow3(move) {
 		for (let i = elem0.children.length - 1; i >= 2; i--)
 			elem0.removeChild(elem0.children[i]);
 	} else if (
-		(move.from.x == move.to.x && move.from.y == move.to.y) ||
+		(move.from.x === move.to.x && move.from.y === move.to.y) ||
 		!bounds(move.from.x, move.from.y) ||
 		!bounds(move.to.x, move.to.y)
 	) {
@@ -1050,13 +1053,13 @@ function finalArrow3() {
 	let list = elem.children[0].children,
 		remElem = null;
 	if (list == null) return;
-	if (list[1].style.display == "none") return;
+	if (list[1].style.display === "none") return;
 	for (let i = 2; i < list.length; i++) {
 		if (
-			list[i].getAttribute("x1") == list[1].getAttribute("x1") &&
-			list[i].getAttribute("y1") == list[1].getAttribute("y1") &&
-			list[i].getAttribute("x2") == list[1].getAttribute("x2") &&
-			list[i].getAttribute("y2") == list[1].getAttribute("y2")
+			list[i].getAttribute("x1") === list[1].getAttribute("x1") &&
+			list[i].getAttribute("y1") === list[1].getAttribute("y1") &&
+			list[i].getAttribute("x2") === list[1].getAttribute("x2") &&
+			list[i].getAttribute("y2") === list[1].getAttribute("y2")
 		)
 			remElem = list[i];
 	}
@@ -1094,7 +1097,7 @@ function updateInfo() {
 		" To Play (" +
 		_curmoves.length +
 		" Legal Move" +
-		(_curmoves.length == 1 ? "" : "s") +
+		(_curmoves.length === 1 ? "" : "s") +
 		")";
 
 	// Batch DOM updates
@@ -1115,7 +1118,7 @@ function updateInfo() {
 
 	for (let i = 0; i < _history.length; i++) {
 		mn = parseMoveNumber(_history[i][0]);
-		if (mn != lastmn) {
+		if (mn !== lastmn) {
 			const span1 = document.createElement("span");
 			setElemText(span1, mn + ". ");
 			span1.style.color = "#64c4db";
@@ -1130,16 +1133,16 @@ function updateInfo() {
 				: "\u2605";
 		const span2 = document.createElement("span");
 		setElemText(span2, san);
-		span2.className = "movelink" + (i == _historyindex ? " selected" : "");
+		span2.className = "movelink" + (i === _historyindex ? " selected" : "");
 		span2.targetindex = i;
 		const c = getGraphPointColor(i);
-		if (c != "#008800") span2.style.borderBottomColor = c;
+		if (c !== "#008800") span2.style.borderBottomColor = c;
 		span2.onclick = function () {
 			const targetIndex = this.targetindex;
 			if (
 				targetIndex < _history.length &&
 				targetIndex >= 0 &&
-				targetIndex != _historyindex
+				targetIndex !== _historyindex
 			) {
 				historyMove(targetIndex - _historyindex);
 			}
@@ -1172,7 +1175,7 @@ function colorflip(pos) {
 	for (x = 0; x < 8; x++)
 		for (y = 0; y < 8; y++) {
 			board[x][y] = pos.b[x][7 - y];
-			const color = board[x][y].toUpperCase() == board[x][y];
+			const color = board[x][y].toUpperCase() === board[x][y];
 			board[x][y] = color
 				? board[x][y].toLowerCase()
 				: board[x][y].toUpperCase();
@@ -1195,7 +1198,7 @@ function sum(pos, func, param) {
 
 function parseMoveNumber(fen) {
 	const a = fen.replace(/^\s+/, "").split(" ");
-	return a.length > 5 && !isNaN(a[5]) && a[5] != "" ? parseInt(a[5]) : 1;
+	return a.length > 5 && !isNaN(a[5]) && a[5] !== "" ? parseInt(a[5]) : 1;
 }
 
 function parseFEN(fen) {
@@ -1211,34 +1214,34 @@ function parseFEN(fen) {
 		}
 	(x = 0), (y = 0);
 	for (let i = 0; i < s.length; i++) {
-		if (s[i] == " ") break;
-		if (s[i] == "/") {
+		if (s[i] === " ") break;
+		if (s[i] === "/") {
 			x = 0;
 			y++;
 		} else {
 			if (!bounds(x, y)) continue;
-			if ("KQRBNP".indexOf(s[i].toUpperCase()) != -1) {
+			if ("KQRBNP".indexOf(s[i].toUpperCase()) !== -1) {
 				board[x][y] = s[i];
 				x++;
-			} else if ("0123456789".indexOf(s[i]) != -1) {
+			} else if ("0123456789".indexOf(s[i]) !== -1) {
 				x += parseInt(s[i]);
 			} else x++;
 		}
 	}
 	let castling,
 		enpassant,
-		whitemove = !(a.length > 1 && a[1] == "b");
+		whitemove = !(a.length > 1 && a[1] === "b");
 	if (a.length > 2) {
 		castling = [
-			a[2].indexOf("K") != -1,
-			a[2].indexOf("Q") != -1,
-			a[2].indexOf("k") != -1,
-			a[2].indexOf("q") != -1,
+			a[2].indexOf("K") !== -1,
+			a[2].indexOf("Q") !== -1,
+			a[2].indexOf("k") !== -1,
+			a[2].indexOf("q") !== -1,
 		];
 	} else {
 		castling = [true, true, true, true];
 	}
-	if (a.length > 3 && a[3].length == 2) {
+	if (a.length > 3 && a[3].length === 2) {
 		const ex = "abcdefgh".indexOf(a[3][0]);
 		const ey = "87654321".indexOf(a[3][1]);
 		enpassant = ex >= 0 && ey >= 0 ? [ex, ey] : null;
@@ -1246,8 +1249,8 @@ function parseFEN(fen) {
 		enpassant = null;
 	}
 	const movecount = [
-		a.length > 4 && !isNaN(a[4]) && a[4] != "" ? parseInt(a[4]) : 0,
-		a.length > 5 && !isNaN(a[5]) && a[5] != "" ? parseInt(a[5]) : 1,
+		a.length > 4 && !isNaN(a[4]) && a[4] !== "" ? parseInt(a[4]) : 0,
+		a.length > 5 && !isNaN(a[5]) && a[5] !== "" ? parseInt(a[5]) : 1,
 	];
 	return {
 		b: board,
@@ -1266,7 +1269,7 @@ function generateFEN(pos) {
 		board = pos.b;
 	for (let y = 0; y < 8; y++) {
 		for (let x = 0; x < 8; x++) {
-			if (board[x][y] == "-") {
+			if (board[x][y] === "-") {
 				f++;
 			} else {
 				if (f > 0) (s += f), (f = 0);
@@ -1302,7 +1305,7 @@ function isWhiteCheck(pos) {
 		ky = null;
 	for (let x = 0; x < 8; x++) {
 		for (let y = 0; y < 8; y++) {
-			if (pos.b[x][y] == "K") {
+			if (pos.b[x][y] === "K") {
 				kx = x;
 				ky = y;
 			}
@@ -1310,24 +1313,24 @@ function isWhiteCheck(pos) {
 	}
 	if (kx == null || ky == null) return false;
 	if (
-		board(pos, kx + 1, ky - 1) == "p" ||
-		board(pos, kx - 1, ky - 1) == "p" ||
-		board(pos, kx + 2, ky + 1) == "n" ||
-		board(pos, kx + 2, ky - 1) == "n" ||
-		board(pos, kx + 1, ky + 2) == "n" ||
-		board(pos, kx + 1, ky - 2) == "n" ||
-		board(pos, kx - 2, ky + 1) == "n" ||
-		board(pos, kx - 2, ky - 1) == "n" ||
-		board(pos, kx - 1, ky + 2) == "n" ||
-		board(pos, kx - 1, ky - 2) == "n" ||
-		board(pos, kx - 1, ky - 1) == "k" ||
-		board(pos, kx, ky - 1) == "k" ||
-		board(pos, kx + 1, ky - 1) == "k" ||
-		board(pos, kx - 1, ky) == "k" ||
-		board(pos, kx + 1, ky) == "k" ||
-		board(pos, kx - 1, ky + 1) == "k" ||
-		board(pos, kx, ky + 1) == "k" ||
-		board(pos, kx + 1, ky + 1) == "k"
+		board(pos, kx + 1, ky - 1) === "p" ||
+		board(pos, kx - 1, ky - 1) === "p" ||
+		board(pos, kx + 2, ky + 1) === "n" ||
+		board(pos, kx + 2, ky - 1) === "n" ||
+		board(pos, kx + 1, ky + 2) === "n" ||
+		board(pos, kx + 1, ky - 2) === "n" ||
+		board(pos, kx - 2, ky + 1) === "n" ||
+		board(pos, kx - 2, ky - 1) === "n" ||
+		board(pos, kx - 1, ky + 2) === "n" ||
+		board(pos, kx - 1, ky - 2) === "n" ||
+		board(pos, kx - 1, ky - 1) === "k" ||
+		board(pos, kx, ky - 1) === "k" ||
+		board(pos, kx + 1, ky - 1) === "k" ||
+		board(pos, kx - 1, ky) === "k" ||
+		board(pos, kx + 1, ky) === "k" ||
+		board(pos, kx - 1, ky + 1) === "k" ||
+		board(pos, kx, ky + 1) === "k" ||
+		board(pos, kx + 1, ky + 1) === "k"
 	)
 		return true;
 	for (let i = 0; i < 8; i++) {
@@ -1335,9 +1338,9 @@ function isWhiteCheck(pos) {
 		const iy = (((i + (i > 3)) / 3) << 0) - 1;
 		for (let d = 1; d < 8; d++) {
 			const b = board(pos, kx + d * ix, ky + d * iy);
-			const line = ix == 0 || iy == 0;
-			if (b == "q" || (b == "r" && line) || (b == "b" && !line)) return true;
-			if (b != "-") break;
+			const line = ix === 0 || iy === 0;
+			if (b === "q" || (b === "r" && line) || (b === "b" && !line)) return true;
+			if (b !== "-") break;
 		}
 	}
 	return false;
@@ -1353,7 +1356,7 @@ function doMove(pos, from, to, promotion) {
 	) {
 		return pos; // Return the original position without changes
 	}
-	if (pos.b[from.x][from.y].toUpperCase() != pos.b[from.x][from.y]) {
+	if (pos.b[from.x][from.y].toUpperCase() !== pos.b[from.x][from.y]) {
 		const r = colorflip(
 			doMove(
 				colorflip(pos),
@@ -1373,16 +1376,16 @@ function doMove(pos, from, to, promotion) {
 	}
 	const r = colorflip(colorflip(pos));
 	r.w = !r.w;
-	if (from.x == 7 && from.y == 7) r.c[0] = false;
-	if (from.x == 0 && from.y == 7) r.c[1] = false;
-	if (to.x == 7 && to.y == 0) r.c[2] = false;
-	if (to.x == 0 && to.y == 0) r.c[3] = false;
-	if (from.x == 4 && from.y == 7) r.c[0] = r.c[1] = false;
+	if (from.x === 7 && from.y === 7) r.c[0] = false;
+	if (from.x === 0 && from.y === 7) r.c[1] = false;
+	if (to.x === 7 && to.y === 0) r.c[2] = false;
+	if (to.x === 0 && to.y === 0) r.c[3] = false;
+	if (from.x === 4 && from.y === 7) r.c[0] = r.c[1] = false;
 	r.e =
-		pos.b[from.x][from.y] == "P" && from.y == 6 && to.y == 4
+		pos.b[from.x][from.y] === "P" && from.y === 6 && to.y === 4
 			? [from.x, 5]
 			: null;
-	if (pos.b[from.x][from.y] == "K") {
+	if (pos.b[from.x][from.y] === "K") {
 		if (Math.abs(from.x - to.x) > 1) {
 			r.b[from.x][from.y] = "-";
 			r.b[to.x][to.y] = "K";
@@ -1391,14 +1394,14 @@ function doMove(pos, from, to, promotion) {
 			return r;
 		}
 	}
-	if (pos.b[from.x][from.y] == "P" && to.y == 0) {
+	if (pos.b[from.x][from.y] === "P" && to.y === 0) {
 		r.b[to.x][to.y] = promotion != null ? promotion : getPromotionPiece();
 	} else if (
-		pos.b[from.x][from.y] == "P" &&
+		pos.b[from.x][from.y] === "P" &&
 		pos.e != null &&
-		to.x == pos.e[0] &&
-		to.y == pos.e[1] &&
-		Math.abs(from.x - to.x) == 1
+		to.x === pos.e[0] &&
+		to.y === pos.e[1] &&
+		Math.abs(from.x - to.x) === 1
 	) {
 		r.b[to.x][from.y] = "-";
 		r.b[to.x][to.y] = pos.b[from.x][from.y];
@@ -1407,15 +1410,15 @@ function doMove(pos, from, to, promotion) {
 	}
 	r.b[from.x][from.y] = "-";
 	r.m[0] =
-		pos.b[from.x][from.y] == "P" || pos.b[to.x][to.y] != "-" ? 0 : r.m[0] + 1;
+		pos.b[from.x][from.y] === "P" || pos.b[to.x][to.y] !== "-" ? 0 : r.m[0] + 1;
 	return r;
 }
 
 function isLegal(pos, from, to) {
 	if (!bounds(from.x, from.y)) return false;
 	if (!bounds(to.x, to.y)) return false;
-	if (from.x == to.x && from.y == to.y) return false;
-	if (pos.b[from.x][from.y] != pos.b[from.x][from.y].toUpperCase()) {
+	if (from.x === to.x && from.y === to.y) return false;
+	if (pos.b[from.x][from.y] !== pos.b[from.x][from.y].toUpperCase()) {
 		return isLegal(
 			colorflip(pos),
 			{
@@ -1431,42 +1434,43 @@ function isLegal(pos, from, to) {
 	if (!pos.w) return false;
 	const pfrom = pos.b[from.x][from.y];
 	const pto = pos.b[to.x][to.y];
-	if (pto.toUpperCase() == pto && pto != "-") return false;
-	if (pfrom == "-") {
+	if (pto.toUpperCase() === pto && pto !== "-") return false;
+	if (pfrom === "-") {
 		return false;
-	} else if (pfrom == "P") {
-		const enpassant = pos.e != null && to.x == pos.e[0] && to.y == pos.e[1];
+	} else if (pfrom === "P") {
+		const enpassant = pos.e != null && to.x === pos.e[0] && to.y === pos.e[1];
 		if (
 			!(
-				(from.x == to.x && from.y == to.y + 1 && pto == "-") ||
-				(from.x == to.x &&
-					from.y == 6 &&
-					to.y == 4 &&
-					pto == "-" &&
-					pos.b[to.x][5] == "-") ||
-				(Math.abs(from.x - to.x) == 1 &&
-					from.y == to.y + 1 &&
-					(pto != "-" || enpassant))
+				(from.x === to.x && from.y === to.y + 1 && pto === "-") ||
+				(from.x === to.x &&
+					from.y === 6 &&
+					to.y === 4 &&
+					pto === "-" &&
+					pos.b[to.x][5] === "-") ||
+				(Math.abs(from.x - to.x) === 1 &&
+					from.y === to.y + 1 &&
+					(pto !== "-" || enpassant))
 			)
 		)
 			return false;
-	} else if (pfrom == "N") {
+	} else if (pfrom === "N") {
 		if (Math.abs(from.x - to.x) < 1 || Math.abs(from.x - to.x) > 2)
 			return false;
 		if (Math.abs(from.y - to.y) < 1 || Math.abs(from.y - to.y) > 2)
 			return false;
-		if (Math.abs(from.x - to.x) + Math.abs(from.y - to.y) != 3) return false;
-	} else if (pfrom == "K") {
+		if (Math.abs(from.x - to.x) + Math.abs(from.y - to.y) !== 3) return false;
+	} else if (pfrom === "K") {
 		let castling = true;
-		if (from.y != 7 || to.y != 7) castling = false;
-		if (from.x != 4 || (to.x != 2 && to.x != 6)) castling = false;
-		if ((to.x == 6 && !pos.c[0]) || (to.x == 2 && !pos.c[1])) castling = false;
+		if (from.y !== 7 || to.y !== 7) castling = false;
+		if (from.x !== 4 || (to.x !== 2 && to.x !== 6)) castling = false;
+		if ((to.x === 6 && !pos.c[0]) || (to.x === 2 && !pos.c[1]))
+			castling = false;
 		if (
-			to.x == 2 &&
-			pos.b[0][7] + pos.b[1][7] + pos.b[2][7] + pos.b[3][7] != "R---"
+			to.x === 2 &&
+			pos.b[0][7] + pos.b[1][7] + pos.b[2][7] + pos.b[3][7] !== "R---"
 		)
 			castling = false;
-		if (to.x == 6 && pos.b[5][7] + pos.b[6][7] + pos.b[7][7] != "--R")
+		if (to.x === 6 && pos.b[5][7] + pos.b[6][7] + pos.b[7][7] !== "--R")
 			castling = false;
 		if (
 			(Math.abs(from.x - to.x) > 1 || Math.abs(from.y - to.y) > 1) &&
@@ -1478,26 +1482,26 @@ function isLegal(pos, from, to) {
 			castling &&
 			isWhiteCheck(
 				doMove(pos, from, {
-					x: to.x == 2 ? 3 : 5,
+					x: to.x === 2 ? 3 : 5,
 					y: 7,
 				}),
 			)
 		)
 			return false;
 	}
-	if (pfrom == "B" || pfrom == "R" || pfrom == "Q") {
+	if (pfrom === "B" || pfrom === "R" || pfrom === "Q") {
 		const a = from.x - to.x,
 			b = from.y - to.y;
-		const line = a == 0 || b == 0;
-		const diag = Math.abs(a) == Math.abs(b);
+		const line = a === 0 || b === 0;
+		const diag = Math.abs(a) === Math.abs(b);
 		if (!line && !diag) return false;
-		if (pfrom == "R" && !line) return false;
-		if (pfrom == "B" && !diag) return false;
+		if (pfrom === "R" && !line) return false;
+		if (pfrom === "B" && !diag) return false;
 		const count = Math.max(Math.abs(a), Math.abs(b));
 		const ix = a > 0 ? -1 : a < 0 ? 1 : 0,
 			iy = b > 0 ? -1 : b < 0 ? 1 : 0;
 		for (let i = 1; i < count; i++) {
-			if (pos.b[from.x + ix * i][from.y + iy * i] != "-") return false;
+			if (pos.b[from.x + ix * i][from.y + iy * i] !== "-") return false;
 		}
 	}
 	if (isWhiteCheck(doMove(pos, from, to))) return false;
@@ -1507,7 +1511,7 @@ function isLegal(pos, from, to) {
 function parseMove(pos, s) {
 	let promotion = null;
 	s = s.replace(/[+|#|?|!|x]/g, "");
-	if (s.length >= 2 && s[s.length - 2] == "=") {
+	if (s.length >= 2 && s[s.length - 2] === "=") {
 		promotion = s[s.length - 1];
 		s = s.substring(0, s.length - 2);
 	}
@@ -1515,13 +1519,13 @@ function parseMove(pos, s) {
 		promotion = s[s.length - 1];
 		s = s.substring(0, s.length - 1);
 	}
-	if (s == "O-O" || s == "O-O-O") {
+	if (s === "O-O" || s === "O-O-O") {
 		const from = {
 				x: 4,
 				y: pos.w ? 7 : 0,
 			},
 			to = {
-				x: s == "O-O" ? 6 : 2,
+				x: s === "O-O" ? 6 : 2,
 				y: pos.w ? 7 : 0,
 			};
 		if (isLegal(pos, from, to))
@@ -1549,10 +1553,10 @@ function parseMove(pos, s) {
 		}
 		for (let x = 0; x < 8; x++) {
 			for (let y = 0; y < 8; y++) {
-				if (xfrom != -1 && xfrom != x) continue;
-				if (yfrom != -1 && yfrom != y) continue;
+				if (xfrom !== -1 && xfrom !== x) continue;
+				if (yfrom !== -1 && yfrom !== y) continue;
 				if (
-					pos.b[x][y] == (pos.w ? p : p.toLowerCase()) &&
+					pos.b[x][y] === (pos.w ? p : p.toLowerCase()) &&
 					isLegal(
 						pos,
 						{
@@ -1604,7 +1608,7 @@ function genMoves(pos) {
 							},
 						)
 					) {
-						if ((y2 == 0 || y2 == 7) && pos.b[x1][y1].toUpperCase() == "P") {
+						if ((y2 === 0 || y2 === 7) && pos.b[x1][y1].toUpperCase() === "P") {
 							moves.push({
 								from: {
 									x: x1,
@@ -1668,15 +1672,15 @@ function genMoves(pos) {
 function sanMove(pos, move, moves) {
 	let s = "";
 	if (
-		move.from.x == 4 &&
-		move.to.x == 6 &&
-		pos.b[move.from.x][move.from.y].toLowerCase() == "k"
+		move.from.x === 4 &&
+		move.to.x === 6 &&
+		pos.b[move.from.x][move.from.y].toLowerCase() === "k"
 	) {
 		s = "O-O";
 	} else if (
-		move.from.x == 4 &&
-		move.to.x == 2 &&
-		pos.b[move.from.x][move.from.y].toLowerCase() == "k"
+		move.from.x === 4 &&
+		move.to.x === 2 &&
+		pos.b[move.from.x][move.from.y].toLowerCase() === "k"
 	) {
 		s = "O-O-O";
 	} else {
@@ -1688,21 +1692,22 @@ function sanMove(pos, move, moves) {
 			return s; // Return the original position without changes
 		}
 		const piece = pos.b[move.from.x][move.from.y].toUpperCase();
-		if (piece != "P") {
+		if (piece !== "P") {
 			let a = 0,
 				sx = 0,
 				sy = 0;
 			for (let i = 0; i < moves.length; i++) {
 				if (
-					pos.b[moves[i].from.x][moves[i].from.y] ==
+					pos.b[moves[i].from.x][moves[i].from.y] ===
 						pos.b[move.from.x][move.from.y] &&
-					(moves[i].from.x != move.from.x || moves[i].from.y != move.from.y) &&
-					moves[i].to.x == move.to.x &&
-					moves[i].to.y == move.to.y
+					(moves[i].from.x !== move.from.x ||
+						moves[i].from.y !== move.from.y) &&
+					moves[i].to.x === move.to.x &&
+					moves[i].to.y === move.to.y
 				) {
 					a++;
-					if (moves[i].from.x == move.from.x) sx++;
-					if (moves[i].from.y == move.from.y) sy++;
+					if (moves[i].from.x === move.from.x) sx++;
+					if (moves[i].from.y === move.from.y) sy++;
 				}
 			}
 			s += piece;
@@ -1714,59 +1719,70 @@ function sanMove(pos, move, moves) {
 			}
 		}
 		if (
-			pos.b[move.to.x][move.to.y] != "-" ||
-			(piece == "P" && move.to.x != move.from.x)
+			pos.b[move.to.x][move.to.y] !== "-" ||
+			(piece === "P" && move.to.x !== move.from.x)
 		) {
-			if (piece == "P") s += "abcdefgh"[move.from.x];
+			if (piece === "P") s += "abcdefgh"[move.from.x];
 			s += "x";
 		}
 		s += "abcdefgh"[move.to.x] + "87654321"[move.to.y];
-		if (piece == "P" && (move.to.y == 0 || move.to.y == 7))
+		if (piece === "P" && (move.to.y === 0 || move.to.y === 7))
 			s += "=" + (move.p == null ? "Q" : move.p);
 	}
 	const pos2 = doMove(pos, move.from, move.to, move.p);
 	if (isWhiteCheck(pos2) || isWhiteCheck(colorflip(pos2)))
-		s += genMoves(pos2).length == 0 ? "#" : "+";
+		s += genMoves(pos2).length === 0 ? "#" : "+";
 	return s;
 }
 
 function fixCastling(pos) {
-	pos.c[0] &= !(pos.b[7][7] != "R" || pos.b[4][7] != "K");
-	pos.c[1] &= !(pos.b[0][7] != "R" || pos.b[4][7] != "K");
-	pos.c[2] &= !(pos.b[7][0] != "r" || pos.b[4][0] != "k");
-	pos.c[3] &= !(pos.b[0][0] != "r" || pos.b[4][0] != "k");
+	pos.c[0] &= !(pos.b[7][7] !== "R" || pos.b[4][7] !== "K");
+	pos.c[1] &= !(pos.b[0][7] !== "R" || pos.b[4][7] !== "K");
+	pos.c[2] &= !(pos.b[7][0] !== "r" || pos.b[4][0] !== "k");
+	pos.c[3] &= !(pos.b[0][0] !== "r" || pos.b[4][0] !== "k");
 }
 
 function checkPosition(pos) {
 	const errmsgs = [];
-	let wk = (bk = 0),
-		wp = (bp = 0),
-		wpr = (bpr = 0),
-		wn = (wb1 = wb2 = wr = wq = 0),
-		bn = (bb1 = bb2 = br = bq = 0);
+	let wk = 0,
+		bk = 0,
+		wp = 0,
+		bp = 0,
+		wpr = 0,
+		bpr = 0,
+		wn = 0,
+		wb1 = 0,
+		wb2 = 0,
+		wr = 0,
+		wq = 0,
+		bn = 0,
+		bb1 = 0,
+		bb2 = 0,
+		br = 0,
+		bq = 0;
 	for (let x = 0; x < 8; x++) {
 		for (let y = 0; y < 8; y++) {
-			const c = (x + y) % 2 == 0;
-			if (pos.b[x][y] == "K") wk++;
-			if (pos.b[x][y] == "k") bk++;
-			if (pos.b[x][y] == "P") wp++;
-			if (pos.b[x][y] == "p") bp++;
-			if (pos.b[x][y] == "N") wn++;
-			if (pos.b[x][y] == "n") bn++;
-			if (c && pos.b[x][y] == "B") wb1++;
-			if (c && pos.b[x][y] == "b") bb1++;
-			if (!c && pos.b[x][y] == "B") wb2++;
-			if (!c && pos.b[x][y] == "b") bb2++;
-			if (pos.b[x][y] == "R") wr++;
-			if (pos.b[x][y] == "r") br++;
-			if (pos.b[x][y] == "Q") wq++;
-			if (pos.b[x][y] == "q") bq++;
-			if (pos.b[x][y] == "P" && (y == 0 || y == 7)) wpr++;
-			if (pos.b[x][y] == "p" && (y == 0 || y == 7)) bpr++;
+			const c = (x + y) % 2 === 0;
+			if (pos.b[x][y] === "K") wk++;
+			if (pos.b[x][y] === "k") bk++;
+			if (pos.b[x][y] === "P") wp++;
+			if (pos.b[x][y] === "p") bp++;
+			if (pos.b[x][y] === "N") wn++;
+			if (pos.b[x][y] === "n") bn++;
+			if (c && pos.b[x][y] === "B") wb1++;
+			if (c && pos.b[x][y] === "b") bb1++;
+			if (!c && pos.b[x][y] === "B") wb2++;
+			if (!c && pos.b[x][y] === "b") bb2++;
+			if (pos.b[x][y] === "R") wr++;
+			if (pos.b[x][y] === "r") br++;
+			if (pos.b[x][y] === "Q") wq++;
+			if (pos.b[x][y] === "q") bq++;
+			if (pos.b[x][y] === "P" && (y === 0 || y === 7)) wpr++;
+			if (pos.b[x][y] === "p" && (y === 0 || y === 7)) bpr++;
 		}
 	}
-	if (wk == 0) errmsgs.push("Missing white king");
-	if (bk == 0) errmsgs.push("Missing black king");
+	if (wk === 0) errmsgs.push("Missing white king");
+	if (bk === 0) errmsgs.push("Missing black king");
 	if (wk > 1) errmsgs.push("Two white kings");
 	if (bk > 1) errmsgs.push("Two black kings");
 	const wcheck = isWhiteCheck(pos);
@@ -1792,15 +1808,15 @@ function checkPosition(pos) {
 	if (we > Math.max(0, 8 - wp)) errmsgs.push("Too many extra white pieces");
 	if (be > Math.max(0, 8 - bp)) errmsgs.push("Too many extra black pieces");
 	if (
-		(pos.c[0] && (pos.b[7][7] != "R" || pos.b[4][7] != "K")) ||
-		(pos.c[1] && (pos.b[0][7] != "R" || pos.b[4][7] != "K"))
+		(pos.c[0] && (pos.b[7][7] !== "R" || pos.b[4][7] !== "K")) ||
+		(pos.c[1] && (pos.b[0][7] !== "R" || pos.b[4][7] !== "K"))
 	)
 		errmsgs.push(
 			"White has castling rights and king or rook not in their starting position",
 		);
 	if (
-		(pos.c[2] && (pos.b[7][0] != "r" || pos.b[4][0] != "k")) ||
-		(pos.c[3] && (pos.b[0][0] != "r" || pos.b[4][0] != "k"))
+		(pos.c[2] && (pos.b[7][0] !== "r" || pos.b[4][0] !== "k")) ||
+		(pos.c[3] && (pos.b[0][0] !== "r" || pos.b[4][0] !== "k"))
 	)
 		errmsgs.push(
 			"Black has castling rights and king or rook not in their starting position",
@@ -1818,7 +1834,7 @@ function refreshMoves() {
 		_curmoves = [];
 		setElemText(document.getElementById("moves"), "");
 		const errmsgs = checkPosition(pos);
-		if (errmsgs.length == 0) {
+		if (errmsgs.length === 0) {
 			const moves = genMoves(pos);
 			for (let i = 0; i < moves.length; i++) {
 				_curmoves.push({
@@ -1855,7 +1871,7 @@ function refreshMoves() {
 				div0.appendChild(ul);
 				fragment.appendChild(div0);
 				document.getElementById("moves").appendChild(fragment);
-			} else if (_curmoves.length == 0) {
+			} else if (_curmoves.length === 0) {
 				const matecheck =
 					(pos.w && isWhiteCheck(pos)) ||
 					(!pos.w && isWhiteCheck(colorflip(pos)));
@@ -1906,11 +1922,11 @@ function historyButtons() {
 }
 
 function historyAdd(fen, oldhistory, move, san) {
-	if (_historyindex >= 0 && _history[_historyindex][0] == fen) return;
+	if (_historyindex >= 0 && _history[_historyindex][0] === fen) return;
 	let c = null;
 	if (oldhistory != null) {
 		for (let i = 0; i < oldhistory.length; i++) {
-			if (oldhistory[i][0] == fen && oldhistory[i].length > 1)
+			if (oldhistory[i][0] === fen && oldhistory[i].length > 1)
 				c = oldhistory[i][1];
 		}
 	} else {
@@ -1930,20 +1946,20 @@ function historyMove(v, e, ctrl) {
 	const oldindex = _historyindex;
 	// Adjust this block to include move and san as null
 	if (
-		_historyindex == _history.length - 1 &&
-		_history[_historyindex][0] != getCurFEN()
+		_historyindex === _history.length - 1 &&
+		_history[_historyindex][0] !== getCurFEN()
 	) {
 		historyAdd(getCurFEN(), null, null, null); // Pass null for move and san
 	}
 	_historyindex += v;
 	if (_historyindex < 0) _historyindex = 0;
 	if (_historyindex >= _history.length) _historyindex = _history.length - 1;
-	if ((e != null && e.ctrlKey && Math.abs(v) == 1) || ctrl)
-		_historyindex = v == 1 ? _history.length - 1 : 0;
+	if ((e != null && e.ctrlKey && Math.abs(v) === 1) || ctrl)
+		_historyindex = v === 1 ? _history.length - 1 : 0;
 	if (
-		v == 0 ||
-		oldindex != _historyindex ||
-		getCurFEN() != _history[_historyindex][0]
+		v === 0 ||
+		oldindex !== _historyindex ||
+		getCurFEN() !== _history[_historyindex][0]
 	) {
 		setCurFEN(_history[_historyindex][0]);
 		historyButtons();
@@ -1964,7 +1980,7 @@ function historyKeep(wname, bname) {
 // ============================
 
 function getCurScale() {
-	if (document.getElementById("wChessboard").style.display == "none") return 1;
+	if (document.getElementById("wChessboard").style.display === "none") return 1;
 	return Math.min(
 		(document.getElementById("wChessboard").clientWidth - 414 + 408) / 408,
 		(document.getElementById("wChessboard").clientHeight +
@@ -1995,11 +2011,11 @@ function getCurSan(move) {
 	if (move == null) return null;
 	for (let i = 0; i < _curmoves.length; i++)
 		if (
-			_curmoves[i].move.from.x == move.from.x &&
-			_curmoves[i].move.from.y == move.from.y &&
-			_curmoves[i].move.to.x == move.to.x &&
-			_curmoves[i].move.to.y == move.to.y &&
-			_curmoves[i].move.p == move.p
+			_curmoves[i].move.from.x === move.from.x &&
+			_curmoves[i].move.from.y === move.from.y &&
+			_curmoves[i].move.to.x === move.to.x &&
+			_curmoves[i].move.to.y === move.to.y &&
+			_curmoves[i].move.p === move.p
 		)
 			return _curmoves[i].san;
 	return null;
@@ -2008,23 +2024,27 @@ function getCurSan(move) {
 function onMouseDown(e) {
 	if (_menu) showHideMenu(false, e);
 	if (e == null) e = window.event;
-	let elem = (target = e.target != null ? e.target : e.srcElement);
+	// `target` is intentionally an implicit global here: it is reassigned and
+	// re-read throughout this handler. Split from the declaration below so the
+	// assignment is a statement rather than an expression.
+	target = e.target != null ? e.target : e.srcElement;
+	let elem = target;
 	if (
-		document.onmousemove == graphMouseMove &&
+		document.onmousemove === graphMouseMove &&
 		target != null &&
-		target.id != "graphWrapper" &&
-		target.id != "graph"
+		target.id !== "graphWrapper" &&
+		target.id !== "graph"
 	) {
 		document.getElementById("graphWrapper").onmouseout();
-	} else if (document.onmousemove == graphMouseMove) {
+	} else if (document.onmousemove === graphMouseMove) {
 		graphMouseDown(e);
 		return;
 	}
 	if (_dragElement != null) return true;
 	if (
 		target != null &&
-		target.className == "cbCell" &&
-		target.children[0].id == "chessboard1"
+		target.className === "cbCell" &&
+		target.children[0].id === "chessboard1"
 	) {
 		target = target.children[0];
 		const bb = document.getElementById("chessboard1").getBoundingClientRect();
@@ -2033,38 +2053,38 @@ function onMouseDown(e) {
 		const cy = Math.round((e.clientY - bb.top - w / 2) / w);
 		for (let i = 0; i < target.children.length; i++) {
 			e0 = target.children[i];
-			if (e0.style.left == cx * 40 + "px" && e0.style.top == cy * 40 + "px")
+			if (e0.style.left === cx * 40 + "px" && e0.style.top === cy * 40 + "px")
 				elem = e0;
 		}
 	}
 	while (
 		target != null &&
-		target.id != "chessboard1" &&
-		target.id != "editWrapper" &&
-		target.tagName != "BODY"
+		target.id !== "chessboard1" &&
+		target.id !== "editWrapper" &&
+		target.tagName !== "BODY"
 	) {
 		target = target.parentNode;
 	}
 	if (target == null) return true;
-	if (elem.id == "editWrapper" || elem.className.length < 3) return;
-	if (target.id != "editWrapper" && target.id != "chessboard1") return true;
+	if (elem.id === "editWrapper" || elem.className.length < 3) return;
+	if (target.id !== "editWrapper" && target.id !== "chessboard1") return true;
 
 	const edit = isEdit();
 	if (
 		edit &&
-		target.id == "chessboard1" &&
+		target.id === "chessboard1" &&
 		elem.className != null &&
 		(e.which === 2 || e.button === 4)
 	) {
-		if (getPaintPiece() == elem.className[2]) setPaintPiece("S");
+		if (getPaintPiece() === elem.className[2]) setPaintPiece("S");
 		else setPaintPiece(elem.className[2]);
 		if (e && e.preventDefault) e.preventDefault();
 		return;
 	}
 	if (
-		target.id == "chessboard1" &&
+		target.id === "chessboard1" &&
 		edit &&
-		(getPaintPiece() != "S" || e.which === 3 || e.button === 2)
+		(getPaintPiece() !== "S" || e.which === 3 || e.button === 2)
 	) {
 		if (e && e.preventDefault) e.preventDefault();
 		paintMouse(e);
@@ -2079,7 +2099,7 @@ function onMouseDown(e) {
 	_dragElement = elem;
 	_startX = e.clientX;
 	_startY = e.clientY;
-	_dragCtrl = target.id == "editWrapper" ? true : e.ctrlKey;
+	_dragCtrl = target.id === "editWrapper" ? true : e.ctrlKey;
 	_dragLMB = e.which === 3 || e.button === 2 ? 1 : 0;
 	return false;
 }
@@ -2087,8 +2107,8 @@ function onMouseDown(e) {
 function dragActivate() {
 	if (_dragElement == null) return;
 	if (_dragElement.parentNode == null) return;
-	if (_dragElement.className[2] == "-" && !dragFromEditTools) return;
-	const dragFromEditTools = _dragElement.parentNode.id != "chessboard1";
+	const dragFromEditTools = _dragElement.parentNode.id !== "chessboard1";
+	if (_dragElement.className[2] === "-" && !dragFromEditTools) return;
 
 	const clone = _dragElement.cloneNode(false);
 	if (!_dragCtrl) _dragElement.className = _dragElement.className[0] + " -";
@@ -2117,7 +2137,7 @@ function doMoveHandler(move, copy) {
 		copy == null && isLegal(pos, move.from, move.to) && _curmoves.length > 0;
 	if (legal) {
 		const san = getCurSan(move); // Get the SAN notation of the move
-		if (pos.w != _play) {
+		if (pos.w !== _play) {
 			pos = doMove(pos, move.from, move.to, move.p); // Apply the move to the position
 		}
 		setCurFEN(generateFEN(pos)); // Update the current FEN to the new position
@@ -2126,12 +2146,12 @@ function doMoveHandler(move, copy) {
 		// Optional: Log history for debugging
 		// console.log('History:', _history);
 		requestAnimationFrame(() => {
-			showBoard(getCurFEN() == oldfen);
+			showBoard(getCurFEN() === oldfen);
 			doComputerMove();
 		});
 	} else if (
 		isEdit() &&
-		(move.from.x != move.to.x || move.from.y != move.to.y)
+		(move.from.x !== move.to.x || move.from.y !== move.to.y)
 	) {
 		if (copy && bounds(move.to.x, move.to.y)) {
 			pos.b[move.to.x][move.to.y] = copy;
@@ -2146,7 +2166,7 @@ function doMoveHandler(move, copy) {
 		setCurFEN(generateFEN(pos));
 		historyAdd(getCurFEN(), null, null, null); // Update this line
 		requestAnimationFrame(() => {
-			showBoard(getCurFEN() == oldfen);
+			showBoard(getCurFEN() === oldfen);
 		});
 	} else return false;
 	return true;
@@ -2156,9 +2176,9 @@ function onMouseMove(e) {
 	requestAnimationFrame(() => {
 		defaultMouseMove(e);
 		if (
-			document.onmousemove != onMouseMove &&
+			document.onmousemove !== onMouseMove &&
 			isEdit() &&
-			getPaintPiece() != "S"
+			getPaintPiece() !== "S"
 		)
 			paintMouse(e, getPaintPiece());
 		if (_dragElement == null) return;
@@ -2193,14 +2213,14 @@ function onMouseMove(e) {
 }
 
 function onMouseUp(e) {
-	if (document.onmousemove == graphMouseMove) return;
+	if (document.onmousemove === graphMouseMove) return;
 	onMouseMove(e);
 	if (
 		!_dragActive &&
 		_clickFrom != null &&
 		_clickFromElem != null &&
 		_clickFromElem.className.indexOf(" h0") > 0 &&
-		_dragLMB == 0
+		_dragLMB === 0
 	) {
 		const oldDragElement = _dragElement;
 		_dragElement = _clickFromElem;
@@ -2248,15 +2268,15 @@ function onMouseUp(e) {
 				.getElementById("editWrapper")
 				.children[0].children[0].getBoundingClientRect();
 			const ew1w = ew1br.width;
-			if (_dragElement.parentNode.id != "chessboard1") {
+			if (_dragElement.parentNode.id !== "chessboard1") {
 				x1 = -Math.round((e.clientX - ew1br.left - ew1w / 2) / ew1w) - 1;
 				y1 = -Math.round((e.clientY - ew1br.top - ew1w / 2) / ew1w) - 1;
-				if (_dragElement.parentNode.className != "cb" || x1 > 0 || y1 > 0)
+				if (_dragElement.parentNode.className !== "cb" || x1 > 0 || y1 > 0)
 					x1 = y1 = -99;
 			}
 			if (e.which === 3 || e.button === 2) {
-				if (_dragElement.parentNode.id == "chessboard1") {
-					if (_dragLMB == 1) {
+				if (_dragElement.parentNode.id === "chessboard1") {
+					if (_dragLMB === 1) {
 						const c = _dragElement.className;
 						_dragElement.className =
 							c.split(" ")[0] +
@@ -2281,17 +2301,17 @@ function onMouseUp(e) {
 							-Math.round(
 								(list[i].getBoundingClientRect().top - ew1br.top) / ew1w,
 							) - 1;
-						if (list[i].className != null && x1c == x1 && y1c == y1)
+						if (list[i].className != null && x1c === x1 && y1c === y1)
 							p = list[i].className[2];
 					}
 					if (p != null) {
-						if (p == "S") setCurFEN(START);
-						else if (p == "-") setCurFEN("8/8/8/8/8/8/8/8 w - - 0 0");
+						if (p === "S") setCurFEN(START);
+						else if (p === "-") setCurFEN("8/8/8/8/8/8/8/8 w - - 0 0");
 						else {
 							const pos = parseFEN(getCurFEN());
 							for (let x = 0; x < 8; x++)
 								for (let y = 0; y < 8; y++)
-									if (pos.b[x][y] == p) pos.b[x][y] = "-";
+									if (pos.b[x][y] === p) pos.b[x][y] = "-";
 							fixCastling(pos);
 							setCurFEN(generateFEN(pos));
 						}
@@ -2302,10 +2322,10 @@ function onMouseUp(e) {
 				(_clickFrom != null &&
 					_clickFromElem != null &&
 					_clickFromElem.className.indexOf(" h0") > 0 &&
-					_clickFrom.x == x1 &&
-					_clickFrom.y == y1) ||
-				(_dragElement.className[2] == "-" &&
-					_dragElement.parentNode.id == "chessboard1")
+					_clickFrom.x === x1 &&
+					_clickFrom.y === y1) ||
+				(_dragElement.className[2] === "-" &&
+					_dragElement.parentNode.id === "chessboard1")
 			) {
 				showLegalMoves(null);
 			} else {
@@ -2320,7 +2340,7 @@ function onMouseUp(e) {
 			_clickFrom == null ||
 			(_clickFrom.x > 0 && _clickFrom.y > 0) ||
 			(_clickFromElem != null &&
-				_clickFromElem.className[2] == "S" &&
+				_clickFromElem.className[2] === "S" &&
 				(e.which === 1 || e.button === 0))
 		)
 			showLegalMoves(null);
@@ -2341,7 +2361,7 @@ function onWheel(e) {
 			if (e.deltaY < 0) index--;
 			if (e.deltaY > 0) index++;
 			if (index < 0) index = str.length - 1;
-			if (index == str.length) index = 0;
+			if (index === str.length) index = 0;
 			setPaintPiece(str[index]);
 		}
 	} else {
@@ -2355,7 +2375,7 @@ function setPaintPiece(newp) {
 	let list = document.getElementById("editWrapper").children[0].children,
 		newe = null;
 	for (let i = 0; i < list.length; i++) {
-		if (list[i].className != null && list[i].className[2] == newp)
+		if (list[i].className != null && list[i].className[2] === newp)
 			newe = list[i];
 	}
 	if (newe != null) {
@@ -2391,8 +2411,11 @@ function isEdit() {
 
 function paintMouse(e, p) {
 	if (e == null) e = window.event;
-	const elem = (target = e.target != null ? e.target : e.srcElement);
-	if (elem.parentNode == null || elem.parentNode.id != "chessboard1") return;
+	// Keeps the pre-existing implicit global `target` assignment, split out of
+	// the declaration so it is a statement rather than an expression.
+	target = e.target != null ? e.target : e.srcElement;
+	const elem = target;
+	if (elem.parentNode == null || elem.parentNode.id !== "chessboard1") return;
 	const w = elem.getBoundingClientRect().width;
 	const h = elem.getBoundingClientRect().height;
 	const offsetX =
@@ -2545,8 +2568,9 @@ function loadEngine(onReady) {
 			Uint8Array.of(0x0, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00),
 		);
 	if (typeof Worker === "undefined") return engine;
+	let worker;
 	try {
-		var worker = new Worker("./engine/stockfish-18-lite.js");
+		worker = new Worker("./engine/stockfish-18-lite.js");
 	} catch (err) {
 		return engine;
 	}
@@ -2567,7 +2591,7 @@ function loadEngine(onReady) {
 			if (!matches)
 				matches = str.match(/depth (\d+) .*score (cp|mate) ([-\d]+).*/);
 			if (matches) {
-				if (engine.lastnodes == 0) engine.fen = fen;
+				if (engine.lastnodes === 0) engine.fen = fen;
 				if (matches.length > 4) {
 					const nodes = Number(matches[4]);
 					if (nodes < engine.lastnodes) engine.fen = fen;
@@ -2576,20 +2600,20 @@ function loadEngine(onReady) {
 				const depth = Number(matches[1]);
 				const type = matches[2];
 				let score = Number(matches[3]);
-				if (type == "mate")
+				if (type === "mate")
 					score = (1000000 - Math.abs(score)) * (score <= 0 ? -1 : 1);
 				engine.score = score;
 				if (matches.length > 5) {
 					const pv = matches[5].split(" ");
-					if (info != null && engine.fen == fen) info(depth, score, pv);
+					if (info != null && engine.fen === fen) info(depth, score, pv);
 				}
 			}
 			if (
 				str.indexOf("bestmove") >= 0 ||
 				str.indexOf("mate 0") >= 0 ||
-				str == "info depth 0 score cp 0"
+				str === "info depth 0 score cp 0"
 			) {
-				if (engine.fen == fen) done(str);
+				if (engine.fen === fen) done(str);
 				engine.lastnodes = 0;
 			}
 		});
@@ -2638,10 +2662,10 @@ function evalNext() {
 				curpos,
 				function done(str) {
 					_analysisEngine.waiting = true;
-					if (i >= _curmoves.length || _curmoves[i].fen != curpos) return;
+					if (i >= _curmoves.length || _curmoves[i].fen !== curpos) return;
 					if (
 						_analysisEngine.score != null &&
-						_analysisEngine.depth == initialdepth
+						_analysisEngine.depth === initialdepth
 					) {
 						_curmoves[i].eval = _curmoves[i].w
 							? _analysisEngine.score
@@ -2652,20 +2676,20 @@ function evalNext() {
 							m &&
 							m.length > 1 &&
 							m[1] != null &&
-							(m[1].length == 4 || m[1].length == 5)
+							(m[1].length === 4 || m[1].length === 5)
 								? m[1]
 								: null;
 						_curmoves[i].answerpv = [];
 						let pvtext = "";
 						if (_curmoves[i].answer != null) {
-							if (savedpv.length < 1 || savedpv[0] != m[1]) savedpv = [m[1]];
+							if (savedpv.length < 1 || savedpv[0] !== m[1]) savedpv = [m[1]];
 							if (
 								m.length > 2 &&
 								m[2] != null &&
-								m[2].length != 4 &&
-								m[2].length != 5
+								m[2].length !== 4 &&
+								m[2].length !== 5
 							) {
-								if (savedpv.length < 2 || savedpv[1] != m[2])
+								if (savedpv.length < 2 || savedpv[1] !== m[2])
 									savedpv = [m[1], m[2]];
 							}
 							let nextpos = parseFEN(curpos);
@@ -2690,7 +2714,7 @@ function evalNext() {
 			return;
 		}
 	}
-	if (_curmoves.length > 0 && _history[_historyindex][0] == getCurFEN())
+	if (_curmoves.length > 0 && _history[_historyindex][0] === getCurFEN())
 		addHistoryEval(
 			_historyindex,
 			_curmoves[0].w ? -_curmoves[0].eval : _curmoves[0].eval,
@@ -2714,11 +2738,11 @@ function evalNext() {
 				_analysisEngine.waiting = false;
 				_analysisEngine.eval(curpos, function done(str) {
 					_analysisEngine.waiting = true;
-					if (i >= _history.length || _history[i][0] != curpos) return;
+					if (i >= _history.length || _history[i][0] !== curpos) return;
 					if (_analysisEngine.score != null) {
 						const m = str.match(/^bestmove\s(\S+)(?:\sponder\s(\S+))?/);
 						const answer =
-							m && m.length > 1 && (m[1].length == 4 || m[1].length == 5)
+							m && m.length > 1 && (m[1].length === 4 || m[1].length === 5)
 								? m[1]
 								: null;
 						addHistoryEval(
@@ -2737,13 +2761,13 @@ function evalNext() {
 }
 
 function applyEval(m, s, d) {
-	if (s == null || m.length < 4 || _analysisEngine.depth == 0) return;
+	if (s == null || m.length < 4 || _analysisEngine.depth === 0) return;
 	for (let i = 0; i < _curmoves.length; i++) {
 		if (
-			_curmoves[i].move.from.x == "abcdefgh".indexOf(m[0]) &&
-			_curmoves[i].move.from.y == "87654321".indexOf(m[1]) &&
-			_curmoves[i].move.to.x == "abcdefgh".indexOf(m[2]) &&
-			_curmoves[i].move.to.y == "87654321".indexOf(m[3])
+			_curmoves[i].move.from.x === "abcdefgh".indexOf(m[0]) &&
+			_curmoves[i].move.from.y === "87654321".indexOf(m[1]) &&
+			_curmoves[i].move.to.x === "abcdefgh".indexOf(m[2]) &&
+			_curmoves[i].move.to.y === "87654321".indexOf(m[3])
 		) {
 			if (d > _curmoves[i].depth) {
 				_curmoves[i].eval = _curmoves[i].w ? -s : s;
@@ -2804,7 +2828,7 @@ function updateSkillLevelBasedOnDepth(depth) {
 }
 
 function evalAll() {
-	if (_coachMode == false && _play != null) {
+	if (_coachMode === false && _play != null) {
 		return;
 	}
 	if (
@@ -2822,7 +2846,7 @@ function evalAll() {
 		_curmoves[i].eval = null;
 		_curmoves[i].depth = null;
 	}
-	if (_analysisEngine.depth == 0) {
+	if (_analysisEngine.depth === 0) {
 		_analysisEngine.waiting = true;
 		return;
 	}
@@ -2831,7 +2855,7 @@ function evalAll() {
 	_analysisEngine.send("ucinewgame");
 	updateSkillLevelBasedOnDepth(_analysisEngine.depth);
 	_analysisEngine.score = null;
-	if (_curmoves.length == 0) {
+	if (_curmoves.length === 0) {
 		_analysisEngine.waiting = true;
 		if (!_analysisEngine.kill) evalNext();
 		return;
@@ -2840,11 +2864,11 @@ function evalAll() {
 		fen,
 		function done(str) {
 			_analysisEngine.waiting = true;
-			if (fen != getCurFEN()) return;
+			if (fen !== getCurFEN()) return;
 			const matches = str.match(/^bestmove\s(\S+)(?:\sponder\s(\S+))?/);
 			if (matches && matches.length > 1) {
 				applyEval(matches[1], _analysisEngine.score, _analysisEngine.depth - 1);
-				if (_history[_historyindex][0] == fen)
+				if (_history[_historyindex][0] === fen)
 					addHistoryEval(
 						_historyindex,
 						_analysisEngine.score,
@@ -2855,9 +2879,9 @@ function evalAll() {
 			if (!_analysisEngine.kill) evalNext();
 		},
 		function info(depth, score, pv) {
-			if (fen != getCurFEN() || depth <= 10) return;
+			if (fen !== getCurFEN() || depth <= 10) return;
 			applyEval(pv[0], score, depth - 1);
-			if (_history[_historyindex][0] == fen)
+			if (_history[_historyindex][0] === fen)
 				addHistoryEval(_historyindex, score, depth - 1, parseBestMove(pv[0]));
 		},
 	);
@@ -2885,7 +2909,7 @@ function doComputerMove() {
 		_playEngine.score = null;
 		_playEngine.eval(fen, function done(str) {
 			_playEngine.waiting = true;
-			if (fen != getCurFEN()) return;
+			if (fen !== getCurFEN()) return;
 			const matches = str.match(/^bestmove\s(\S+)(?:\sponder\s(\S+))?/);
 			if (matches && matches.length > 1) {
 				const move = parseBestMove(matches[1]);
@@ -2924,7 +2948,7 @@ function highlightMove(index, state) {
 	const text = getEvalText(_curmoves[index].eval, true);
 	for (let i = 0; i < elem.children.length; i++) {
 		const div = elem.children[i];
-		if (div.tagName != "DIV") continue;
+		if (div.tagName !== "DIV") continue;
 		if (div.style.zIndex > 0) continue;
 		let x = parseInt(div.style.left.replace("px", "")) / 40;
 		let y = parseInt(div.style.top.replace("px", "")) / 40;
@@ -2935,8 +2959,8 @@ function highlightMove(index, state) {
 		let c = div.className.split(" ")[0] + " " + div.className.split(" ")[1];
 		setElemText(div, "");
 		if (div.className.indexOf(" h2") >= 0) c += " h2";
-		if (state && x1 == x && y1 == y) div.className = c + " h0";
-		else if (state && x2 == x && y2 == y) {
+		if (state && x1 === x && y1 === y) div.className = c + " h0";
+		else if (state && x2 === x && y2 === y) {
 			div.className = c + " h1";
 			setElemText(div, text);
 		} else div.className = c;
@@ -2947,14 +2971,14 @@ function highlightMove(index, state) {
 }
 
 function repaintStatic() {
-	if (document.getElementById("wStatic").style.display == "none") return;
+	if (document.getElementById("wStatic").style.display === "none") return;
 
 	const curfen = getCurFEN();
 	const pos = parseFEN(curfen);
 
 	// Static evaluation window
 	requestAnimationFrame(() => {
-		if (getCurFEN() != curfen) return;
+		if (getCurFEN() !== curfen) return;
 
 		const elem = document.getElementById("static");
 		const evalUnit = 213;
@@ -2968,11 +2992,12 @@ function repaintStatic() {
 			ci = 5;
 
 		for (let i = 0; i < staticEvalList.length; i++) {
-			if (i > 0 && staticEvalList[i - 1].group != staticEvalList[i].group) ci++;
+			if (i > 0 && staticEvalList[i - 1].group !== staticEvalList[i].group)
+				ci++;
 			let c1 = 0,
 				c2 = 0,
 				c3 = 0;
-			while (c1 + c2 + c3 == 0) {
+			while (c1 + c2 + c3 === 0) {
 				c1 = 22 + (ci % 2) * 216;
 				c2 = 22 + (((ci / 2) << 0) % 3) * 108;
 				c3 = 22 + (((ci / 6) << 0) % 2) * 216;
@@ -3011,11 +3036,11 @@ function repaintStatic() {
 			const i = sortArray[j].index;
 			total += staticEvalList[i].item[2];
 			let text = (staticEvalList[i].item[2] / evalUnit).toFixed(2);
-			if (text == "-0.00") text = "0.00";
+			if (text === "-0.00") text = "0.00";
 			let rel = (staticEvalList[i].rel / evalUnit).toFixed(2);
-			if (rel == "-0.00") rel = "0.00";
-			if (!_staticSortByChange && text == "0.00") continue;
-			if (_staticSortByChange && rel == "0.00") continue;
+			if (rel === "-0.00") rel = "0.00";
+			if (!_staticSortByChange && text === "0.00") continue;
+			if (_staticSortByChange && rel === "0.00") continue;
 
 			const node0 = document.createElement("SPAN");
 			node0.className = "circle";
@@ -3083,18 +3108,21 @@ function repaintStatic() {
 					sei = null;
 				for (let j = 0; j < data.length; j++) {
 					const n = data[j].name.toLowerCase().replace(/ /g, "_");
-					if (n == this.name) sei = data[j];
+					if (n === this.name) sei = data[j];
 				}
 				if (sei == null) return;
 				const func = null,
 					n2 = this.name.toLowerCase().replace(/ /g, "_");
 				try {
+					// biome-ignore lint/security/noGlobalEval: the static-evaluation terms are first-party function sources installed on the global scope at runtime; they can only be reached by name through eval. No user input is involved.
 					eval("func = $" + n2 + ";");
-				} catch (e) {}
+				} catch (e) {
+					/* term not installed on the global scope; leave func null */
+				}
 				const elem = document.getElementById("chessboard1");
 				for (let i = 0; i < elem.children.length; i++) {
 					const div = elem.children[i];
-					if (div.tagName != "DIV" || div.style.zIndex > 0) continue;
+					if (div.tagName !== "DIV" || div.style.zIndex > 0) continue;
 					let x = parseInt(div.style.left.replace("px", "")) / 40;
 					let y = parseInt(div.style.top.replace("px", "")) / 40;
 					if (_flip) {
@@ -3102,12 +3130,12 @@ function repaintStatic() {
 						y = 7 - y;
 					}
 					let sqeval = 0;
-					if (n2 == "king_danger") {
+					if (n2 === "king_danger") {
 						sqeval = $unsafe_checks(pos, { x: x, y: y });
-						if (sqeval == 0)
+						if (sqeval === 0)
 							sqeval = $unsafe_checks(colorflip(pos), { x: x, y: 7 - y });
-						if (sqeval == 0) sqeval = $weak_bonus(pos, { x: x, y: y });
-						if (sqeval == 0)
+						if (sqeval === 0) sqeval = $weak_bonus(pos, { x: x, y: y });
+						if (sqeval === 0)
 							sqeval = $weak_bonus(colorflip(pos), { x: x, y: 7 - y });
 						const showKDarrows = (p, flipy) => {
 							for (let x2 = 0; x2 < 8; x2++)
@@ -3119,8 +3147,8 @@ function repaintStatic() {
 									if ($king_ring(p, s2)) {
 										if (
 											$pawn_attack(p, s2) &&
-											Math.abs(x - x2) == 1 &&
-											y - y2 == flipy
+											Math.abs(x - x2) === 1 &&
+											y - y2 === flipy
 												? 1
 												: -1 ||
 													$knight_attack(p, s2, s) ||
@@ -3170,17 +3198,17 @@ function repaintStatic() {
 					} else {
 						try {
 							sqeval = func(pos, { x: x, y: y });
-							if (sqeval == 0 && sei.forwhite)
+							if (sqeval === 0 && sei.forwhite)
 								sqeval = func(colorflip(pos), { x: x, y: 7 - y });
-							if (sqeval == 0) sqeval = func(pos, { x: x, y: y }, true);
-							if (sqeval == 0 && sei.forwhite)
+							if (sqeval === 0) sqeval = func(pos, { x: x, y: y }, true);
+							if (sqeval === 0 && sei.forwhite)
 								sqeval = func(colorflip(pos), { x: x, y: 7 - y }, true);
 						} catch (e) {}
 					}
 					let c =
 						div.className.split(" ")[0] + " " + div.className.split(" ")[1];
 					if (div.className.indexOf(" h2") >= 0) c += " h2";
-					if (sqeval != 0) c += " h3";
+					if (sqeval !== 0) c += " h3";
 					div.className = c;
 				}
 			};
@@ -3207,8 +3235,8 @@ function showEvals() {
 			const b0 = b.eval == null ? -2000000 : b.eval * (_curmoves[0].w ? -1 : 1);
 
 			let r = 0;
-			if (a0 < b0 || (a0 == b0 && a.san < b.san)) r = 1;
-			if (a0 > b0 || (a0 == b0 && a.san > b.san)) r = -1;
+			if (a0 < b0 || (a0 === b0 && a.san < b.san)) r = 1;
+			if (a0 > b0 || (a0 === b0 && a.san > b.san)) r = -1;
 			return r;
 		};
 		_curmoves.sort(sortfunc);
@@ -3271,7 +3299,7 @@ function showEvals() {
 		if (
 			_historyindex + 1 < _history.length &&
 			_history[_historyindex + 1].length > 3 &&
-			_history[_historyindex + 1][3] == _curmoves[i].san
+			_history[_historyindex + 1][3] === _curmoves[i].san
 		)
 			node1.style.color = "#64c4db";
 		document.getElementById("moves").appendChild(node1);
@@ -4849,6 +4877,7 @@ _staticEvalData = (() => {
 		elo: null,
 	});
 	for (let i = 0; i < data.length; i++)
+		// biome-ignore lint/security/noGlobalEval: installs the first-party Stockfish evaluation-term sources shipped in this file as global functions. No user input.
 		eval(
 			"$" +
 				data[i].name.toLowerCase().replace(/ /g, "_") +
@@ -4866,7 +4895,7 @@ _staticEvalData = (() => {
 function getGraphPointData(i) {
 	let e = null,
 		black = false;
-	if (_analysisEngine == null || _analysisEngine.depth == 0) return 0;
+	if (_analysisEngine == null || _analysisEngine.depth === 0) return 0;
 	if (
 		i >= 0 &&
 		i < _history.length &&
@@ -4963,7 +4992,7 @@ function repaintGraph(event) {
 			) {
 				mouseDataPos = Math.round((mx - b2) / mUnit) - 1;
 			}
-			if (mouseDataPos == _lastMouseDataPos) return;
+			if (mouseDataPos === _lastMouseDataPos) return;
 			_lastMouseDataPos = mouseDataPos;
 		} else {
 			_lastMouseDataPos = mouseDataPos;
@@ -5000,7 +5029,7 @@ function repaintGraph(event) {
 		ctx.beginPath();
 		ctx.strokeStyle = "#738191";
 		for (let i = yStep; i <= yMax; i += yStep) {
-			if (i == 0) continue;
+			if (i === 0) continue;
 			const y = Math.round((i * yUnit) / yStep);
 			ctx.fillText("+" + i, border2 - 6, border1 + yTotal / 2 - y);
 			ctx.fillText("-" + i, border2 - 6, border1 + yTotal / 2 + y);
@@ -5047,9 +5076,9 @@ function repaintGraph(event) {
 			if (data[i] != null && data[i - 1] != null) {
 				ctx.beginPath();
 				ctx.strokeStyle =
-					color[i] == "#bb0000"
+					color[i] === "#bb0000"
 						? "red"
-						: color[i] == "#008800"
+						: color[i] === "#008800"
 							? "black"
 							: "white";
 				ctx.lineWidth = 1;
@@ -5066,7 +5095,7 @@ function repaintGraph(event) {
 		}
 
 		for (let i = 0; i < data.length; i++) {
-			if (i != mouseDataPos && i != _historyindex) {
+			if (i !== mouseDataPos && i !== _historyindex) {
 				ctx.beginPath();
 				ctx.arc(
 					border2 + (i + 1) * (xUnit / xStep),
@@ -5148,7 +5177,7 @@ function repaintSidebars() {
 		for (let x = 0; x < 8; x++) {
 			for (let y = 0; y < 8; y++) {
 				const p = board(pos, x, y).toLowerCase();
-				const col = board(pos, x, y) != p;
+				const col = board(pos, x, y) !== p;
 				const index = "pnbrqk".indexOf(p);
 				if (index >= 0) {
 					if (col) whitemat.push(index);
@@ -5162,7 +5191,7 @@ function repaintSidebars() {
 		blackmat.sort();
 
 		for (let i = 0, j = 0; i < whitemat.length && j < blackmat.length; ) {
-			if (whitemat[i] == blackmat[j]) {
+			if (whitemat[i] === blackmat[j]) {
 				whitemat.splice(i, 1);
 				blackmat.splice(j, 1);
 			} else if (whitemat[i] < blackmat[j]) i++;
@@ -5189,7 +5218,7 @@ function repaintSidebars() {
 		fmat(blackmat, !_flip);
 		if (points >= 0) fmat(whitemat, _flip);
 
-		if (points != 0) {
+		if (points !== 0) {
 			const node1 = document.createElement("DIV");
 			node1.appendChild(document.createTextNode("+" + Math.abs(points)));
 			const down = (points > 0 && !_flip) || (points < 0 && _flip);
@@ -5233,7 +5262,7 @@ function refreshFlip() {
 				_flip ? 7 - i : i
 			];
 		elem.children[0].children[1 + i].children[0].innerText =
-			elem.children[0].children[1 + i].children[i == 0 ? 2 : 1].innerText =
+			elem.children[0].children[1 + i].children[i === 0 ? 2 : 1].innerText =
 				"12345678"[_flip ? i : 7 - i];
 	}
 	showBoard(true);
@@ -5245,13 +5274,13 @@ function doFlip() {
 }
 
 function showHideWindow(name, targetState) {
-	if (_mobile && name != "Chessboard") {
+	if (_mobile && name !== "Chessboard") {
 		const wb = document.getElementById("wb").children;
 		const lparams = [];
 		for (let i = 0; i < wb.length; i++) {
-			if (wb[i].tagName != "DIV") continue;
+			if (wb[i].tagName !== "DIV") continue;
 			const wbId = wb[i].id.substring(2);
-			if (wbId == "Chessboard") continue;
+			if (wbId === "Chessboard") continue;
 			document.getElementById("w" + wbId).style.display = "none";
 			const wbElem = document.getElementById("wb" + wbId);
 			wbElem.className = wbElem.className.replace(" selected", "");
@@ -5259,16 +5288,16 @@ function showHideWindow(name, targetState) {
 	}
 	const boxElem = document.getElementById("w" + name);
 	const newState =
-		targetState == null ? boxElem.style.display == "none" : targetState;
+		targetState == null ? boxElem.style.display === "none" : targetState;
 	boxElem.style.display = newState ? "" : "none";
 	const wbElem = document.getElementById("wb" + name);
 	wbElem.className =
 		wbElem.className.replace(" selected", "") + (newState ? " selected" : "");
 	checkSizes();
-	if ((name == "Edit" || _mobile) && isEdit()) showLegalMoves(null);
-	if (name == "Graph" && document.onmousemove == graphMouseMove)
+	if ((name === "Edit" || _mobile) && isEdit()) showLegalMoves(null);
+	if (name === "Graph" && document.onmousemove === graphMouseMove)
 		document.getElementById("graphWrapper").onmouseout();
-	if (name == "Static" && newState) repaintStatic();
+	if (name === "Static" && newState) repaintStatic();
 }
 
 function showHideMenu(state, e) {
@@ -5276,13 +5305,13 @@ function showHideMenu(state, e) {
 		let target = e.target != null ? e.target : e.srcElement;
 		while (
 			target != null &&
-			target.id != "buttonMenu" &&
-			target.id != "menu" &&
-			target.tagName != "BODY"
+			target.id !== "buttonMenu" &&
+			target.id !== "menu" &&
+			target.tagName !== "BODY"
 		)
 			target = target.parentNode;
 		if (target == null) return;
-		if (!state && (target.id == "buttonMenu" || target.id == "menu")) return;
+		if (!state && (target.id === "buttonMenu" || target.id === "menu")) return;
 	}
 	if (state) _menu = !_menu;
 	else _menu = false;
@@ -5381,7 +5410,7 @@ function reloadMenu() {
 			span3.id = "buttonEngineValue";
 			span3.onclick = () => {
 				if (_analysisEngine != null && _analysisEngine.ready)
-					command("depth " + (_analysisEngine.depth != 0 ? "0" : "28"));
+					command("depth " + (_analysisEngine.depth !== 0 ? "0" : "28"));
 				showBoard(false, true);
 				setEngineValue(document.getElementById("buttonEngineValue"));
 			};
@@ -5504,7 +5533,7 @@ function reloadMenu() {
 			"menuAnalysisMode",
 			"Mode 1: Analyze Board",
 			1,
-			_gameMode != 1,
+			_gameMode !== 1,
 			(e) => {
 				menuAnalysisMode();
 			},
@@ -5513,7 +5542,7 @@ function reloadMenu() {
 			"menuPlayEngine",
 			"Mode 2: Player (White) vs. Engine (Black)",
 			2,
-			_gameMode != 2,
+			_gameMode !== 2,
 			(e) => {
 				menuPlayEngineWhite();
 			},
@@ -5522,7 +5551,7 @@ function reloadMenu() {
 			"menuPlayEngine",
 			"Mode 3: Engine (White) vs. Player (Black)",
 			3,
-			_gameMode != 3,
+			_gameMode !== 3,
 			(e) => {
 				menuPlayEngineBlack();
 			},
@@ -5531,7 +5560,7 @@ function reloadMenu() {
 			"menuTwoPlayerMode",
 			"Mode 4: Player vs. Player",
 			4,
-			_gameMode != 4,
+			_gameMode !== 4,
 			(e) => {
 				menuTwoPlayerMode();
 			},
@@ -5553,7 +5582,7 @@ function reloadMenu() {
 			"menuKeep",
 			"Keep Changes",
 			"K",
-			document.getElementById("buttonRevert").className == "on",
+			document.getElementById("buttonRevert").className === "on",
 			() => {
 				command("keep");
 				showHideMenu(false);
@@ -5563,7 +5592,7 @@ function reloadMenu() {
 			"menuRevert",
 			"Revert Changes",
 			"ESC",
-			document.getElementById("buttonRevert").className == "on",
+			document.getElementById("buttonRevert").className === "on",
 			() => {
 				command("revert");
 				showHideMenu(false);
@@ -5583,7 +5612,7 @@ function reloadMenu() {
 			"menuStart",
 			"Go To First Move",
 			"Home",
-			document.getElementById("buttonBack").className == "on",
+			document.getElementById("buttonBack").className === "on",
 			() => {
 				historyMove(-1, null, true);
 				showHideMenu(false);
@@ -5593,7 +5622,7 @@ function reloadMenu() {
 			"menuEnd",
 			"Go To Last Move",
 			"End",
-			document.getElementById("buttonForward").className == "on",
+			document.getElementById("buttonForward").className === "on",
 			() => {
 				historyMove(+1, null, true);
 				showHideMenu(false);
@@ -5684,8 +5713,8 @@ function setupBoxes() {
 	for (let j = 0; j < elems.length; j++)
 		for (let i = 0; i < elems[j].children.length; i++) {
 			const div = elems[j].children[i];
-			if (div.tagName != "DIV") continue;
-			if (div.className != "box") continue;
+			if (div.tagName !== "DIV") continue;
+			if (div.className !== "box") continue;
 			if (!_mobile) {
 				setupDragElement(div);
 				const divCloseIcon = document.createElement("div");
@@ -5696,7 +5725,7 @@ function setupBoxes() {
 				};
 				div.appendChild(divCloseIcon);
 			}
-			if (!_mobile || div.id != "wChessboard") {
+			if (!_mobile || div.id !== "wChessboard") {
 				const divBoxIcon = document.createElement("div");
 				divBoxIcon.className = "boxIcon icon" + div.id.substring(1);
 				div.appendChild(divBoxIcon);
@@ -5704,7 +5733,7 @@ function setupBoxes() {
 			const wbIcon = document.createElement("div");
 			wbIcon.id = "wb" + div.id.substring(1);
 			wbIcon.className = "wbButton icon" + div.id.substring(1);
-			if (div.style.display != "none") wbIcon.className += " selected";
+			if (div.style.display !== "none") wbIcon.className += " selected";
 
 			wbIcon.onclick = function () {
 				showHideWindow(this.id.substring(2));
@@ -5766,7 +5795,7 @@ function setupDragElement(elmnt) {
 	function moveBoxDrag(e) {
 		e = e || window.event;
 		if (e && e.preventDefault) e.preventDefault();
-		if (elmnt.style.position != "absolute") {
+		if (elmnt.style.position !== "absolute") {
 			elmnt.style.width = elmnt.getBoundingClientRect().width - 2 + "px";
 			elmnt.style.height = elmnt.getBoundingClientRect().height - 2 + "px";
 			elmnt.style.left =
@@ -5830,7 +5859,7 @@ function setupDragElement(elmnt) {
 function setupTouchEvents(elem, funcStart, funcMove, funcEnd) {
 	const onTouch = (e) => {
 		if (e.cancelable) e.preventDefault();
-		if (e.touches.length > 1 || (e.type == "touchend" && e.touches.length > 0))
+		if (e.touches.length > 1 || (e.type === "touchend" && e.touches.length > 0))
 			return;
 		switch (e.type) {
 			case "touchstart":
@@ -5857,7 +5886,7 @@ function showBoard(noeval, refreshhistory, keepcontent) {
 		while (dragElem.firstChild) dragElem.removeChild(dragElem.firstChild);
 
 		const elem = document.getElementById("chessboard1");
-		if (keepcontent && elem.children.length != 64) keepcontent = false;
+		if (keepcontent && elem.children.length !== 64) keepcontent = false;
 		if (!keepcontent) while (elem.firstChild) elem.removeChild(elem.firstChild);
 
 		const fragment = document.createDocumentFragment();
@@ -5872,8 +5901,8 @@ function showBoard(noeval, refreshhistory, keepcontent) {
 				div.style.top = (_flip ? 7 - y : y) * 40 + "px";
 				div.className = ((x + y) % 2 ? "d" : "l") + " " + pos.b[x][y];
 				if (
-					(pos.b[x][y] == "K" && isWhiteCheck(pos)) ||
-					(pos.b[x][y] == "k" && isWhiteCheck(colorflip(pos)))
+					(pos.b[x][y] === "K" && isWhiteCheck(pos)) ||
+					(pos.b[x][y] === "k" && isWhiteCheck(colorflip(pos)))
 				) {
 					div.className += " h2";
 				}
@@ -5934,7 +5963,7 @@ function scrollReset(winId) {
 
 function findMoveIndexBySan(san) {
 	for (let i = 0; i < _curmoves.length; i++)
-		if (san == _curmoves[i].san) return i;
+		if (san === _curmoves[i].san) return i;
 	return null;
 }
 
@@ -5950,7 +5979,7 @@ function graphMouseMove(event) {
 function graphMouseDown(event) {
 	if (_lastMouseDataPos != null) {
 		const i = _lastMouseDataPos;
-		if (i < _history.length && i >= 0 && i != _historyindex) {
+		if (i < _history.length && i >= 0 && i !== _historyindex) {
 			historyMove(i - _historyindex);
 		}
 	}
@@ -5972,7 +6001,7 @@ function getCircleClassName(i) {
 function getStaticEvalList(pos) {
 	const posfen = generateFEN(pos);
 	for (let si = 0; si < _staticEvalListCache.length; si++)
-		if (_staticEvalListCache[si][0] == posfen)
+		if (_staticEvalListCache[si][0] === posfen)
 			return _staticEvalListCache[si][1];
 
 	const data = _staticEvalData;
@@ -5981,22 +6010,23 @@ function getStaticEvalList(pos) {
 		endindex = null,
 		maincode = null;
 	for (let i = 0; i < data.length; i++) {
-		if (data[i].name == "Middle game evaluation") midindex = i;
-		if (data[i].name == "End game evaluation") endindex = i;
-		if (data[i].name == "Main evaluation") maincode = data[i].code;
+		if (data[i].name === "Middle game evaluation") midindex = i;
+		if (data[i].name === "End game evaluation") endindex = i;
+		if (data[i].name === "Main evaluation") maincode = data[i].code;
 	}
 	if (midindex == null || endindex == null || maincode == null) return;
 	const zero = () => 0;
 	for (let i = 0; i < data.length; i++) {
 		const n = data[i].name.toLowerCase().replace(/ /g, "_");
 		while (
-			i != midindex &&
-			i != endindex &&
+			i !== midindex &&
+			i !== endindex &&
 			maincode.indexOf("$" + n + "(") >= 0
 		) {
 			try {
 				maincode = maincode.replace(
 					"$" + n + "(",
+					// biome-ignore lint/security/noGlobalEval: calls a first-party evaluation term installed on the global scope by name. No user input.
 					"(function(){return " + eval("$" + n + "(pos)") + ";})(",
 				);
 			} catch (e) {
@@ -6012,7 +6042,8 @@ function getStaticEvalList(pos) {
 		let code = data[i].code,
 			list = [];
 		for (let j = 0; j < data.length; j++) {
-			if (!data[j].graph || data[j].group != data[i].group || i == j) continue;
+			if (!data[j].graph || data[j].group !== data[i].group || i === j)
+				continue;
 			const n2 = data[j].name.toLowerCase().replace(/ /g, "_");
 			code = code
 				.replace("$" + n2 + "(", "$g-" + n2 + "(")
@@ -6029,6 +6060,7 @@ function getStaticEvalList(pos) {
 				eb = 0,
 				func = null;
 			try {
+				// biome-ignore lint/security/noGlobalEval: compiles a first-party evaluation-term source into a callable in this scope. No user input.
 				eval(
 					"func = " +
 						code
@@ -6070,6 +6102,7 @@ function getStaticEvalList(pos) {
 		.replace("function $$(pos)", "function $$(PMG,PEG)")
 		.replace("$middle_game_evaluation(pos)", "PMG")
 		.replace("$end_game_evaluation(pos)", "PEG");
+	// biome-ignore lint/security/noGlobalEval: compiles the first-party main evaluation source (rewritten above) into a callable. No user input.
 	const mainfunc = eval("(" + maincode + ")");
 	for (let i = 0; i < grouplist.length; i++) {
 		grouplist[i].item.push(
@@ -6094,7 +6127,7 @@ function checkSizes() {
 	if (
 		_mobile &&
 		(document.activeElement == null ||
-			document.activeElement.tagName != "INPUT")
+			document.activeElement.tagName !== "INPUT")
 	)
 		setupMobileLayout(false);
 
@@ -6102,7 +6135,7 @@ function checkSizes() {
 	const cw = document.getElementById("graphWrapper").clientWidth;
 	const ch = document.getElementById("graphWrapper").clientHeight;
 	const canvas = document.getElementById("graph");
-	if (canvas.width != cw || canvas.height != ch) repaintGraph();
+	if (canvas.width !== cw || canvas.height !== ch) repaintGraph();
 
 	// Chessboard
 	const targetScale = Math.round(getCurScale() * 1000) / 1000;
@@ -6121,8 +6154,8 @@ function checkSizes() {
 		document.getElementById("boxBoardOuter").style.marginLeft.replace("px", ""),
 	);
 	if (
-		Math.round(oldScale * 1000) != Math.round(targetScale * 1000) ||
-		Math.round(oldMargin) != Math.round(targetMargin)
+		Math.round(oldScale * 1000) !== Math.round(targetScale * 1000) ||
+		Math.round(oldMargin) !== Math.round(targetMargin)
 	) {
 		document.getElementById("boxBoard").style.transform =
 			"scale(" + targetScale + ")";
@@ -6207,7 +6240,7 @@ function setupMobileLayout(init) {
 	const elems = document.getElementById("colRight");
 	for (let i = 0; i < elems.children.length; i++) {
 		const div = elems.children[i];
-		if (div.tagName != "DIV" || div.className != "box") continue;
+		if (div.tagName !== "DIV" || div.className !== "box") continue;
 		div.style.height = (horiz ? 243 + height - 280 : 121 + height - 490) + "px";
 		div.style.margin = "0";
 		div.style.resize = "none";
