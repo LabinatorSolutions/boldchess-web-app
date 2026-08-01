@@ -27,20 +27,20 @@
 		"url": "https://bitbucket.org/labinator-team/boldchess-web-app"
 	},
 	"dependencies": {
-		"baseline-browser-mapping": "^2.11.1",
+		"baseline-browser-mapping": "^2.11.9",
 		"caniuse-lite": "^1.0.30001806",
 		"cheerio": "^1.2.0",
 		"compression": "^1.8.1",
 		"cors": "^2.8.6",
 		"dotenv": "^17.4.2",
 		"express": "^5.2.1",
-		"express-rate-limit": "^8.6.0",
+		"express-rate-limit": "^8.6.1",
 		"express-session": "^1.19.0",
 		"helmet": "^8.3.0",
 		"morgan": "^1.11.0"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "^2.5.5"
+		"@biomejs/biome": "^2.5.6"
 	},
 	"engines": {
 		"node": ">=24.12.0"
