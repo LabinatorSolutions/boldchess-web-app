@@ -3111,8 +3111,12 @@ function repaintStatic() {
 					if (n === this.name) sei = data[j];
 				}
 				if (sei == null) return;
-				const func = null,
-					n2 = this.name.toLowerCase().replace(/ /g, "_");
+				// `func` must be `let`: the eval below assigns to it. As a `const` the
+				// assignment threw "Assignment to constant variable" on every click, the
+				// empty catch swallowed it, and func stayed null — so the per-square
+				// highlight overlay below silently did nothing for every term.
+				let func = null;
+				const n2 = this.name.toLowerCase().replace(/ /g, "_");
 				try {
 					// biome-ignore lint/security/noGlobalEval: the static-evaluation terms are first-party function sources installed on the global scope at runtime; they can only be reached by name through eval. No user input is involved.
 					eval("func = $" + n2 + ";");
@@ -3145,18 +3149,21 @@ function repaintStatic() {
 										s2 = { x: x2, y: y2 },
 										a = false;
 									if ($king_ring(p, s2)) {
+										// The pawn-direction ternary needs its own parens: without them
+										// `?:` (lowest precedence) swallowed the whole `||` chain, so both
+										// branches were truthy constants (1 / -1) and this `if` was always
+										// taken. `flipy` is a boolean, so the pawn's rank delta compares
+										// against the direction it selects, not against `flipy` itself.
 										if (
-											$pawn_attack(p, s2) &&
-											Math.abs(x - x2) === 1 &&
-											y - y2 === flipy
-												? 1
-												: -1 ||
-													$knight_attack(p, s2, s) ||
-													$bishop_xray_attack(p, s2, s) ||
-													$rook_xray_attack(p, s2, s) ||
-													$queen_attack(p, s2, s)
+											($pawn_attack(p, s2) &&
+												Math.abs(x - x2) === 1 &&
+												y - y2 === (flipy ? 1 : -1)) ||
+											$knight_attack(p, s2, s) ||
+											$bishop_xray_attack(p, s2, s) ||
+											$rook_xray_attack(p, s2, s) ||
+											$queen_attack(p, s2, s)
 										)
-											a = false;
+											a = true;
 									}
 									if (
 										!a &&
