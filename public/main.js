@@ -56,7 +56,7 @@ let _userUciEloRating = 2000;
 // Initialization
 // ============================
 
-document.addEventListener("DOMContentLoaded", (e) => {
+document.addEventListener("DOMContentLoaded", () => {
 	try {
 		const url = new URL(document.location.href);
 		const search_params = new URLSearchParams(url.search);
@@ -81,7 +81,7 @@ window.onload = () => {
 	_playEngine = loadEngine((engine) => {
 		// Configure playing engine when it's ready
 		engine.send("setoption name UCI_LimitStrength value true");
-		engine.send("setoption name UCI_Elo value " + _userUciEloRating);
+		engine.send(`setoption name UCI_Elo value ${_userUciEloRating}`);
 	});
 
 	document.onmousedown = onMouseDown;
@@ -111,15 +111,15 @@ window.onload = () => {
 	document.getElementById("buttonMenu").onclick = (event) => {
 		showHideMenu(true, event);
 	};
-	document.getElementById("buttonStaticSortByValue").onclick = (event) => {
+	document.getElementById("buttonStaticSortByValue").onclick = () => {
 		_staticSortByChange = false;
 		repaintStatic();
 	};
-	document.getElementById("buttonStaticSortByChange").onclick = (event) => {
+	document.getElementById("buttonStaticSortByChange").onclick = () => {
 		_staticSortByChange = true;
 		repaintStatic();
 	};
-	document.getElementById("buttonMovesPv").onclick = (event) => {
+	document.getElementById("buttonMovesPv").onclick = () => {
 		_movesPv = !_movesPv;
 		showEvals();
 	};
@@ -163,7 +163,7 @@ window.onload = () => {
 		document.getElementById("arrowWrapper1").style.height =
 		document.getElementById("arrowWrapper2").style.height =
 		document.getElementById("arrowWrapper3").style.height =
-			40 * 8 + "px";
+			`${40 * 8}px`;
 
 	if (_mobile) setupMobileLayout(true);
 	setupTouchEvents(
@@ -407,7 +407,7 @@ function command(text) {
 			" " +
 			text
 				.replace(/\./g, " ")
-				.replace(/(\[FEN [^\]]+\])+?/g, ($0, $1) =>
+				.replace(/(\[FEN [^\]]+\])+?/g, (_match, $1) =>
 					$1.replace(/\[|\]|'/g, "").replace(/\s/g, "."),
 				);
 		text = text
@@ -458,7 +458,7 @@ function command(text) {
 			}
 			const move = parseMove(pos, moves[i]);
 			if (move == null) {
-				alert("Incorrect move: " + moves[i] + " " + gm);
+				alert(`Incorrect move: ${moves[i]} ${gm}`);
 				break;
 			}
 			const san = sanMove(pos, move, genMoves(pos));
@@ -490,12 +490,13 @@ function command(text) {
 		);
 		showBoard();
 	} else if (text.toLowerCase().indexOf("depth ") === 0) {
-		if (_analysisEngine != null && _analysisEngine.ready) {
+		if (_analysisEngine?.ready) {
 			_analysisEngine.depth = Math.min(
 				MAX_DEPTH,
-				Math.max(0, parseInt(text.toLowerCase().replace("depth ", ""))),
+				Math.max(0, parseInt(text.toLowerCase().replace("depth ", ""), 10)),
 			);
-			if (isNaN(_analysisEngine.depth)) _analysisEngine.depth = DEFAULT_DEPTH;
+			if (Number.isNaN(_analysisEngine.depth))
+				_analysisEngine.depth = DEFAULT_DEPTH;
 		}
 		showBoard();
 	} else if (text.toLowerCase() === "flip") {
@@ -543,7 +544,7 @@ function command(text) {
 		for (let i = 0; i < wb.length; i++) {
 			if (wb[i].tagName !== "DIV") continue;
 			const winId = wb[i].id.substring(2);
-			const elem = document.getElementById("w" + winId);
+			const elem = document.getElementById(`w${winId}`);
 			if (elem.style.display === "none") continue;
 			if (elem.style.position === "absolute" && !_mobile) {
 				lparams.push(
@@ -564,7 +565,7 @@ function command(text) {
 				!_mobile
 			) {
 				lparams.push(
-					(winId[0] + elem.style.width + "," + elem.style.height).replace(
+					`${winId[0] + elem.style.width},${elem.style.height}`.replace(
 						/(\.[0-9]+)?px/g,
 						"",
 					),
@@ -576,16 +577,12 @@ function command(text) {
 			"",
 		);
 		const params = [];
-		if (_color > 0) params.push("col" + _color);
-		if (
-			_analysisEngine != null &&
-			_analysisEngine.ready &&
-			_analysisEngine.depth !== DEFAULT_DEPTH
-		)
-			params.push("depth " + _analysisEngine.depth);
+		if (_color > 0) params.push(`col${_color}`);
+		if (_analysisEngine?.ready && _analysisEngine.depth !== DEFAULT_DEPTH)
+			params.push(`depth ${_analysisEngine.depth}`);
 		if (lparamsstr !== "c m h g")
-			params.push("layout " + (lparamsstr.length === 0 ? "-" : lparamsstr));
-		if (encoded.length > 0) params.push("~" + encoded);
+			params.push(`layout ${lparamsstr.length === 0 ? "-" : lparamsstr}`);
+		if (encoded.length > 0) params.push(`~${encoded}`);
 		else if (getCurFEN() !== START) params.push(getCurFEN());
 		for (let i = 0; i < params.length; i++) {
 			url +=
@@ -650,16 +647,16 @@ function command(text) {
 			if (cur != null && !_mobile) {
 				cur = cur.substring(1);
 				const b = cur.length === 0 ? [] : cur.split(",");
-				const elem = document.getElementById("w" + winId);
+				const elem = document.getElementById(`w${winId}`);
 				if (elem.firstElementChild.ondblclick != null)
 					elem.firstElementChild.ondblclick();
 				if (b.length >= 2) {
-					elem.style.width = b[0] + "px";
-					elem.style.height = b[1] + "px";
+					elem.style.width = `${b[0]}px`;
+					elem.style.height = `${b[1]}px`;
 				}
 				if (b.length >= 4) {
-					elem.style.left = b[2] + "px";
-					elem.style.top = b[3] + "px";
+					elem.style.left = `${b[2]}px`;
+					elem.style.top = `${b[3]}px`;
 					elem.style.position = "absolute";
 				}
 				showHideWindow(winId, true);
@@ -765,8 +762,8 @@ function getClientY(e) {
 
 function updateTooltipPos(e) {
 	const tooltip = document.getElementById("tooltip");
-	tooltip.style.left = e.clientX * _bodyScale + "px";
-	tooltip.style.top = getClientY(e) + 20 + "px";
+	tooltip.style.left = `${e.clientX * _bodyScale}px`;
+	tooltip.style.top = `${getClientY(e) + 20}px`;
 }
 
 function updateTooltip(text, answerpv, movenumber, cl, e) {
@@ -782,7 +779,7 @@ function updateTooltip(text, answerpv, movenumber, cl, e) {
 		if (movenumber != null) {
 			const span2 = document.createElement("span");
 			span2.style.color = "#64c4db";
-			setElemText(span2, movenumber + " ");
+			setElemText(span2, `${movenumber} `);
 			tooltip.appendChild(span2);
 		}
 
@@ -846,13 +843,13 @@ function showLegalMoves(from) {
 		const div = elem.children[i];
 		if (div.tagName !== "DIV") continue;
 		if (div.style.zIndex > 0) continue;
-		let x = parseInt(div.style.left.replace("px", "")) / 40;
-		let y = parseInt(div.style.top.replace("px", "")) / 40;
+		let x = parseInt(div.style.left.replace("px", ""), 10) / 40;
+		let y = parseInt(div.style.top.replace("px", ""), 10) / 40;
 		if (_flip) {
 			x = 7 - x;
 			y = 7 - y;
 		}
-		let c = div.className.split(" ")[0] + " " + div.className.split(" ")[1];
+		let c = `${div.className.split(" ")[0]} ${div.className.split(" ")[1]}`;
 		if (div.className.indexOf(" h2") >= 0) c += " h2";
 		div.className = c;
 		div.onmouseover = null;
@@ -889,7 +886,7 @@ function showLegalMoves(from) {
 			}
 			div.className += " h1";
 			setElemText(div, text);
-			div.tooltip = san + (text.length > 0 ? " " + text : "");
+			div.tooltip = san + (text.length > 0 ? ` ${text}` : "");
 			div.answerpv = answerpv == null ? [] : answerpv;
 			div.cl = cl == null ? "circle" : cl;
 			div.onmouseover = function (e) {
@@ -907,9 +904,9 @@ function showLegalMoves(from) {
 		const div = elem.children[i];
 		if (div.tagName !== "DIV") continue;
 		if (div.style.zIndex > 0) continue;
-		const x = -parseInt(div.style.left.replace("px", "")) / 40 - 1;
-		const y = -parseInt(div.style.top.replace("px", "")) / 40 - 1;
-		const c = div.className.split(" ")[0] + " " + div.className.split(" ")[1];
+		const x = -parseInt(div.style.left.replace("px", ""), 10) / 40 - 1;
+		const y = -parseInt(div.style.top.replace("px", ""), 10) / 40 - 1;
+		const c = `${div.className.split(" ")[0]} ${div.className.split(" ")[1]}`;
 		div.className = c;
 		setElemText(div, "");
 		if (from == null || from.x >= 0 || from.y >= 0) continue;
@@ -924,7 +921,6 @@ function showLegalMoves(from) {
 }
 
 function updateLegalMoves() {
-	const pos = parseFEN(getCurFEN());
 	const elem = document.getElementById("chessboard1");
 	for (let i = 0; i < elem.children.length; i++) {
 		const div = elem.children[i];
@@ -935,14 +931,6 @@ function updateLegalMoves() {
 			div.cl !== "circle"
 		)
 			continue;
-		let x = parseInt(div.style.left.replace("px", "")) / 40;
-		let y = parseInt(div.style.top.replace("px", "")) / 40;
-		if (_flip) {
-			x = 7 - x;
-			y = 7 - y;
-		}
-		let c = div.className.split(" ")[0] + " " + div.className.split(" ")[1];
-		if (div.className.indexOf(" h2") >= 0) c += " h2";
 		for (let j = 0; j < _curmoves.length; j++) {
 			if (div.tooltip === _curmoves[j].san) {
 				const text = getEvalText(_curmoves[j].eval, true);
@@ -950,7 +938,7 @@ function updateLegalMoves() {
 				const answerpv = _curmoves[j].answerpv;
 				const cl = getCircleClassName(j);
 				setElemText(div, text);
-				div.tooltip = san + (text.length > 0 ? " " + text : "");
+				div.tooltip = san + (text.length > 0 ? ` ${text}` : "");
 				div.answerpv = answerpv == null ? [] : answerpv;
 				div.cl = cl == null ? "circle" : cl;
 				div.onmouseover = function (e) {
@@ -1074,7 +1062,6 @@ function finalArrow3() {
 function updateInfo() {
 	const curfen = getCurFEN();
 	const pos = parseFEN(curfen);
-	const curpos = pos.m[1];
 	let positionInfoText =
 		"Position: " +
 		(_historyindex + 1) +
@@ -1088,7 +1075,7 @@ function updateInfo() {
 	) {
 		const pos2 = parseFEN(_history[_historyindex][0]);
 		positionInfoText +=
-			(pos2.w ? pos2.m[1] - 1 + "... " : pos2.m[1] + ". ") +
+			(pos2.w ? `${pos2.m[1] - 1}... ` : `${pos2.m[1]}. `) +
 			_history[_historyindex][3];
 	} else positionInfoText += "-";
 
@@ -1114,17 +1101,14 @@ function updateInfo() {
 	const historyFragment = document.createDocumentFragment();
 	let lastmn = null,
 		mn = null;
-	let movesText = "";
 
 	for (let i = 0; i < _history.length; i++) {
 		mn = parseMoveNumber(_history[i][0]);
 		if (mn !== lastmn) {
 			const span1 = document.createElement("span");
-			setElemText(span1, mn + ". ");
+			setElemText(span1, `${mn}. `);
 			span1.style.color = "#64c4db";
 			historyFragment.appendChild(span1);
-			// Do not add move numbers to movesText
-			// if (i <= _historyindex) movesText += mn + '.';
 			lastmn = mn;
 		}
 		const san =
@@ -1133,7 +1117,7 @@ function updateInfo() {
 				: "\u2605";
 		const span2 = document.createElement("span");
 		setElemText(span2, san);
-		span2.className = "movelink" + (i === _historyindex ? " selected" : "");
+		span2.className = `movelink${i === _historyindex ? " selected" : ""}`;
 		span2.targetindex = i;
 		const c = getGraphPointColor(i);
 		if (c !== "#008800") span2.style.borderBottomColor = c;
@@ -1149,9 +1133,6 @@ function updateInfo() {
 		};
 		historyFragment.appendChild(span2);
 		historyFragment.appendChild(document.createTextNode(" "));
-
-		// Include only SAN moves in movesText
-		if (i <= _historyindex) movesText += san + " ";
 	}
 	historyElem.appendChild(historyFragment);
 }
@@ -1189,6 +1170,7 @@ function colorflip(pos) {
 	};
 }
 
+// biome-ignore lint/correctness/noUnusedVariables: called from the evaluation-term source strings that are run through eval() below, which Biome cannot see through.
 function sum(pos, func, param) {
 	let sum = 0;
 	for (let x = 0; x < 8; x++)
@@ -1198,7 +1180,9 @@ function sum(pos, func, param) {
 
 function parseMoveNumber(fen) {
 	const a = fen.replace(/^\s+/, "").split(" ");
-	return a.length > 5 && !isNaN(a[5]) && a[5] !== "" ? parseInt(a[5]) : 1;
+	return a.length > 5 && !Number.isNaN(Number(a[5])) && a[5] !== ""
+		? parseInt(a[5], 10)
+		: 1;
 }
 
 function parseFEN(fen) {
@@ -1212,7 +1196,8 @@ function parseFEN(fen) {
 		for (y = 0; y < 8; y++) {
 			board[x][y] = "-";
 		}
-	(x = 0), (y = 0);
+	x = 0;
+	y = 0;
 	for (let i = 0; i < s.length; i++) {
 		if (s[i] === " ") break;
 		if (s[i] === "/") {
@@ -1224,7 +1209,7 @@ function parseFEN(fen) {
 				board[x][y] = s[i];
 				x++;
 			} else if ("0123456789".indexOf(s[i]) !== -1) {
-				x += parseInt(s[i]);
+				x += parseInt(s[i], 10);
 			} else x++;
 		}
 	}
@@ -1249,8 +1234,12 @@ function parseFEN(fen) {
 		enpassant = null;
 	}
 	const movecount = [
-		a.length > 4 && !isNaN(a[4]) && a[4] !== "" ? parseInt(a[4]) : 0,
-		a.length > 5 && !isNaN(a[5]) && a[5] !== "" ? parseInt(a[5]) : 1,
+		a.length > 4 && !Number.isNaN(Number(a[4])) && a[4] !== ""
+			? parseInt(a[4], 10)
+			: 0,
+		a.length > 5 && !Number.isNaN(Number(a[5])) && a[5] !== ""
+			? parseInt(a[5], 10)
+			: 1,
 	];
 	return {
 		b: board,
@@ -1272,11 +1261,17 @@ function generateFEN(pos) {
 			if (board[x][y] === "-") {
 				f++;
 			} else {
-				if (f > 0) (s += f), (f = 0);
+				if (f > 0) {
+					s += f;
+					f = 0;
+				}
 				s += board[x][y];
 			}
 		}
-		if (f > 0) (s += f), (f = 0);
+		if (f > 0) {
+			s += f;
+			f = 0;
+		}
 		if (y < 7) s += "/";
 	}
 	s +=
@@ -1727,7 +1722,7 @@ function sanMove(pos, move, moves) {
 		}
 		s += "abcdefgh"[move.to.x] + "87654321"[move.to.y];
 		if (piece === "P" && (move.to.y === 0 || move.to.y === 7))
-			s += "=" + (move.p == null ? "Q" : move.p);
+			s += `=${move.p == null ? "Q" : move.p}`;
 	}
 	const pos2 = doMove(pos, move.from, move.to, move.p);
 	if (isWhiteCheck(pos2) || isWhiteCheck(colorflip(pos2)))
@@ -1954,7 +1949,7 @@ function historyMove(v, e, ctrl) {
 	_historyindex += v;
 	if (_historyindex < 0) _historyindex = 0;
 	if (_historyindex >= _history.length) _historyindex = _history.length - 1;
-	if ((e != null && e.ctrlKey && Math.abs(v) === 1) || ctrl)
+	if ((e?.ctrlKey && Math.abs(v) === 1) || ctrl)
 		_historyindex = v === 1 ? _history.length - 1 : 0;
 	if (
 		v === 0 ||
@@ -1991,7 +1986,7 @@ function getCurScale() {
 	);
 }
 
-function getDragX(x, full) {
+function getDragX(x) {
 	const bb = document.getElementById("chessboard1").getBoundingClientRect();
 	const w = bb.width / 8;
 	const offsetX = bb.left + w / 2;
@@ -1999,7 +1994,7 @@ function getDragX(x, full) {
 	else return Math.round((x - offsetX) / w);
 }
 
-function getDragY(y, full) {
+function getDragY(y) {
 	const bb = document.getElementById("chessboard1").getBoundingClientRect();
 	const h = bb.width / 8;
 	const offsetY = bb.top + h / 2;
@@ -2053,7 +2048,7 @@ function onMouseDown(e) {
 		const cy = Math.round((e.clientY - bb.top - w / 2) / w);
 		for (let i = 0; i < target.children.length; i++) {
 			e0 = target.children[i];
-			if (e0.style.left === cx * 40 + "px" && e0.style.top === cy * 40 + "px")
+			if (e0.style.left === `${cx * 40}px` && e0.style.top === `${cy * 40}px`)
 				elem = e0;
 		}
 	}
@@ -2078,7 +2073,7 @@ function onMouseDown(e) {
 	) {
 		if (getPaintPiece() === elem.className[2]) setPaintPiece("S");
 		else setPaintPiece(elem.className[2]);
-		if (e && e.preventDefault) e.preventDefault();
+		if (e?.preventDefault) e.preventDefault();
 		return;
 	}
 	if (
@@ -2086,7 +2081,7 @@ function onMouseDown(e) {
 		edit &&
 		(getPaintPiece() !== "S" || e.which === 3 || e.button === 2)
 	) {
-		if (e && e.preventDefault) e.preventDefault();
+		if (e?.preventDefault) e.preventDefault();
 		paintMouse(e);
 		return;
 	}
@@ -2111,14 +2106,14 @@ function dragActivate() {
 	if (_dragElement.className[2] === "-" && !dragFromEditTools) return;
 
 	const clone = _dragElement.cloneNode(false);
-	if (!_dragCtrl) _dragElement.className = _dragElement.className[0] + " -";
+	if (!_dragCtrl) _dragElement.className = `${_dragElement.className[0]} -`;
 	_dragElement = clone;
 	_dragElement.className = _dragElement.className.substring(0, 3);
 	_dragElement.style.backgroundColor = "transparent";
 	_dragElement.style.background = "none";
 	_dragElement.style.zIndex = 10000;
 	_dragElement.style.pointerEvents = "none";
-	_dragElement.style.transform = "scale(" + getCurScale() + ")";
+	_dragElement.style.transform = `scale(${getCurScale()})`;
 	document.getElementById("dragPiece").appendChild(_dragElement);
 	_dragActive = true;
 	if (!isEdit() && !_dragCtrl)
@@ -2205,8 +2200,8 @@ function onMouseMove(e) {
 			dragActivate();
 		}
 
-		_dragElement.style.left = e.clientX * _bodyScale - 20 + "px";
-		_dragElement.style.top = getClientY(e) - 20 + "px";
+		_dragElement.style.left = `${e.clientX * _bodyScale - 20}px`;
+		_dragElement.style.top = `${getClientY(e) - 20}px`;
 		_dragElement.style.color = "transparent";
 		setElemText(_dragElement, "-"); // force browser to refresh pop-up
 	});
@@ -2454,21 +2449,21 @@ function onKeyDown(e) {
 	if (e.ctrlKey) return;
 
 	const key = e.key;
-	const engineReady = _analysisEngine != null && _analysisEngine.ready;
+	const engineReady = _analysisEngine?.ready;
 
 	switch (key) {
 		case "`":
 		case "*":
 			if (engineReady)
-				command("depth " + (_analysisEngine.depth !== 0 ? "0" : DEFAULT_DEPTH));
+				command(`depth ${_analysisEngine.depth !== 0 ? "0" : DEFAULT_DEPTH}`);
 			break;
 		case "+":
 			if (engineReady)
-				command("depth " + Math.min(MAX_DEPTH, _analysisEngine.depth + 1));
+				command(`depth ${Math.min(MAX_DEPTH, _analysisEngine.depth + 1)}`);
 			break;
 		case "-":
 			if (engineReady)
-				command("depth " + Math.max(MIN_DEPTH, _analysisEngine.depth - 1));
+				command(`depth ${Math.max(MIN_DEPTH, _analysisEngine.depth - 1)}`);
 			break;
 		case "ArrowUp":
 		case "ArrowLeft":
@@ -2562,16 +2557,11 @@ function loadEngine(onReady) {
 		lastnodes: 0,
 	};
 
-	const wasmSupported =
-		typeof WebAssembly === "object" &&
-		WebAssembly.validate(
-			Uint8Array.of(0x0, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00),
-		);
 	if (typeof Worker === "undefined") return engine;
 	let worker;
 	try {
 		worker = new Worker("./engine/stockfish-18-lite.js");
-	} catch (err) {
+	} catch {
 		return engine;
 	}
 	worker.onmessage = (e) => {
@@ -2583,8 +2573,8 @@ function loadEngine(onReady) {
 		worker.postMessage(cmd);
 	};
 	engine.eval = function evaluate(fen, done, info) {
-		engine.send("position fen " + fen);
-		engine.send("go depth " + engine.depth, function message(str) {
+		engine.send(`position fen ${fen}`);
+		engine.send(`go depth ${engine.depth}`, function message(str) {
 			let matches = str.match(
 				/depth (\d+) .*score (cp|mate) ([-\d]+) .*nodes (\d+) .*pv (.+)/,
 			);
@@ -2707,7 +2697,7 @@ function evalNext() {
 					}
 					if (!_analysisEngine.kill) evalNext();
 				},
-				function info(depth, score, pv) {
+				function info(_depth, _score, pv) {
 					savedpv = pv;
 				},
 			);
@@ -2824,7 +2814,7 @@ function updateSkillLevelBasedOnDepth(depth) {
 				skillLevel = 20; // Any depth 15 or higher sets the skill to 20
 		}
 	}
-	_analysisEngine.send("setoption name Skill Level value " + skillLevel);
+	_analysisEngine.send(`setoption name Skill Level value ${skillLevel}`);
 }
 
 function evalAll() {
@@ -2950,18 +2940,18 @@ function highlightMove(index, state) {
 		const div = elem.children[i];
 		if (div.tagName !== "DIV") continue;
 		if (div.style.zIndex > 0) continue;
-		let x = parseInt(div.style.left.replace("px", "")) / 40;
-		let y = parseInt(div.style.top.replace("px", "")) / 40;
+		let x = parseInt(div.style.left.replace("px", ""), 10) / 40;
+		let y = parseInt(div.style.top.replace("px", ""), 10) / 40;
 		if (_flip) {
 			x = 7 - x;
 			y = 7 - y;
 		}
-		let c = div.className.split(" ")[0] + " " + div.className.split(" ")[1];
+		let c = `${div.className.split(" ")[0]} ${div.className.split(" ")[1]}`;
 		setElemText(div, "");
 		if (div.className.indexOf(" h2") >= 0) c += " h2";
-		if (state && x1 === x && y1 === y) div.className = c + " h0";
+		if (state && x1 === x && y1 === y) div.className = `${c} h0`;
 		else if (state && x2 === x && y2 === y) {
-			div.className = c + " h1";
+			div.className = `${c} h1`;
 			setElemText(div, text);
 		} else div.className = c;
 		div.onmouseover = null;
@@ -3006,7 +2996,7 @@ function repaintStatic() {
 					ci++;
 				}
 			}
-			staticEvalList[i].bgcol = "rgb(" + c1 + "," + c2 + "," + c3 + ")";
+			staticEvalList[i].bgcol = `rgb(${c1},${c2},${c3})`;
 			staticEvalList[i].rel =
 				staticEvalList[i].item[2] -
 				(staticEvalListLast == null ? 0 : staticEvalListLast[i].item[2]);
@@ -3115,20 +3105,21 @@ function repaintStatic() {
 				// assignment threw "Assignment to constant variable" on every click, the
 				// empty catch swallowed it, and func stayed null — so the per-square
 				// highlight overlay below silently did nothing for every term.
+				// biome-ignore lint/style/useConst: reassigned inside the eval() below, which Biome cannot see through; as `const` the assignment throws and the highlight overlay silently breaks.
 				let func = null;
 				const n2 = this.name.toLowerCase().replace(/ /g, "_");
 				try {
 					// biome-ignore lint/security/noGlobalEval: the static-evaluation terms are first-party function sources installed on the global scope at runtime; they can only be reached by name through eval. No user input is involved.
-					eval("func = $" + n2 + ";");
-				} catch (e) {
+					eval(`func = $${n2};`);
+				} catch {
 					/* term not installed on the global scope; leave func null */
 				}
 				const elem = document.getElementById("chessboard1");
 				for (let i = 0; i < elem.children.length; i++) {
 					const div = elem.children[i];
 					if (div.tagName !== "DIV" || div.style.zIndex > 0) continue;
-					let x = parseInt(div.style.left.replace("px", "")) / 40;
-					let y = parseInt(div.style.top.replace("px", "")) / 40;
+					let x = parseInt(div.style.left.replace("px", ""), 10) / 40;
+					let y = parseInt(div.style.top.replace("px", ""), 10) / 40;
 					if (_flip) {
 						x = 7 - x;
 						y = 7 - y;
@@ -3210,10 +3201,11 @@ function repaintStatic() {
 							if (sqeval === 0) sqeval = func(pos, { x: x, y: y }, true);
 							if (sqeval === 0 && sei.forwhite)
 								sqeval = func(colorflip(pos), { x: x, y: 7 - y }, true);
-						} catch (e) {}
+						} catch {
+							/* term threw for this square; leave sqeval at 0 */
+						}
 					}
-					let c =
-						div.className.split(" ")[0] + " " + div.className.split(" ")[1];
+					let c = `${div.className.split(" ")[0]} ${div.className.split(" ")[1]}`;
 					if (div.className.indexOf(" h2") >= 0) c += " h2";
 					if (sqeval !== 0) c += " h3";
 					div.className = c;
@@ -3225,7 +3217,7 @@ function repaintStatic() {
 		elem.appendChild(fragment);
 		setElemText(
 			document.getElementById("staticInfo"),
-			"Static evaluation (" + (total / evalUnit).toFixed(2) + ")",
+			`Static evaluation (${(total / evalUnit).toFixed(2)})`,
 		);
 	});
 }
@@ -3299,7 +3291,7 @@ function showEvals() {
 		node1.onmouseout = function () {
 			highlightMove(this.index, false);
 		};
-		node1.onmousedown = function (e) {
+		node1.onmousedown = function () {
 			if (_menu) showHideMenu(false);
 			doMoveHandler(_curmoves[this.index].move);
 		};
@@ -3316,8 +3308,7 @@ function showEvals() {
 }
 
 _staticEvalData = (() => {
-	const data = [],
-		curindex = null;
+	const data = [];
 	data.push({
 		name: "Main evaluation",
 		group: "",
@@ -4946,12 +4937,12 @@ function showGraphTooltip(i, event) {
 		if (_history[i][1] != null && _history[i][1].score != null) {
 			let e = _history[i][1].score;
 			if (_history[i][1].black) e = -e;
-			evalText += " " + getEvalText(e, true);
+			evalText += ` ${getEvalText(e, true)}`;
 		}
 		updateTooltip(
 			evalText,
 			null,
-			pos.w ? pos.m[1] - 1 + "..." : pos.m[1] + ".",
+			pos.w ? `${pos.m[1] - 1}...` : `${pos.m[1]}.`,
 			null,
 			event,
 		);
@@ -5038,8 +5029,8 @@ function repaintGraph(event) {
 		for (let i = yStep; i <= yMax; i += yStep) {
 			if (i === 0) continue;
 			const y = Math.round((i * yUnit) / yStep);
-			ctx.fillText("+" + i, border2 - 6, border1 + yTotal / 2 - y);
-			ctx.fillText("-" + i, border2 - 6, border1 + yTotal / 2 + y);
+			ctx.fillText(`+${i}`, border2 - 6, border1 + yTotal / 2 - y);
+			ctx.fillText(`-${i}`, border2 - 6, border1 + yTotal / 2 + y);
 			if (i < yMax) {
 				ctx.moveTo(border2, border1 + yTotal / 2 - y);
 				ctx.lineTo(border2 + xTotal, border1 + yTotal / 2 - y);
@@ -5213,7 +5204,7 @@ function repaintSidebars() {
 			for (let i = 0; i < mat.length; i++) {
 				const node1 = document.createElement("DIV");
 				node1.className = "pnbrqk"[mat[i]];
-				const d = (mat.length - 1 - i) * 16 + "px";
+				const d = `${(mat.length - 1 - i) * 16}px`;
 				if (flip) node1.style.top = d;
 				else node1.style.bottom = d;
 				fragment.appendChild(node1);
@@ -5227,9 +5218,9 @@ function repaintSidebars() {
 
 		if (points !== 0) {
 			const node1 = document.createElement("DIV");
-			node1.appendChild(document.createTextNode("+" + Math.abs(points)));
+			node1.appendChild(document.createTextNode(`+${Math.abs(points)}`));
 			const down = (points > 0 && !_flip) || (points < 0 && _flip);
-			const d = (_flip ^ down ? whitemat.length : blackmat.length) * 16 + "px";
+			const d = `${(_flip ^ down ? whitemat.length : blackmat.length) * 16}px`;
 			if (down) node1.style.bottom = d;
 			else node1.style.top = d;
 			elem.appendChild(node1);
@@ -5283,21 +5274,20 @@ function doFlip() {
 function showHideWindow(name, targetState) {
 	if (_mobile && name !== "Chessboard") {
 		const wb = document.getElementById("wb").children;
-		const lparams = [];
 		for (let i = 0; i < wb.length; i++) {
 			if (wb[i].tagName !== "DIV") continue;
 			const wbId = wb[i].id.substring(2);
 			if (wbId === "Chessboard") continue;
-			document.getElementById("w" + wbId).style.display = "none";
-			const wbElem = document.getElementById("wb" + wbId);
+			document.getElementById(`w${wbId}`).style.display = "none";
+			const wbElem = document.getElementById(`wb${wbId}`);
 			wbElem.className = wbElem.className.replace(" selected", "");
 		}
 	}
-	const boxElem = document.getElementById("w" + name);
+	const boxElem = document.getElementById(`w${name}`);
 	const newState =
 		targetState == null ? boxElem.style.display === "none" : targetState;
 	boxElem.style.display = newState ? "" : "none";
-	const wbElem = document.getElementById("wb" + name);
+	const wbElem = document.getElementById(`wb${name}`);
 	wbElem.className =
 		wbElem.className.replace(" selected", "") + (newState ? " selected" : "");
 	checkSizes();
@@ -5354,21 +5344,16 @@ function setBoardColor(c) {
 	const count = 6;
 	if (c < 0) c = count - 1;
 	if (c >= count) c = 0;
-	document.getElementById("cbTable").className = "c" + c;
-	document.getElementById("boxBoard").className = "c" + c;
-	document.getElementById("chessboard1").className = "cb c" + c;
+	document.getElementById("cbTable").className = `c${c}`;
+	document.getElementById("boxBoard").className = `c${c}`;
+	document.getElementById("chessboard1").className = `cb c${c}`;
 	const elem = document.getElementById("icolor");
-	if (elem != null) elem.className = "c" + c;
+	if (elem != null) elem.className = `c${c}`;
 	_color = c;
 }
 
 function setEngineValue(elem) {
-	setElemText(
-		elem,
-		_analysisEngine != null && _analysisEngine.ready
-			? _analysisEngine.depth
-			: "18",
-	);
+	setElemText(elem, _analysisEngine?.ready ? _analysisEngine.depth : "18");
 	elem.removeAttribute("title");
 }
 
@@ -5385,7 +5370,7 @@ function reloadMenu() {
 
 		const addMenuItem = (className, text, key, enabled, func) => {
 			const div = document.createElement("div");
-			div.className = "menuItem " + className;
+			div.className = `menuItem ${className}`;
 			if (!enabled) div.className += " disabled";
 			const span1 = document.createElement("span");
 			setElemText(span1, text);
@@ -5400,15 +5385,15 @@ function reloadMenu() {
 
 		const addMenuItemEngine = (className, text) => {
 			const div = document.createElement("div");
-			div.className = "menuItem " + className;
+			div.className = `menuItem ${className}`;
 			const span1 = document.createElement("span");
 			setElemText(span1, text);
 			div.appendChild(span1);
 			const span2 = document.createElement("span");
 			span2.id = "buttonEnginePlus";
 			span2.onclick = () => {
-				if (_analysisEngine != null && _analysisEngine.ready)
-					command("depth " + Math.min(MAX_DEPTH, _analysisEngine.depth + 1));
+				if (_analysisEngine?.ready)
+					command(`depth ${Math.min(MAX_DEPTH, _analysisEngine.depth + 1)}`);
 				showBoard(false, true);
 				setEngineValue(document.getElementById("buttonEngineValue"));
 			};
@@ -5416,8 +5401,8 @@ function reloadMenu() {
 			const span3 = document.createElement("span");
 			span3.id = "buttonEngineValue";
 			span3.onclick = () => {
-				if (_analysisEngine != null && _analysisEngine.ready)
-					command("depth " + (_analysisEngine.depth !== 0 ? "0" : "28"));
+				if (_analysisEngine?.ready)
+					command(`depth ${_analysisEngine.depth !== 0 ? "0" : "28"}`);
 				showBoard(false, true);
 				setEngineValue(document.getElementById("buttonEngineValue"));
 			};
@@ -5426,8 +5411,8 @@ function reloadMenu() {
 			const span4 = document.createElement("span");
 			span4.id = "buttonEngineMinus";
 			span4.onclick = () => {
-				if (_analysisEngine != null && _analysisEngine.ready)
-					command("depth " + Math.max(0, _analysisEngine.depth - 1));
+				if (_analysisEngine?.ready)
+					command(`depth ${Math.max(0, _analysisEngine.depth - 1)}`);
 				showBoard(false, true);
 				setEngineValue(document.getElementById("buttonEngineValue"));
 			};
@@ -5437,7 +5422,7 @@ function reloadMenu() {
 
 		const addMenuItemUciElo = (className, text) => {
 			const div = document.createElement("div");
-			div.className = "menuItem " + className;
+			div.className = `menuItem ${className}`;
 
 			const span1 = document.createElement("span");
 			setElemText(span1, text);
@@ -5449,9 +5434,9 @@ function reloadMenu() {
 			span2.onclick = () => {
 				_userUciEloRating = Math.min(3190, _userUciEloRating + 10);
 				updateUciEloValue(span3);
-				if (_playEngine && _playEngine.ready) {
+				if (_playEngine?.ready) {
 					_playEngine.send("setoption name UCI_LimitStrength value true");
-					_playEngine.send("setoption name UCI_Elo value " + _userUciEloRating);
+					_playEngine.send(`setoption name UCI_Elo value ${_userUciEloRating}`);
 				}
 			};
 			div.appendChild(span2);
@@ -5468,9 +5453,9 @@ function reloadMenu() {
 			span4.onclick = () => {
 				_userUciEloRating = Math.max(1320, _userUciEloRating - 10);
 				updateUciEloValue(span3);
-				if (_playEngine && _playEngine.ready) {
+				if (_playEngine?.ready) {
 					_playEngine.send("setoption name UCI_LimitStrength value true");
-					_playEngine.send("setoption name UCI_Elo value " + _userUciEloRating);
+					_playEngine.send(`setoption name UCI_Elo value ${_userUciEloRating}`);
 				}
 			};
 			div.appendChild(span4);
@@ -5479,12 +5464,12 @@ function reloadMenu() {
 
 		// Helper function to update the Elo rating display
 		function updateUciEloValue(span) {
-			setElemText(span, "" + _userUciEloRating);
+			setElemText(span, `${_userUciEloRating}`);
 		}
 
 		const addMenuItemColor = (className, text) => {
 			const div = document.createElement("div");
-			div.className = "menuItem " + className;
+			div.className = `menuItem ${className}`;
 			const span1 = document.createElement("span");
 			setElemText(span1, text);
 			div.appendChild(span1);
@@ -5497,7 +5482,7 @@ function reloadMenu() {
 			div.appendChild(span2);
 			const div1 = document.createElement("div");
 			div1.id = "icolor";
-			div1.className = "c" + _color;
+			div1.className = `c${_color}`;
 			div1.onclick = () => {
 				setBoardColor(0);
 			};
@@ -5541,7 +5526,7 @@ function reloadMenu() {
 			"Mode 1: Analyze Board",
 			1,
 			_gameMode !== 1,
-			(e) => {
+			() => {
 				menuAnalysisMode();
 			},
 		);
@@ -5550,7 +5535,7 @@ function reloadMenu() {
 			"Mode 2: Player (White) vs. Engine (Black)",
 			2,
 			_gameMode !== 2,
-			(e) => {
+			() => {
 				menuPlayEngineWhite();
 			},
 		);
@@ -5559,7 +5544,7 @@ function reloadMenu() {
 			"Mode 3: Engine (White) vs. Player (Black)",
 			3,
 			_gameMode !== 3,
-			(e) => {
+			() => {
 				menuPlayEngineBlack();
 			},
 		);
@@ -5568,7 +5553,7 @@ function reloadMenu() {
 			"Mode 4: Player vs. Player",
 			4,
 			_gameMode !== 4,
-			(e) => {
+			() => {
 				menuTwoPlayerMode();
 			},
 		);
@@ -5665,9 +5650,9 @@ function menuPlayEngineWhite() {
 	_gameMode = 2;
 	_isPlayerWhite = true;
 	_play = 0;
-	if (_playEngine != null && _playEngine.ready) {
+	if (_playEngine?.ready) {
 		_playEngine.send("setoption name UCI_LimitStrength value true");
-		_playEngine.send("setoption name UCI_Elo value " + _userUciEloRating);
+		_playEngine.send(`setoption name UCI_Elo value ${_userUciEloRating}`);
 	}
 	showBoard(true);
 	showHideMenu(false);
@@ -5678,9 +5663,9 @@ function menuPlayEngineBlack() {
 	_gameMode = 3;
 	_isPlayerWhite = false;
 	_play = 1;
-	if (_playEngine != null && _playEngine.ready) {
+	if (_playEngine?.ready) {
 		_playEngine.send("setoption name UCI_LimitStrength value true");
-		_playEngine.send("setoption name UCI_Elo value " + _userUciEloRating);
+		_playEngine.send(`setoption name UCI_Elo value ${_userUciEloRating}`);
 	}
 	showBoard(true);
 	showHideMenu(false);
@@ -5702,9 +5687,9 @@ function menuTwoPlayerMode() {
 function getParameterByName(name, url) {
 	if (!url) url = window.location.href;
 	name = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-	const regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+	const regex = new RegExp(`[?&]${name}(=([^&#]*)|&|#|$)`),
 		results = regex.exec(url);
-	if (!results || !results[2]) return "";
+	if (!results?.[2]) return "";
 	return decodeURIComponent(results[2].replace(/\+/g, " "));
 }
 
@@ -5734,12 +5719,12 @@ function setupBoxes() {
 			}
 			if (!_mobile || div.id !== "wChessboard") {
 				const divBoxIcon = document.createElement("div");
-				divBoxIcon.className = "boxIcon icon" + div.id.substring(1);
+				divBoxIcon.className = `boxIcon icon${div.id.substring(1)}`;
 				div.appendChild(divBoxIcon);
 			}
 			const wbIcon = document.createElement("div");
-			wbIcon.id = "wb" + div.id.substring(1);
-			wbIcon.className = "wbButton icon" + div.id.substring(1);
+			wbIcon.id = `wb${div.id.substring(1)}`;
+			wbIcon.className = `wbButton icon${div.id.substring(1)}`;
 			if (div.style.display !== "none") wbIcon.className += " selected";
 
 			wbIcon.onclick = function () {
@@ -5756,10 +5741,10 @@ function setupDragElement(elmnt) {
 		pos4 = 0;
 	oldDisplay = elmnt.style.display;
 	elmnt.style.display = "";
-	elmnt.originalWidth = elmnt.style.width =
-		elmnt.getBoundingClientRect().width - 2 + "px";
-	elmnt.originalHeight = elmnt.style.height =
-		elmnt.getBoundingClientRect().height - 2 + "px";
+	elmnt.originalWidth =
+		elmnt.style.width = `${elmnt.getBoundingClientRect().width - 2}px`;
+	elmnt.originalHeight =
+		elmnt.style.height = `${elmnt.getBoundingClientRect().height - 2}px`;
 	elmnt.style.display = oldDisplay;
 	elmnt.firstElementChild.onmousedown = startBoxDrag;
 	elmnt.firstElementChild.ondblclick = () => {
@@ -5792,7 +5777,7 @@ function setupDragElement(elmnt) {
 
 	function startBoxDrag(e) {
 		e = e || window.event;
-		if (e && e.preventDefault) e.preventDefault();
+		if (e?.preventDefault) e.preventDefault();
 		pos3 = e.clientX;
 		pos4 = e.clientY;
 		document.onmouseup = endBoxDrag;
@@ -5801,10 +5786,10 @@ function setupDragElement(elmnt) {
 
 	function moveBoxDrag(e) {
 		e = e || window.event;
-		if (e && e.preventDefault) e.preventDefault();
+		if (e?.preventDefault) e.preventDefault();
 		if (elmnt.style.position !== "absolute") {
-			elmnt.style.width = elmnt.getBoundingClientRect().width - 2 + "px";
-			elmnt.style.height = elmnt.getBoundingClientRect().height - 2 + "px";
+			elmnt.style.width = `${elmnt.getBoundingClientRect().width - 2}px`;
+			elmnt.style.height = `${elmnt.getBoundingClientRect().height - 2}px`;
 			elmnt.style.left =
 				elmnt.getBoundingClientRect().left -
 				document.getElementById("container").getBoundingClientRect().left +
@@ -5823,8 +5808,8 @@ function setupDragElement(elmnt) {
 		pos4 = e.clientY;
 		const x0 = parseFloat(elmnt.style.left.replace("px", "")) || 0;
 		const y0 = parseFloat(elmnt.style.top.replace("px", "")) || 0;
-		elmnt.style.left = x0 - pos1 + "px";
-		elmnt.style.top = y0 - pos2 + "px";
+		elmnt.style.left = `${x0 - pos1}px`;
+		elmnt.style.top = `${y0 - pos2}px`;
 		elmnt.style.zIndex = "5";
 		elmnt.style.cursor = "move";
 	}
@@ -5838,26 +5823,26 @@ function setupDragElement(elmnt) {
 
 	function startBoxResize(e) {
 		e = e || window.event;
-		if (e && e.preventDefault) e.preventDefault();
+		if (e?.preventDefault) e.preventDefault();
 		pos3 = e.clientX;
 		pos4 = e.clientY;
-		elmnt.style.width = elmnt.getBoundingClientRect().width - 2 + "px";
-		elmnt.style.height = elmnt.getBoundingClientRect().height - 2 + "px";
+		elmnt.style.width = `${elmnt.getBoundingClientRect().width - 2}px`;
+		elmnt.style.height = `${elmnt.getBoundingClientRect().height - 2}px`;
 		document.onmouseup = endBoxDrag;
 		document.onmousemove = moveBoxResize;
 	}
 
 	function moveBoxResize(e) {
 		e = e || window.event;
-		if (e && e.preventDefault) e.preventDefault();
+		if (e?.preventDefault) e.preventDefault();
 		pos1 = pos3 - e.clientX;
 		pos2 = pos4 - e.clientY;
 		pos3 = e.clientX;
 		pos4 = e.clientY;
 		const x0 = parseFloat(elmnt.style.width.replace("px", "")) || 0;
 		const y0 = parseFloat(elmnt.style.height.replace("px", "")) || 0;
-		elmnt.style.width = x0 - pos1 + "px";
-		elmnt.style.height = y0 - pos2 + "px";
+		elmnt.style.width = `${x0 - pos1}px`;
+		elmnt.style.height = `${y0 - pos2}px`;
 		elmnt.style.zIndex = "5";
 		elmnt.style.cursor = "nw-resize";
 	}
@@ -5904,9 +5889,9 @@ function showBoard(noeval, refreshhistory, keepcontent) {
 					? elem.children[index]
 					: document.createElement("div");
 				index++;
-				div.style.left = (_flip ? 7 - x : x) * 40 + "px";
-				div.style.top = (_flip ? 7 - y : y) * 40 + "px";
-				div.className = ((x + y) % 2 ? "d" : "l") + " " + pos.b[x][y];
+				div.style.left = `${(_flip ? 7 - x : x) * 40}px`;
+				div.style.top = `${(_flip ? 7 - y : y) * 40}px`;
+				div.className = `${(x + y) % 2 ? "d" : "l"} ${pos.b[x][y]}`;
 				if (
 					(pos.b[x][y] === "K" && isWhiteCheck(pos)) ||
 					(pos.b[x][y] === "k" && isWhiteCheck(colorflip(pos)))
@@ -5959,19 +5944,13 @@ function showBoard(noeval, refreshhistory, keepcontent) {
 
 function scrollReset(winId) {
 	requestAnimationFrame(() => {
-		const windowElem = document.getElementById("w" + winId);
+		const windowElem = document.getElementById(`w${winId}`);
 		const scrollElem = document.getElementById(winId.toLowerCase());
 		const oldDisplay = windowElem.style.display;
 		windowElem.style.display = "";
 		scrollElem.scrollTop = 0;
 		windowElem.style.display = oldDisplay;
 	});
-}
-
-function findMoveIndexBySan(san) {
-	for (let i = 0; i < _curmoves.length; i++)
-		if (san === _curmoves[i].san) return i;
-	return null;
 }
 
 function defaultMouseMove(event) {
@@ -5983,7 +5962,7 @@ function graphMouseMove(event) {
 	if (_tooltipState) updateTooltipPos(event);
 }
 
-function graphMouseDown(event) {
+function graphMouseDown() {
 	if (_lastMouseDataPos != null) {
 		const i = _lastMouseDataPos;
 		if (i < _history.length && i >= 0 && i !== _historyindex) {
@@ -6022,19 +6001,20 @@ function getStaticEvalList(pos) {
 		if (data[i].name === "Main evaluation") maincode = data[i].code;
 	}
 	if (midindex == null || endindex == null || maincode == null) return;
+	// biome-ignore lint/correctness/noUnusedVariables: substituted in as `zero(` by the `$g-` replacement below and called from the eval()'d term source, which Biome cannot see through.
 	const zero = () => 0;
 	for (let i = 0; i < data.length; i++) {
 		const n = data[i].name.toLowerCase().replace(/ /g, "_");
 		while (
 			i !== midindex &&
 			i !== endindex &&
-			maincode.indexOf("$" + n + "(") >= 0
+			maincode.indexOf(`$${n}(`) >= 0
 		) {
 			try {
 				maincode = maincode.replace(
-					"$" + n + "(",
+					`$${n}(`,
 					// biome-ignore lint/security/noGlobalEval: calls a first-party evaluation term installed on the global scope by name. No user input.
-					"(function(){return " + eval("$" + n + "(pos)") + ";})(",
+					`(function(){return ${eval(`$${n}(pos)`)};})(`,
 				);
 			} catch (e) {
 				alert(e.message);
@@ -6042,8 +6022,8 @@ function getStaticEvalList(pos) {
 			}
 		}
 		if (
-			data[midindex].code.indexOf("$" + n + "(") < 0 &&
-			data[endindex].code.indexOf("$" + n + "(") < 0
+			data[midindex].code.indexOf(`$${n}(`) < 0 &&
+			data[endindex].code.indexOf(`$${n}(`) < 0
 		)
 			continue;
 		let code = data[i].code,
@@ -6053,14 +6033,14 @@ function getStaticEvalList(pos) {
 				continue;
 			const n2 = data[j].name.toLowerCase().replace(/ /g, "_");
 			code = code
-				.replace("$" + n2 + "(", "$g-" + n2 + "(")
-				.replace("$" + n2 + "(", "$g-" + n2 + "(");
+				.replace(`$${n2}(`, `$g-${n2}(`)
+				.replace(`$${n2}(`, `$g-${n2}(`);
 			list.push(n2);
 		}
 		if (data[i].graph) list.push(n);
 		for (let j = 0; j < list.length; j++) {
 			const n2 = list[j];
-			if (code.indexOf("$g-" + n2 + "(") < 0 && !data[i].graph) continue;
+			if (code.indexOf(`$g-${n2}(`) < 0 && !data[i].graph) continue;
 			let mw = 0,
 				mb = 0,
 				ew = 0,
@@ -6071,16 +6051,16 @@ function getStaticEvalList(pos) {
 				eval(
 					"func = " +
 						code
-							.replace("$g-" + n2 + "(", "$" + n2 + "(")
-							.replace("$g-" + n2 + "(", "$" + n2 + "(")
+							.replace(`$g-${n2}(`, `$${n2}(`)
+							.replace(`$g-${n2}(`, `$${n2}(`)
 							.replace(/\$g-[a-z_]+\(/g, "zero(") +
 						";",
 				);
-				if (data[midindex].code.indexOf("$" + n + "(pos") >= 0) mw = func(pos);
-				if (data[midindex].code.indexOf("$" + n + "(colorflip(pos)") >= 0)
+				if (data[midindex].code.indexOf(`$${n}(pos`) >= 0) mw = func(pos);
+				if (data[midindex].code.indexOf(`$${n}(colorflip(pos)`) >= 0)
 					mb = func(colorflip(pos));
-				if (data[endindex].code.indexOf("$" + n + "(pos") >= 0) ew = func(pos);
-				if (data[endindex].code.indexOf("$" + n + "(colorflip(pos)") >= 0)
+				if (data[endindex].code.indexOf(`$${n}(pos`) >= 0) ew = func(pos);
+				if (data[endindex].code.indexOf(`$${n}(colorflip(pos)`) >= 0)
 					eb = func(colorflip(pos));
 			} catch (e) {
 				alert(e.message);
@@ -6110,7 +6090,7 @@ function getStaticEvalList(pos) {
 		.replace("$middle_game_evaluation(pos)", "PMG")
 		.replace("$end_game_evaluation(pos)", "PEG");
 	// biome-ignore lint/security/noGlobalEval: compiles the first-party main evaluation source (rewritten above) into a callable. No user input.
-	const mainfunc = eval("(" + maincode + ")");
+	const mainfunc = eval(`(${maincode})`);
 	for (let i = 0; i < grouplist.length; i++) {
 		grouplist[i].item.push(
 			mainfunc(grouplist[i].item[0], grouplist[i].item[1]) - mainfunc(0, 0),
@@ -6165,10 +6145,10 @@ function checkSizes() {
 		Math.round(oldMargin) !== Math.round(targetMargin)
 	) {
 		document.getElementById("boxBoard").style.transform =
-			"scale(" + targetScale + ")";
+			`scale(${targetScale})`;
 		document.getElementById("boxBoardOuter").style.marginLeft =
 			document.getElementById("boxBoardOuter").style.marginRight =
-				targetMargin + "px";
+				`${targetMargin}px`;
 	}
 
 	if (_wantUpdateInfo) {
@@ -6219,18 +6199,18 @@ function setupMobileLayout(init) {
 		: Math.max(490, winHeight / scale);
 	document.body.style.display = "flex";
 	document.body.style.transformOrigin = "top left";
-	document.body.style.transform = "scale(" + scale + ")";
-	document.body.style.width = width + "px";
-	document.body.style.height = height + "px";
+	document.body.style.transform = `scale(${scale})`;
+	document.body.style.width = `${width}px`;
+	document.body.style.height = `${height}px`;
 	document.body.style.overflowX = "hidden";
-	document.getElementById("container").style.width = width + "px";
-	document.getElementById("container").style.height = height + "px";
+	document.getElementById("container").style.width = `${width}px`;
+	document.getElementById("container").style.height = `${height}px`;
 	document.getElementById("logo").style.position = horiz ? "absolute" : "";
 	document.getElementById("logo").style.top = horiz ? "0" : "";
 	document.getElementById("logo").style.left = horiz ? "355px" : "";
 	document.getElementById("wChessboard").style.width = horiz ? "310px" : "";
 	document.getElementById("wChessboard").style.height =
-		(horiz ? height - 16 : 300) + "px";
+		`${horiz ? height - 16 : 300}px`;
 	document.getElementById("wb").style.top = horiz ? "0" : "329px";
 	document.getElementById("wb").style.right = horiz ? "324px" : "162px";
 	document.getElementById("wb").style.width = horiz ? "21px" : "";
@@ -6248,7 +6228,7 @@ function setupMobileLayout(init) {
 	for (let i = 0; i < elems.children.length; i++) {
 		const div = elems.children[i];
 		if (div.tagName !== "DIV" || div.className !== "box") continue;
-		div.style.height = (horiz ? 243 + height - 280 : 121 + height - 490) + "px";
+		div.style.height = `${horiz ? 243 + height - 280 : 121 + height - 490}px`;
 		div.style.margin = "0";
 		div.style.resize = "none";
 	}

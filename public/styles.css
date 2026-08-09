@@ -696,6 +696,13 @@ li {
 	box-shadow: inset 0 0 8px #000000;
 }
 
+.line {
+	height: 18px;
+	cursor: pointer;
+	position: relative;
+	overflow-x: hidden;
+}
+
 #moves .line {
 	width: 100%;
 	min-width: 281px;
@@ -703,13 +710,6 @@ li {
 
 .line:nth-child(odd) {
 	background-color: rgba(0, 0, 0, 0.2);
-}
-
-.line {
-	height: 18px;
-	cursor: pointer;
-	position: relative;
-	overflow-x: hidden;
 }
 
 .line .san {
