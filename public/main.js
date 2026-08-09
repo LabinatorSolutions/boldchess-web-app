@@ -385,7 +385,7 @@ function command(text) {
 		}
 	}
 	if (text.split("/").length === 8 && text.split(".").length === 1) {
-		pos = parseFEN(text);
+		const pos = parseFEN(text);
 		setCurFEN(generateFEN(pos));
 		_history = [[getCurFEN()]];
 		_historyindex = 0;
@@ -432,7 +432,7 @@ function command(text) {
 		const oldhistory = JSON.parse(JSON.stringify(_history));
 		_history = [[START]];
 		_historyindex = 0;
-		gm = 0;
+		let gm = 0;
 		for (let i = 0; i < moves.length; i++) {
 			if (moves[i].length === 0) continue;
 			if ("*".indexOf(moves[i][0]) === 0) {
@@ -1153,8 +1153,8 @@ function board(pos, x, y) {
 function colorflip(pos) {
 	const board = new Array(8);
 	for (let i = 0; i < 8; i++) board[i] = new Array(8);
-	for (x = 0; x < 8; x++)
-		for (y = 0; y < 8; y++) {
+	for (let x = 0; x < 8; x++)
+		for (let y = 0; y < 8; y++) {
 			board[x][y] = pos.b[x][7 - y];
 			const color = board[x][y].toUpperCase() === board[x][y];
 			board[x][y] = color
@@ -2047,7 +2047,7 @@ function onMouseDown(e) {
 		const cx = Math.round((e.clientX - bb.left - w / 2) / w);
 		const cy = Math.round((e.clientY - bb.top - w / 2) / w);
 		for (let i = 0; i < target.children.length; i++) {
-			e0 = target.children[i];
+			const e0 = target.children[i];
 			if (e0.style.left === `${cx * 40}px` && e0.style.top === `${cy * 40}px`)
 				elem = e0;
 		}
@@ -3307,7 +3307,7 @@ function showEvals() {
 	updateLegalMoves();
 }
 
-_staticEvalData = (() => {
+const _staticEvalData = (() => {
 	const data = [];
 	data.push({
 		name: "Main evaluation",
@@ -4913,7 +4913,7 @@ function getGraphPointData(i) {
 function getGraphPointColor(i) {
 	const e = getGraphPointData(i),
 		laste = getGraphPointData(i - 1);
-	black =
+	const black =
 		i >= 0 &&
 		i < _history.length &&
 		_history[i].length >= 2 &&
@@ -5739,7 +5739,7 @@ function setupDragElement(elmnt) {
 		pos2 = 0,
 		pos3 = 0,
 		pos4 = 0;
-	oldDisplay = elmnt.style.display;
+	const oldDisplay = elmnt.style.display;
 	elmnt.style.display = "";
 	elmnt.originalWidth =
 		elmnt.style.width = `${elmnt.getBoundingClientRect().width - 2}px`;
