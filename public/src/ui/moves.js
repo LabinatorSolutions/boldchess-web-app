@@ -182,8 +182,7 @@ export function showEvals() {
 		};
 		if (
 			state.historyindex + 1 < state.history.length &&
-			state.history[state.historyindex + 1].length > 3 &&
-			state.history[state.historyindex + 1][3] === state.curmoves[i].san
+			state.history[state.historyindex + 1].san === state.curmoves[i].san
 		)
 			node1.style.color = "#64c4db";
 		document.getElementById("moves").appendChild(node1);

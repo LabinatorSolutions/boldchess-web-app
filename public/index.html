@@ -103,10 +103,10 @@
                                     <defs>
                                         <marker id="markerArrow1" markerWidth="13" markerHeight="13" orient="auto"
                                             refX="3" refY="3">
-                                            <path d="M1,1 L1,5 L4,3 Z" style="fill:#000000;"></path>
+                                            <path d="M1,1 L1,5 L4,3 Z" fill="#000000"></path>
                                         </marker>
                                     </defs>
-                                    <line style="stroke:#000000; stroke-width:6; marker-end:url(#markerArrow1);" y2="0"
+                                    <line stroke="#000000" stroke-width="6" marker-end="url(#markerArrow1)" y2="0"
                                         y1="0" x1="0" x2="0"></line>
                                 </svg>
                             </div>
@@ -118,7 +118,7 @@
                                             <path d="M1,1 L1,5 L4,3 Z"></path>
                                         </marker>
                                     </defs>
-                                    <line style="stroke-width:6; marker-end:url(#markerArrow2);" y2="0" y1="0" x1="0"
+                                    <line stroke-width="6" marker-end="url(#markerArrow2)" y2="0" y1="0" x1="0"
                                         x2="0"></line>
                                 </svg>
                             </div>
@@ -130,7 +130,7 @@
                                             <path d="M1,1 L1,5 L4,3 Z"></path>
                                         </marker>
                                     </defs>
-                                    <line style="stroke-width:5; marker-end:url(#markerArrow3);" y2="0" y1="0" x1="0"
+                                    <line stroke-width="5" marker-end="url(#markerArrow3)" y2="0" y1="0" x1="0"
                                         x2="0"></line>
                                 </svg>
                             </div>
@@ -240,7 +240,7 @@
                     <canvas id="graph">Your browser does not support the HTML5 canvas tag.</canvas>
                 </div>
             </div>
-            <div class="box" id="wStatic" style="display:none;">
+            <div class="box" id="wStatic" hidden>
                 <div id="staticInfo" class="boxTop">Static Evaluation</div>
                 <div id="staticHeader">
                     <div class="group">Group</div>
@@ -250,26 +250,11 @@
                 </div>
                 <div id="static" class="boxMid"></div>
             </div>
-            <div class="box" id="wEdit" style="display:none;">
+            <div class="box" id="wEdit" hidden>
                 <div class="boxTop">Edit tools</div>
                 <div id="editWrapperOuter" class="boxMid">
                     <div id="editWrapper">
-                        <div class="cb">
-                            <div style="left: 0px; top: 0px;" class="l S"></div>
-                            <div style="left: 40px; top: 0px;" class="d p"></div>
-                            <div style="left: 80px; top: 0px;" class="l n"></div>
-                            <div style="left: 120px; top: 0px;" class="d b"></div>
-                            <div style="left: 160px; top: 0px;" class="l r"></div>
-                            <div style="left: 200px; top: 0px;" class="d q"></div>
-                            <div style="left: 240px; top: 0px;" class="l k"></div>
-                            <div style="left: 0px; top: 40px;" class="d -"></div>
-                            <div style="left: 40px; top: 40px;" class="l P"></div>
-                            <div style="left: 80px; top: 40px;" class="d N"></div>
-                            <div style="left: 120px; top: 40px;" class="l B"></div>
-                            <div style="left: 160px; top: 40px;" class="d R"></div>
-                            <div style="left: 200px; top: 40px;" class="l Q"></div>
-                            <div style="left: 240px; top: 40px;" class="d K"></div>
-                        </div>
+                        <div class="cb"></div>
                     </div>
                 </div>
             </div>

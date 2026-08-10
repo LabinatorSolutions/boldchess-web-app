@@ -19,9 +19,8 @@ export function setArrow(on) {
 export function repaintLastMoveArrow() {
 	requestAnimationFrame(() => {
 		const lastmove =
-			getCurFEN() === state.history[state.historyindex][0] &&
-			state.history[state.historyindex].length > 2
-				? state.history[state.historyindex][2]
+			getCurFEN() === state.history[state.historyindex].fen
+				? state.history[state.historyindex].move
 				: null;
 		if (lastmove != null) {
 			const elem = document.getElementById("arrowWrapper2");

@@ -15,12 +15,11 @@ export function getGraphPointData(i) {
 	if (
 		i >= 0 &&
 		i < state.history.length &&
-		state.history[i].length >= 2 &&
-		state.history[i][1] != null &&
-		state.history[i][1].score != null
+		state.history[i].evaluation != null &&
+		state.history[i].evaluation.score != null
 	) {
-		black = state.history[i][1].black;
-		e = state.history[i][1].score / 100;
+		black = state.history[i].evaluation.black;
+		e = state.history[i].evaluation.score / 100;
 		if (black) e = -e;
 		if ((e || 0) > 10) e = 10;
 		else if ((e || 0) < -10) e = -10;
@@ -34,10 +33,9 @@ export function getGraphPointColor(i) {
 	const black =
 		i >= 0 &&
 		i < state.history.length &&
-		state.history[i].length >= 2 &&
-		state.history[i][1] != null &&
-		state.history[i][1].score != null &&
-		state.history[i][1].black;
+		state.history[i].evaluation != null &&
+		state.history[i].evaluation.score != null &&
+		state.history[i].evaluation.black;
 	const lost = laste == null || e == null ? 0 : black ? laste - e : e - laste;
 	return lost <= 1.0 ? "#008800" : lost <= 3.0 ? "#bb8800" : "#bb0000";
 }
@@ -47,14 +45,16 @@ export function showGraphTooltip(i, event) {
 		i >= 0 &&
 		i < state.history.length &&
 		state.history[i] != null &&
-		state.history[i].length > 3 &&
-		state.history[i][3] != null
+		state.history[i].san != null
 	) {
-		const pos = parseFEN(state.history[i][0]);
-		let evalText = state.history[i][3];
-		if (state.history[i][1] != null && state.history[i][1].score != null) {
-			let e = state.history[i][1].score;
-			if (state.history[i][1].black) e = -e;
+		const pos = parseFEN(state.history[i].fen);
+		let evalText = state.history[i].san;
+		if (
+			state.history[i].evaluation != null &&
+			state.history[i].evaluation.score != null
+		) {
+			let e = state.history[i].evaluation.score;
+			if (state.history[i].evaluation.black) e = -e;
 			evalText += ` ${getEvalText(e, true)}`;
 		}
 		updateTooltip(

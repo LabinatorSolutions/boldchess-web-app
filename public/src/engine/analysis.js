@@ -14,18 +14,10 @@ import { updateTooltip } from "../ui/tooltip.js";
 import { ensurePlayEngine } from "./engines.js";
 
 export function addHistoryEval(index, score, depth, move) {
-	if (
-		state.history[index].length < 2 ||
-		state.history[index][1] == null ||
-		(state.history[index][1] != null && state.history[index][1].depth < depth)
-	) {
-		const black = state.history[index][0].indexOf(" b ") > 0;
-		const ei = { score: score, depth: depth, black: black, move: move };
-		if (state.history[index].length >= 2) state.history[index][1] = ei;
-		else {
-			state.history[index].push(ei);
-			state.history[index].push(null);
-		}
+	const entry = state.history[index];
+	if (entry.evaluation == null || entry.evaluation.depth < depth) {
+		const black = entry.fen.indexOf(" b ") > 0;
+		entry.evaluation = { score: score, depth: depth, black: black, move: move };
 		repaintGraph();
 		requestInfoUpdate();
 	}
@@ -99,7 +91,7 @@ export function evalNext() {
 	}
 	if (
 		state.curmoves.length > 0 &&
-		state.history[state.historyindex][0] === getCurFEN()
+		state.history[state.historyindex].fen === getCurFEN()
 	)
 		addHistoryEval(
 			state.historyindex,
@@ -109,12 +101,10 @@ export function evalNext() {
 		);
 	for (let i = state.history.length - 1; i >= 0; i--) {
 		if (
-			state.history[i].length < 2 ||
-			state.history[i][1] == null ||
-			(state.history[i][1] != null &&
-				state.history[i][1].depth < state.analysisEngine.depth - 1)
+			state.history[i].evaluation == null ||
+			state.history[i].evaluation.depth < state.analysisEngine.depth - 1
 		) {
-			const curpos = state.history[i][0];
+			const curpos = state.history[i].fen;
 			state.analysisEngine.score = null;
 			if (!state.analysisEngine.waiting) return;
 			if (checkPosition(parseFEN(curpos)).length > 0) {
@@ -124,7 +114,7 @@ export function evalNext() {
 				state.analysisEngine.waiting = false;
 				state.analysisEngine.eval(curpos, function done(str) {
 					state.analysisEngine.waiting = true;
-					if (i >= state.history.length || state.history[i][0] !== curpos)
+					if (i >= state.history.length || state.history[i].fen !== curpos)
 						return;
 					if (state.analysisEngine.score != null) {
 						const m = str.match(/^bestmove\s(\S+)(?:\sponder\s(\S+))?/);
@@ -259,7 +249,7 @@ export function evalAll() {
 					state.analysisEngine.score,
 					state.analysisEngine.depth - 1,
 				);
-				if (state.history[state.historyindex][0] === fen)
+				if (state.history[state.historyindex].fen === fen)
 					addHistoryEval(
 						state.historyindex,
 						state.analysisEngine.score,
@@ -272,7 +262,7 @@ export function evalAll() {
 		function info(depth, score, pv) {
 			if (fen !== getCurFEN() || depth <= 10) return;
 			applyEval(pv[0], score, depth - 1);
-			if (state.history[state.historyindex][0] === fen)
+			if (state.history[state.historyindex].fen === fen)
 				addHistoryEval(
 					state.historyindex,
 					score,

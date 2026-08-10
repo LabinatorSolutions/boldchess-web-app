@@ -24,7 +24,7 @@ export function repaintStatic() {
 		while (elem.firstChild) elem.removeChild(elem.firstChild);
 		const staticEvalListLast =
 			state.historyindex > 0
-				? getStaticEvalList(parseFEN(state.history[state.historyindex - 1][0]))
+				? getStaticEvalList(parseFEN(state.history[state.historyindex - 1].fen))
 				: null;
 		let staticEvalList = getStaticEvalList(pos),
 			total = 0,

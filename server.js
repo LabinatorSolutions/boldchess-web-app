@@ -36,10 +36,12 @@ if (process.env.NODE_ENV !== "test") app.use(morgan("combined"));
 // Compression middleware
 app.use(compression());
 
-// Rate limiting middleware
+// Rate limiting middleware. The smoke test loads the whole app twice from one
+// address, which is more requests than a real visitor makes in a window, so it
+// runs with a limit that does not cut the second page load short.
 const limiter = rateLimit({
 	windowMs: 15 * 60 * 1000, // 15 minutes
-	max: 100, // Limit each IP to 100 requests per windowMs
+	max: process.env.NODE_ENV === "test" ? 1000 : 100, // per IP per window
 });
 app.use(limiter);
 

@@ -14,12 +14,14 @@
 // Content-Security-Policy directives.
 // 'unsafe-eval' and blob: are required by the Stockfish WASM engine, which
 // compiles WebAssembly and runs from a blob-backed Web Worker.
-// script-src has no 'unsafe-inline': the page carries no inline script.
-// style-src still needs it for the inline style attributes in index.html.
+// Neither script-src nor style-src carries 'unsafe-inline': the page has no
+// inline script and no style attributes in the markup. style-src does not
+// restrict styles set from JavaScript, which is how the board, the arrows and
+// the edit palette are positioned.
 const cspDirectives = {
 	"default-src": ["'self'"],
 	"script-src": ["'self'", "'unsafe-eval'", "blob:"],
-	"style-src": ["'self'", "'unsafe-inline'"],
+	"style-src": ["'self'"],
 	"img-src": ["'self'", "data:"],
 	"connect-src": ["'self'", "blob:"],
 	"font-src": ["'self'", "data:"],

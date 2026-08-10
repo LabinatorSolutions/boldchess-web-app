@@ -21,6 +21,7 @@ import {
 } from "./src/input/mouse.js";
 import { state } from "./src/state.js";
 import { doFlip, showBoard } from "./src/ui/board.js";
+import { buildEditPalette } from "./src/ui/edit-palette.js";
 import {
 	graphMouseDown,
 	graphMouseMove,
@@ -42,6 +43,22 @@ import { updateTooltip } from "./src/ui/tooltip.js";
 // The chess rules do not know about the UI, so hand them the promotion piece
 // the player picked in the toolbar.
 setDefaultPromotionPiece(getPromotionPiece);
+
+// Markup that index.html cannot carry, because CSP's style-src no longer allows
+// inline style attributes. This runs at module evaluation, before the
+// DOMContentLoaded handler below can open the Edit panel.
+//
+// The two panels that start closed are marked `hidden` so they never paint;
+// that is swapped here for the inline display the rest of the code expects,
+// since showHideWindow and setupBoxes both read `style.display` to decide which
+// way to toggle a panel. The palette squares are positioned by inline left/top
+// for the same reason - the edit handlers read those values back.
+for (const id of ["wStatic", "wEdit"]) {
+	const box = document.getElementById(id);
+	box.removeAttribute("hidden");
+	box.style.display = "none";
+}
+buildEditPalette();
 
 document.addEventListener("DOMContentLoaded", () => {
 	try {

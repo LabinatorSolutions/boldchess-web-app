@@ -192,8 +192,8 @@ export function showBoard(noeval, refreshhistory, keepcontent) {
 			refreshMoves();
 			if (refreshhistory) {
 				for (let i = 0; i < state.history.length; i++) {
-					if (state.history[i].length > 1 && state.history[i][1] != null)
-						state.history[i][1].depth = -1;
+					if (state.history[i].evaluation != null)
+						state.history[i].evaluation.depth = -1;
 				}
 			}
 			scrollReset("Moves");
@@ -227,14 +227,11 @@ export function updateInfo() {
 		state.history.length +
 		" - Last Move: ";
 
-	if (
-		state.history[state.historyindex].length > 3 &&
-		state.history[state.historyindex][3] != null
-	) {
-		const pos2 = parseFEN(state.history[state.historyindex][0]);
+	if (state.history[state.historyindex].san != null) {
+		const pos2 = parseFEN(state.history[state.historyindex].fen);
 		positionInfoText +=
 			(pos2.w ? `${pos2.m[1] - 1}... ` : `${pos2.m[1]}. `) +
-			state.history[state.historyindex][3];
+			state.history[state.historyindex].san;
 	} else positionInfoText += "-";
 
 	const movesInfoText =
@@ -261,7 +258,7 @@ export function updateInfo() {
 		mn = null;
 
 	for (let i = 0; i < state.history.length; i++) {
-		mn = parseMoveNumber(state.history[i][0]);
+		mn = parseMoveNumber(state.history[i].fen);
 		if (mn !== lastmn) {
 			const span1 = document.createElement("span");
 			setElemText(span1, `${mn}. `);
@@ -269,10 +266,7 @@ export function updateInfo() {
 			historyFragment.appendChild(span1);
 			lastmn = mn;
 		}
-		const san =
-			state.history[i].length > 3 && state.history[i][3] != null
-				? state.history[i][3]
-				: "\u2605";
+		const san = state.history[i].san != null ? state.history[i].san : "\u2605";
 		const span2 = document.createElement("span");
 		setElemText(span2, san);
 		span2.className = `movelink${i === state.historyindex ? " selected" : ""}`;

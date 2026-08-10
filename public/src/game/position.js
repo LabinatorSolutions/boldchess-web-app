@@ -30,7 +30,7 @@ export function isThreefoldRepetition(fen) {
 	const pos = getFENPos(fen || getCurFEN());
 	let count = 0;
 	for (let i = 0; i < state.history.length; i++) {
-		if (getFENPos(state.history[i][0]) === pos) count++;
+		if (getFENPos(state.history[i].fen) === pos) count++;
 	}
 	// If the current position is not yet in history (depends on call timing),
 	// we might need to add 1. However, typically history is updated on move.

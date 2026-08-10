@@ -5,7 +5,7 @@
 			"headers": [
 				{
 					"key": "Content-Security-Policy",
-					"value": "default-src 'self'; script-src 'self' 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' blob:; font-src 'self' data:; object-src 'none'; worker-src 'self' blob:; upgrade-insecure-requests"
+					"value": "default-src 'self'; script-src 'self' 'unsafe-eval' blob:; style-src 'self'; img-src 'self' data:; connect-src 'self' blob:; font-src 'self' data:; object-src 'none'; worker-src 'self' blob:; upgrade-insecure-requests"
 				},
 				{
 					"key": "Cross-Origin-Embedder-Policy",

@@ -12,6 +12,18 @@
 
 import { START } from "./config.js";
 
+/**
+ * One ply of the game.
+ *
+ * `evaluation` is the engine's latest result for this position - an object with
+ * `score`, `black` and `depth`, filled in by the analysis loop long after the
+ * entry is created. `move` and `san` say how the position was reached and stay
+ * null for the first entry, for positions set up by hand and for a FEN jump.
+ */
+export function historyEntry(fen, evaluation = null, move = null, san = null) {
+	return { fen, evaluation, move, san };
+}
+
 export const state = {
 	// Engines
 	/** Stockfish instance used for background analysis. */
@@ -22,9 +34,12 @@ export const state = {
 	userUciEloRating: 2000,
 
 	// Game history
-	/** One entry per ply: [fen, move, san, ...evaluation]. */
-	history: [[START]],
-	/** Snapshot of the main line while browsing a variation. */
+	/** One `historyEntry` per ply. */
+	history: [historyEntry(START)],
+	/**
+	 * Snapshot of the mainline while browsing a variation, as
+	 * `{ index, entries }`, or null when there is nothing to revert to.
+	 */
 	history2: null,
 	/** Index of the position currently shown. */
 	historyindex: 0,

@@ -8,51 +8,14 @@
  */
 
 import { beforeAll, expect, test } from "bun:test";
-
-function stubDom() {
-	const location = { href: "http://localhost/" };
-	const listeners = [];
-	const element = {
-		style: {},
-		children: [],
-		setAttribute() {},
-		getAttribute: () => null,
-		appendChild() {},
-		addEventListener() {},
-		getBoundingClientRect: () => ({ top: 0, left: 0, width: 0, height: 0 }),
-	};
-	const document = {
-		location,
-		body: element,
-		addEventListener: (type, fn) => listeners.push([type, fn]),
-		getElementById: () => element,
-		querySelector: () => element,
-		createElement: () => element,
-	};
-	const store = new Map();
-	globalThis.document = document;
-	globalThis.location = location;
-	globalThis.navigator = { userAgent: "node" };
-	globalThis.localStorage = {
-		getItem: (key) => (store.has(key) ? store.get(key) : null),
-		setItem: (key, value) => store.set(key, String(value)),
-		removeItem: (key) => store.delete(key),
-	};
-	globalThis.window = {
-		location,
-		document,
-		addEventListener() {},
-		setInterval: () => 0,
-		setTimeout: () => 0,
-		localStorage: globalThis.localStorage,
-	};
-	return { listeners };
-}
+import { installDomStub } from "./dom-stub.js";
 
 let loaded;
 
 beforeAll(() => {
-	stubDom();
+	const dom = installDomStub();
+	// main.js fills the edit palette into this container at module evaluation.
+	dom.getElementById("editWrapper").appendChild(dom.createElement("DIV"));
 });
 
 test("the client module graph loads under module strict mode", async () => {

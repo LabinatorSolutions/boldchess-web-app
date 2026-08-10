@@ -151,6 +151,26 @@ async function main() {
 		})`),
 	);
 
+	// The edit palette and the arrow markers are built without style attributes
+	// in the markup, because CSP's style-src does not allow them. Check that the
+	// palette is there and still carries the inline offsets the edit handlers
+	// read back, and that the arrow line kept its presentation attributes.
+	const palette = JSON.parse(
+		await evaluate(`JSON.stringify((() => {
+			const squares = Array.from(
+				document.getElementById("editWrapper").children[0].children,
+			);
+			return {
+				count: squares.length,
+				offsets: squares.map((d) => d.style.left + "/" + d.style.top).join(" "),
+				classes: squares.map((d) => d.className).join(" "),
+				strokeWidth: getComputedStyle(
+					document.querySelector("#arrowWrapper1 line"),
+				).strokeWidth,
+			};
+		})())`),
+	);
+
 	// Board squares are absolutely positioned inside a zero-height container,
 	// so a square's screen position comes from its own element, not from the
 	// board's box.
@@ -219,6 +239,11 @@ async function main() {
 	await sleep(400);
 
 	// Panels that only render on demand.
+	// Run the window-bar handler directly: it is the real showHideWindow path,
+	// and a synthesized click on the bar does not always land in headless mode.
+	await evaluate(
+		`document.getElementById("wbEdit").onclick.call(document.getElementById("wbEdit"))`,
+	);
 	await evaluate(`document.getElementById("wStatic").style.display = ""`);
 	await clickAt(centerOfElement("buttonStaticSortByChange"));
 	await clickAt(centerOfElement("buttonMovesPv"));
@@ -227,6 +252,7 @@ async function main() {
 	const afterInteraction = JSON.parse(
 		await evaluate(`JSON.stringify({
 			squares: document.getElementById("chessboard1").children.length,
+			editOpen: document.getElementById("wEdit").style.display !== "none",
 		})`),
 	);
 
@@ -259,6 +285,22 @@ async function main() {
 			afterReload.squares === 64,
 		],
 		["move list still populated after reload", afterReload.moves > 0],
+		["edit palette built with 14 squares", palette.count === 14],
+		[
+			"palette squares carry the offsets the edit handlers read",
+			palette.offsets ===
+				[
+					"0px/0px 40px/0px 80px/0px 120px/0px 160px/0px 200px/0px 240px/0px",
+					"0px/40px 40px/40px 80px/40px 120px/40px 160px/40px 200px/40px 240px/40px",
+				].join(" "),
+		],
+		[
+			"palette squares carry the piece classes",
+			palette.classes ===
+				"l S d p l n d b l r d q l k d - l P d N l B d R l Q d K",
+		],
+		["arrow line keeps its stroke width", palette.strokeWidth === "6px"],
+		["edit panel opens from the window bar", afterInteraction.editOpen],
 		["no console errors", errors.length === 0],
 	];
 
