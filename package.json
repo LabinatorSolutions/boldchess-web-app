@@ -30,8 +30,6 @@
 		"url": "git+https://github.com/LabinatorSolutions/boldchess-web-app.git"
 	},
 	"dependencies": {
-		"baseline-browser-mapping": "^2.11.13",
-		"caniuse-lite": "^1.0.30001809",
 		"compression": "^1.8.1",
 		"dotenv": "^17.4.2",
 		"express": "^5.2.1",
