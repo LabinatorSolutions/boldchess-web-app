@@ -1,3 +1,23 @@
+/* Design tokens
+ *
+ * The chrome palette in one place. The board colour schemes further down keep
+ * their own literal colours on purpose - each scheme defines a complete set.
+ */
+:root {
+	--bc-ink: #000000;
+	--bc-paper: #ffffff;
+	--bc-surface: #1d1e22;
+	--bc-surface-raised: #333a42;
+	--bc-surface-board: #312e2b;
+	--bc-text-muted: #b1b4bd;
+	--bc-text-bright: #bdcdd6;
+	--bc-accent: #609fb1;
+	--bc-overlay-strong: rgba(255, 255, 255, 0.5);
+	--bc-overlay: rgba(255, 255, 255, 0.25);
+	--bc-overlay-soft: rgba(255, 255, 255, 0.15);
+	--bc-overlay-faint: rgba(255, 255, 255, 0.1);
+}
+
 html,
 body {
 	height: 100%;
@@ -8,8 +28,8 @@ body {
 	font-size: 100%;
 	user-select: none;
 	-moz-user-select: none;
-	background-color: #000000;
-	color: #b1b4bd;
+	background-color: var(--bc-ink);
+	color: var(--bc-text-muted);
 }
 
 ul {
@@ -35,12 +55,12 @@ li {
 }
 
 #logo svg .shp2 {
-	fill: #ffffff;
+	fill: var(--bc-paper);
 }
 
 #logo svg .shp3 {
-	fill: #000000;
-	stroke: #000000;
+	fill: var(--bc-ink);
+	stroke: var(--bc-ink);
 	stroke-linecap: round;
 	stroke-width: 21.9;
 }
@@ -72,7 +92,7 @@ li {
 #container {
 	position: relative;
 	width: 830px;
-	background-color: #000000;
+	background-color: var(--bc-ink);
 	margin: 0 auto;
 	padding: 0;
 	height: 100vh;
@@ -134,7 +154,7 @@ li {
 	border-width: 2px;
 	border-style: solid;
 	border-color: rgba(0, 0, 0, 0.3);
-	background-color: #609fb1;
+	background-color: var(--bc-accent);
 	transform-origin: left top 0px;
 	transform: scale(1);
 }
@@ -151,7 +171,7 @@ li {
 .cb {
 	position: relative;
 	font-size: 14px;
-	color: #000000;
+	color: var(--bc-ink);
 	font-weight: 600;
 	text-align: center;
 }
@@ -203,7 +223,7 @@ li {
 .cb > .l {
 	background: linear-gradient(
 		to bottom right,
-		rgba(255, 255, 255, 0.5),
+		var(--bc-overlay-strong),
 		rgba(255, 255, 255, 0.7)
 	);
 }
@@ -211,8 +231,8 @@ li {
 .cb > .d {
 	background: linear-gradient(
 		to bottom right,
-		rgba(255, 255, 255, 0.15),
-		rgba(255, 255, 255, 0.25)
+		var(--bc-overlay-soft),
+		var(--bc-overlay)
 	);
 }
 
@@ -396,7 +416,7 @@ li {
 	width: 24px;
 	background-repeat: no-repeat;
 	background-position: center;
-	background-color: #000000;
+	background-color: var(--bc-ink);
 }
 
 #materialWrapper > .k {
@@ -469,16 +489,16 @@ li {
 
 #simpleSearch input:hover,
 #simpleSearch input:focus {
-	background-color: #1d1e22;
+	background-color: var(--bc-surface);
 }
 
 #simpleSearch {
 	display: block;
 	position: relative;
-	color: #b1b4bd;
-	background-color: #1d1e22;
-	border-left: 1px solid #1d1e22;
-	border-right: 1px solid #1d1e22;
+	color: var(--bc-text-muted);
+	background-color: var(--bc-surface);
+	border-left: 1px solid var(--bc-surface);
+	border-right: 1px solid var(--bc-surface);
 	border-radius: 2px;
 }
 
@@ -487,7 +507,7 @@ li {
 	padding: 0;
 	border: 0;
 	background-color: transparent;
-	color: #b1b4bd;
+	color: var(--bc-text-muted);
 }
 
 #simpleSearch #searchInput {
@@ -552,7 +572,7 @@ li {
 	position: absolute;
 	top: 2px;
 	right: 1px;
-	background-color: #1d1e22;
+	background-color: var(--bc-surface);
 	width: 16px;
 	height: 16px;
 	padding: 2px 4px 6px 4px;
@@ -561,15 +581,15 @@ li {
 }
 
 #buttonGo:hover {
-	background-color: rgba(255, 255, 255, 0.1);
+	background-color: var(--bc-overlay-faint);
 }
 
 #buttonGo {
-	fill: #ffffff;
+	fill: var(--bc-paper);
 }
 
 .down {
-	background-color: rgba(255, 255, 255, 0.1);
+	background-color: var(--bc-overlay-faint);
 }
 
 .on,
@@ -584,19 +604,19 @@ li {
 }
 
 .on:hover {
-	background-color: rgba(255, 255, 255, 0.1);
+	background-color: var(--bc-overlay-faint);
 	cursor: pointer;
 }
 
 .off svg {
 	position: absolute;
-	fill: #ffffff;
+	fill: var(--bc-paper);
 	opacity: 0.25;
 }
 
 .on svg {
 	position: absolute;
-	fill: #ffffff;
+	fill: var(--bc-paper);
 	opacity: 0.6;
 }
 
@@ -610,7 +630,7 @@ li {
 }
 
 #buttonFlip:hover {
-	background-color: rgba(255, 255, 255, 0.1);
+	background-color: var(--bc-overlay-faint);
 }
 
 #buttonStm {
@@ -628,17 +648,17 @@ li {
 }
 
 #buttonStm:hover {
-	background-color: rgba(255, 255, 255, 0.1);
+	background-color: var(--bc-overlay-faint);
 }
 
 #buttonStm.white div,
 #buttonStm.white:hover div {
-	background-color: #ffffff;
+	background-color: var(--bc-paper);
 }
 
 #buttonStm.black div,
 #buttonStm.black:hover div {
-	background-color: #000000;
+	background-color: var(--bc-ink);
 }
 
 #buttonStaticSortByValue,
@@ -656,12 +676,12 @@ li {
 /* Status bar */
 
 #tooltip {
-	background-color: #1d1e22;
-	color: #b1b4bd;
+	background-color: var(--bc-surface);
+	color: var(--bc-text-muted);
 	height: 17px;
 	overflow: hidden;
 	border-style: solid;
-	border-color: #000000;
+	border-color: var(--bc-ink);
 	border-width: 1px;
 	border-radius: 3px;
 	font-size: 11px;
@@ -692,8 +712,8 @@ li {
 	color: white;
 	display: inline-block;
 	padding: 4px 8px;
-	border: 1px solid #000000;
-	box-shadow: inset 0 0 8px #000000;
+	border: 1px solid var(--bc-ink);
+	box-shadow: inset 0 0 8px var(--bc-ink);
 }
 
 .line {
@@ -793,8 +813,8 @@ li {
 	position: absolute;
 	left: 0;
 	right: 0;
-	border-top: solid 1px #000000;
-	background-color: #000000;
+	border-top: solid 1px var(--bc-ink);
+	background-color: var(--bc-ink);
 	white-space: nowrap;
 	overflow: hidden;
 	min-width: 281px;
@@ -849,11 +869,11 @@ li {
 #history .movelink.selected,
 #history .movelink.selected:hover {
 	color: #e1e2e6;
-	background-color: #333a42;
+	background-color: var(--bc-surface-raised);
 }
 
 #history .movelink:hover {
-	background-color: #333a42;
+	background-color: var(--bc-surface-raised);
 }
 
 #history .movelink.selected:hover {
@@ -865,7 +885,7 @@ li {
 #editWrapperOuter {
 	display: block;
 	font-weight: 600;
-	color: #ffffff;
+	color: var(--bc-paper);
 	background-color: #697686;
 	border: 0px none;
 	bottom: 0;
@@ -891,7 +911,7 @@ li {
 #editWrapper > .cb > .l {
 	background: linear-gradient(
 		to bottom right,
-		rgba(255, 255, 255, 0.5),
+		var(--bc-overlay-strong),
 		rgba(255, 255, 255, 0.7)
 	);
 }
@@ -899,8 +919,8 @@ li {
 #editWrapper > .cb > .d {
 	background: linear-gradient(
 		to bottom right,
-		rgba(255, 255, 255, 0.15),
-		rgba(255, 255, 255, 0.25)
+		var(--bc-overlay-soft),
+		var(--bc-overlay)
 	);
 }
 
@@ -911,7 +931,7 @@ li {
 	line-height: 22px;
 	font-size: 14px;
 	font-weight: 600;
-	color: #ffffff;
+	color: var(--bc-paper);
 	overflow: hidden;
 }
 
@@ -939,8 +959,8 @@ li {
 	position: absolute;
 	left: 0;
 	right: 0;
-	border-top: solid 1px #000000;
-	background-color: #000000;
+	border-top: solid 1px var(--bc-ink);
+	background-color: var(--bc-ink);
 	white-space: nowrap;
 	overflow: hidden;
 }
@@ -1003,8 +1023,8 @@ li {
 	position: absolute;
 	left: 0;
 	right: 0;
-	border-top: solid 1px #000000;
-	background-color: #000000;
+	border-top: solid 1px var(--bc-ink);
+	background-color: var(--bc-ink);
 	white-space: nowrap;
 	overflow: hidden;
 }
@@ -1059,20 +1079,20 @@ li {
 }
 
 #lczero .loadButton {
-	background-color: #1d1e22;
+	background-color: var(--bc-surface);
 	cursor: pointer;
 	margin: 12px 16px;
-	color: rgba(255, 255, 255, 0.5);
+	color: var(--bc-overlay-strong);
 	display: inline-block;
 	padding: 4px 8px;
-	border: 1px solid #000000;
-	box-shadow: inset 0 0 8px #000000;
+	border: 1px solid var(--bc-ink);
+	box-shadow: inset 0 0 8px var(--bc-ink);
 	white-space: nowrap;
 }
 
 #lczero .wait {
 	margin: 12px 16px;
-	color: rgba(255, 255, 255, 0.5);
+	color: var(--bc-overlay-strong);
 	display: inline-block;
 	padding: 4px 8px;
 	border: 1px solid transparent;
@@ -1080,7 +1100,7 @@ li {
 }
 
 #lczero .loadButton:hover {
-	background-color: #333a42;
+	background-color: var(--bc-surface-raised);
 }
 
 /* Arrow */
@@ -1090,7 +1110,8 @@ li {
 	position: absolute;
 	pointer-events: none;
 	display: none;
-	filter: drop-shadow(-1px -1px 1px white) drop-shadow(1px 1px 1px #000000);
+	filter: drop-shadow(-1px -1px 1px white)
+		drop-shadow(1px 1px 1px var(--bc-ink));
 	opacity: 0.5;
 	z-index: 4;
 }
@@ -1117,14 +1138,14 @@ li {
 
 /* Menu */
 #menu {
-	background-color: #1d1e22;
-	border: solid 1px #000000;
+	background-color: var(--bc-surface);
+	border: solid 1px var(--bc-ink);
 	position: absolute;
 	box-shadow: 0 0 4px hsla(0, 0%, 0%, 0.2);
 	padding-top: 6px;
 	padding-bottom: 6px;
 	font-size: 12px;
-	color: rgba(255, 255, 255, 0.5);
+	color: var(--bc-overlay-strong);
 	z-index: 15;
 	top: 0;
 	left: 0;
@@ -1134,7 +1155,7 @@ li {
 	height: 1px;
 	margin-top: 6px;
 	margin-bottom: 6px;
-	background-color: #000000;
+	background-color: var(--bc-ink);
 }
 
 .menuItem {
@@ -1150,11 +1171,11 @@ li {
 }
 
 .menuItem:hover {
-	background-color: #333a42;
+	background-color: var(--bc-surface-raised);
 }
 
 .menuItem.disabled {
-	color: rgba(255, 255, 255, 0.25);
+	color: var(--bc-overlay);
 	cursor: default;
 }
 
@@ -1165,7 +1186,7 @@ li {
 .menuItem span.key {
 	float: right;
 	text-align: right;
-	color: rgba(255, 255, 255, 0.25);
+	color: var(--bc-overlay);
 	width: 47px;
 }
 
@@ -1215,7 +1236,7 @@ li {
 #buttonUciEloMinus:hover,
 #buttonColorPrev:hover,
 #buttonColorNext:hover {
-	background-color: #333a42;
+	background-color: var(--bc-surface-raised);
 }
 
 #buttonEnginePlus,
@@ -1243,7 +1264,7 @@ li {
 
 #buttonEngineValue:hover,
 #buttonUciEloValue:hover {
-	background-color: #333a42;
+	background-color: var(--bc-surface-raised);
 }
 
 #icolor {
@@ -1275,7 +1296,7 @@ li {
 }
 
 #icolor > div > div.l {
-	background-color: #bdcdd6;
+	background-color: var(--bc-text-bright);
 }
 
 #icolor > div > div.d {

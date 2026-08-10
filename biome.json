@@ -7,7 +7,7 @@
 	},
 	"files": {
 		"ignoreUnknown": false,
-		"includes": ["**", "!public/engine", "!public/libs", "!**/*.svg"]
+		"includes": ["**", "!public/engine", "!**/*.svg"]
 	},
 	"formatter": {
 		"enabled": true,

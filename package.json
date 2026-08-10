@@ -4,10 +4,13 @@
 	"description": "The official chess web app of BoldChess.com",
 	"main": "server.js",
 	"scripts": {
-		"ci": "biome ci .",
+		"ci": "node scripts/generate-headers.js --check && biome ci . && bun test",
 		"start": "node server.js",
-		"build": "echo 'No build required'",
-		"test": "echo 'No test specified' && exit 0",
+		"build": "node scripts/generate-headers.js",
+		"test": "bun test",
+		"smoke": "node scripts/browser-smoke.js",
+		"test:deep": "PERFT_DEEP=1 bun test",
+		"test:update": "UPDATE_SNAPSHOTS=1 bun test",
 		"lint": "biome check .",
 		"lint:fix": "biome check --write .",
 		"format": "biome format --write .",
@@ -27,15 +30,10 @@
 		"url": "git+https://github.com/LabinatorSolutions/boldchess-web-app.git"
 	},
 	"dependencies": {
-		"baseline-browser-mapping": "^2.11.13",
-		"caniuse-lite": "^1.0.30001809",
-		"cheerio": "^1.2.0",
 		"compression": "^1.8.1",
-		"cors": "^2.8.6",
 		"dotenv": "^17.4.2",
 		"express": "^5.2.1",
 		"express-rate-limit": "^8.6.2",
-		"express-session": "^1.19.0",
 		"helmet": "^8.3.0",
 		"morgan": "^1.11.0"
 	},

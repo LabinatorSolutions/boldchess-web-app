@@ -1,0 +1,2222 @@
+{
+	"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1": [
+		{
+			"group": "Imbalance",
+			"elem": "imbalance",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Imbalance",
+			"elem": "bishop_pair",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Initiative",
+			"elem": "initiative",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "King",
+			"elem": "pawnless_flank",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "King",
+			"elem": "shelter_strength",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "King",
+			"elem": "shelter_storm",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "King",
+			"elem": "king_danger",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "King",
+			"elem": "close_enemies",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "King",
+			"elem": "king_pawn_distance",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "King",
+			"elem": "endgame_shelter",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Material",
+			"elem": "piece_value_bonus",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Material",
+			"elem": "psqt_bonus",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Mobility",
+			"elem": "mobility_bonus",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Passed pawns",
+			"elem": "passed_block",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Passed pawns",
+			"elem": "passed_file",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Passed pawns",
+			"elem": "passed_rank",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Passed pawns",
+			"elem": "king_proximity",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pawns",
+			"elem": "isolated",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pawns",
+			"elem": "backward",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pawns",
+			"elem": "doubled",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pawns",
+			"elem": "connected",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pawns",
+			"elem": "weak_unopposed_pawn",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pawns",
+			"elem": "double_attacked_pawn",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "minor_behind_pawn",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "bishop_pawns",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "rook_on_pawn",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "rook_on_file",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "trapped_rook",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "weak_queen",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "king_protector",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "long_diagonal_bishop",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "outpost_total",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Space",
+			"elem": "space",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "threat_safe_pawn",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "minor_threat",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "rook_threat",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "hanging",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "king_threat",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "pawn_push_threat",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "rank_threat",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "slider_on_queen",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "knight_on_queen",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "restricted",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Tempo",
+			"elem": "tempo",
+			"item": [28, 28, 28]
+		}
+	],
+	"rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2": [
+		{
+			"group": "Imbalance",
+			"elem": "imbalance",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Imbalance",
+			"elem": "bishop_pair",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Initiative",
+			"elem": "initiative",
+			"item": [0, 28, 0]
+		},
+		{
+			"group": "King",
+			"elem": "pawnless_flank",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "King",
+			"elem": "shelter_strength",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "King",
+			"elem": "shelter_storm",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "King",
+			"elem": "king_danger",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "King",
+			"elem": "close_enemies",
+			"item": [32, 0, 32]
+		},
+		{
+			"group": "King",
+			"elem": "king_pawn_distance",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "King",
+			"elem": "endgame_shelter",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Material",
+			"elem": "piece_value_bonus",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Material",
+			"elem": "psqt_bonus",
+			"item": [114, 67, 114]
+		},
+		{
+			"group": "Mobility",
+			"elem": "mobility_bonus",
+			"item": [102, 151, 102]
+		},
+		{
+			"group": "Passed pawns",
+			"elem": "passed_block",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Passed pawns",
+			"elem": "passed_file",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Passed pawns",
+			"elem": "passed_rank",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Passed pawns",
+			"elem": "king_proximity",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pawns",
+			"elem": "isolated",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pawns",
+			"elem": "backward",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pawns",
+			"elem": "doubled",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pawns",
+			"elem": "connected",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pawns",
+			"elem": "weak_unopposed_pawn",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pawns",
+			"elem": "double_attacked_pawn",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "minor_behind_pawn",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "bishop_pawns",
+			"item": [-24, -56, -24]
+		},
+		{
+			"group": "Pieces",
+			"elem": "rook_on_pawn",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "rook_on_file",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "trapped_rook",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "weak_queen",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "king_protector",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "long_diagonal_bishop",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "outpost_total",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Space",
+			"elem": "space",
+			"item": [14, 0, 14]
+		},
+		{
+			"group": "Threats",
+			"elem": "threat_safe_pawn",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "minor_threat",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "rook_threat",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "hanging",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "king_threat",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "pawn_push_threat",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "rank_threat",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "slider_on_queen",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "knight_on_queen",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "restricted",
+			"item": [-14, -14, -14]
+		},
+		{
+			"group": "Tempo",
+			"elem": "tempo",
+			"item": [-28, -28, -28]
+		}
+	],
+	"r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 3 3": [
+		{
+			"group": "Imbalance",
+			"elem": "imbalance",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Imbalance",
+			"elem": "bishop_pair",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Initiative",
+			"elem": "initiative",
+			"item": [0, 28, 0]
+		},
+		{
+			"group": "King",
+			"elem": "pawnless_flank",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "King",
+			"elem": "shelter_strength",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "King",
+			"elem": "shelter_storm",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "King",
+			"elem": "king_danger",
+			"item": [10, 13, 10]
+		},
+		{
+			"group": "King",
+			"elem": "close_enemies",
+			"item": [16, 0, 16]
+		},
+		{
+			"group": "King",
+			"elem": "king_pawn_distance",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "King",
+			"elem": "endgame_shelter",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Material",
+			"elem": "piece_value_bonus",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Material",
+			"elem": "psqt_bonus",
+			"item": [37, 36, 37]
+		},
+		{
+			"group": "Mobility",
+			"elem": "mobility_bonus",
+			"item": [-12, -26, -12]
+		},
+		{
+			"group": "Passed pawns",
+			"elem": "passed_block",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Passed pawns",
+			"elem": "passed_file",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Passed pawns",
+			"elem": "passed_rank",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Passed pawns",
+			"elem": "king_proximity",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pawns",
+			"elem": "isolated",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pawns",
+			"elem": "backward",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pawns",
+			"elem": "doubled",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pawns",
+			"elem": "connected",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pawns",
+			"elem": "weak_unopposed_pawn",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pawns",
+			"elem": "double_attacked_pawn",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "minor_behind_pawn",
+			"item": [-18, -3, -18]
+		},
+		{
+			"group": "Pieces",
+			"elem": "bishop_pawns",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "rook_on_pawn",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "rook_on_file",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "trapped_rook",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "weak_queen",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "king_protector",
+			"item": [-21, -24, -21]
+		},
+		{
+			"group": "Pieces",
+			"elem": "long_diagonal_bishop",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "outpost_total",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Space",
+			"elem": "space",
+			"item": [4, 0, 4]
+		},
+		{
+			"group": "Threats",
+			"elem": "threat_safe_pawn",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "minor_threat",
+			"item": [0, 62, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "rook_threat",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "hanging",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "king_threat",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "pawn_push_threat",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "rank_threat",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "slider_on_queen",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "knight_on_queen",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "restricted",
+			"item": [-14, -14, -14]
+		},
+		{
+			"group": "Tempo",
+			"elem": "tempo",
+			"item": [-28, -28, -28]
+		}
+	],
+	"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1": [
+		{
+			"group": "Imbalance",
+			"elem": "imbalance",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Imbalance",
+			"elem": "bishop_pair",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Initiative",
+			"elem": "initiative",
+			"item": [0, -28, 0]
+		},
+		{
+			"group": "King",
+			"elem": "pawnless_flank",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "King",
+			"elem": "shelter_strength",
+			"item": [89, 0, 89]
+		},
+		{
+			"group": "King",
+			"elem": "shelter_storm",
+			"item": [-52, 0, -52]
+		},
+		{
+			"group": "King",
+			"elem": "king_danger",
+			"item": [19, 17, 19]
+		},
+		{
+			"group": "King",
+			"elem": "close_enemies",
+			"item": [40, 0, 40]
+		},
+		{
+			"group": "King",
+			"elem": "king_pawn_distance",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "King",
+			"elem": "endgame_shelter",
+			"item": [0, -82, 0]
+		},
+		{
+			"group": "Material",
+			"elem": "piece_value_bonus",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Material",
+			"elem": "psqt_bonus",
+			"item": [86, 47, 86]
+		},
+		{
+			"group": "Mobility",
+			"elem": "mobility_bonus",
+			"item": [26, -26, 26]
+		},
+		{
+			"group": "Passed pawns",
+			"elem": "passed_block",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Passed pawns",
+			"elem": "passed_file",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Passed pawns",
+			"elem": "passed_rank",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Passed pawns",
+			"elem": "king_proximity",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pawns",
+			"elem": "isolated",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pawns",
+			"elem": "backward",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pawns",
+			"elem": "doubled",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pawns",
+			"elem": "connected",
+			"item": [19, 15, 19]
+		},
+		{
+			"group": "Pawns",
+			"elem": "weak_unopposed_pawn",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pawns",
+			"elem": "double_attacked_pawn",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "minor_behind_pawn",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "bishop_pawns",
+			"item": [-24, -56, -24]
+		},
+		{
+			"group": "Pieces",
+			"elem": "rook_on_pawn",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "rook_on_file",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "trapped_rook",
+			"item": [-47, -4, -47]
+		},
+		{
+			"group": "Pieces",
+			"elem": "weak_queen",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "king_protector",
+			"item": [21, 24, 21]
+		},
+		{
+			"group": "Pieces",
+			"elem": "long_diagonal_bishop",
+			"item": [-45, 0, -45]
+		},
+		{
+			"group": "Pieces",
+			"elem": "outpost_total",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Space",
+			"elem": "space",
+			"item": [90, 0, 90]
+		},
+		{
+			"group": "Threats",
+			"elem": "threat_safe_pawn",
+			"item": [-173, -94, -173]
+		},
+		{
+			"group": "Threats",
+			"elem": "minor_threat",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "rook_threat",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "hanging",
+			"item": [69, 36, 69]
+		},
+		{
+			"group": "Threats",
+			"elem": "king_threat",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "pawn_push_threat",
+			"item": [-48, -39, -48]
+		},
+		{
+			"group": "Threats",
+			"elem": "rank_threat",
+			"item": [13, 0, 13]
+		},
+		{
+			"group": "Threats",
+			"elem": "slider_on_queen",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "knight_on_queen",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "restricted",
+			"item": [-7, -7, -7]
+		},
+		{
+			"group": "Tempo",
+			"elem": "tempo",
+			"item": [28, 28, 28]
+		}
+	],
+	"8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1": [
+		{
+			"group": "Imbalance",
+			"elem": "imbalance",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Imbalance",
+			"elem": "bishop_pair",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Initiative",
+			"elem": "initiative",
+			"item": [0, 35, 33]
+		},
+		{
+			"group": "King",
+			"elem": "pawnless_flank",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "King",
+			"elem": "shelter_strength",
+			"item": [-28, 0, 0]
+		},
+		{
+			"group": "King",
+			"elem": "shelter_storm",
+			"item": [-15, 0, 0]
+		},
+		{
+			"group": "King",
+			"elem": "king_danger",
+			"item": [313, 70, 66]
+		},
+		{
+			"group": "King",
+			"elem": "close_enemies",
+			"item": [-16, 0, 0]
+		},
+		{
+			"group": "King",
+			"elem": "king_pawn_distance",
+			"item": [0, 16, 15]
+		},
+		{
+			"group": "King",
+			"elem": "endgame_shelter",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Material",
+			"elem": "piece_value_bonus",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Material",
+			"elem": "psqt_bonus",
+			"item": [-6, 19, 18]
+		},
+		{
+			"group": "Mobility",
+			"elem": "mobility_bonus",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Passed pawns",
+			"elem": "passed_block",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Passed pawns",
+			"elem": "passed_file",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Passed pawns",
+			"elem": "passed_rank",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Passed pawns",
+			"elem": "king_proximity",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pawns",
+			"elem": "isolated",
+			"item": [-10, -30, -28]
+		},
+		{
+			"group": "Pawns",
+			"elem": "backward",
+			"item": [9, 24, 22]
+		},
+		{
+			"group": "Pawns",
+			"elem": "doubled",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pawns",
+			"elem": "connected",
+			"item": [-33, 0, 0]
+		},
+		{
+			"group": "Pawns",
+			"elem": "weak_unopposed_pawn",
+			"item": [-13, -27, -25]
+		},
+		{
+			"group": "Pawns",
+			"elem": "double_attacked_pawn",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "minor_behind_pawn",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "bishop_pawns",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "rook_on_pawn",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "rook_on_file",
+			"item": [-44, -20, -19]
+		},
+		{
+			"group": "Pieces",
+			"elem": "trapped_rook",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "weak_queen",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "king_protector",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "long_diagonal_bishop",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "outpost_total",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Space",
+			"elem": "space",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "threat_safe_pawn",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "minor_threat",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "rook_threat",
+			"item": [0, 24, 22]
+		},
+		{
+			"group": "Threats",
+			"elem": "hanging",
+			"item": [69, 36, 34]
+		},
+		{
+			"group": "Threats",
+			"elem": "king_threat",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "pawn_push_threat",
+			"item": [-48, -39, -37]
+		},
+		{
+			"group": "Threats",
+			"elem": "rank_threat",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "slider_on_queen",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "knight_on_queen",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "restricted",
+			"item": [7, 7, 6]
+		},
+		{
+			"group": "Tempo",
+			"elem": "tempo",
+			"item": [28, 28, 28]
+		}
+	],
+	"4k3/8/8/8/8/8/8/4K2R w K - 0 1": [
+		{
+			"group": "Imbalance",
+			"elem": "imbalance",
+			"item": [-13, -13, -8]
+		},
+		{
+			"group": "Imbalance",
+			"elem": "bishop_pair",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Initiative",
+			"elem": "initiative",
+			"item": [0, -166, -103]
+		},
+		{
+			"group": "King",
+			"elem": "pawnless_flank",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "King",
+			"elem": "shelter_strength",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "King",
+			"elem": "shelter_storm",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "King",
+			"elem": "king_danger",
+			"item": [19, 17, 10]
+		},
+		{
+			"group": "King",
+			"elem": "close_enemies",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "King",
+			"elem": "king_pawn_distance",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "King",
+			"elem": "endgame_shelter",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Material",
+			"elem": "piece_value_bonus",
+			"item": [1289, 1378, 861]
+		},
+		{
+			"group": "Material",
+			"elem": "psqt_bonus",
+			"item": [-24, -2, -1]
+		},
+		{
+			"group": "Mobility",
+			"elem": "mobility_bonus",
+			"item": [29, 142, 88]
+		},
+		{
+			"group": "Passed pawns",
+			"elem": "passed_block",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Passed pawns",
+			"elem": "passed_file",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Passed pawns",
+			"elem": "passed_rank",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Passed pawns",
+			"elem": "king_proximity",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pawns",
+			"elem": "isolated",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pawns",
+			"elem": "backward",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pawns",
+			"elem": "doubled",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pawns",
+			"elem": "connected",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pawns",
+			"elem": "weak_unopposed_pawn",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pawns",
+			"elem": "double_attacked_pawn",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "minor_behind_pawn",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "bishop_pawns",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "rook_on_pawn",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "rook_on_file",
+			"item": [44, 20, 12]
+		},
+		{
+			"group": "Pieces",
+			"elem": "trapped_rook",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "weak_queen",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "king_protector",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "long_diagonal_bishop",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "outpost_total",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Space",
+			"elem": "space",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "threat_safe_pawn",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "minor_threat",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "rook_threat",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "hanging",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "king_threat",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "pawn_push_threat",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "rank_threat",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "slider_on_queen",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "knight_on_queen",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "restricted",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Tempo",
+			"elem": "tempo",
+			"item": [28, 28, 28]
+		}
+	],
+	"8/8/8/4k3/8/8/4K3/8 w - - 0 1": [
+		{
+			"group": "Imbalance",
+			"elem": "imbalance",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Imbalance",
+			"elem": "bishop_pair",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Initiative",
+			"elem": "initiative",
+			"item": [0, 38, 0]
+		},
+		{
+			"group": "King",
+			"elem": "pawnless_flank",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "King",
+			"elem": "shelter_strength",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "King",
+			"elem": "shelter_storm",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "King",
+			"elem": "king_danger",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "King",
+			"elem": "close_enemies",
+			"item": [-40, 0, 0]
+		},
+		{
+			"group": "King",
+			"elem": "king_pawn_distance",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "King",
+			"elem": "endgame_shelter",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Material",
+			"elem": "piece_value_bonus",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Material",
+			"elem": "psqt_bonus",
+			"item": [75, -38, 0]
+		},
+		{
+			"group": "Mobility",
+			"elem": "mobility_bonus",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Passed pawns",
+			"elem": "passed_block",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Passed pawns",
+			"elem": "passed_file",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Passed pawns",
+			"elem": "passed_rank",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Passed pawns",
+			"elem": "king_proximity",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pawns",
+			"elem": "isolated",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pawns",
+			"elem": "backward",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pawns",
+			"elem": "doubled",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pawns",
+			"elem": "connected",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pawns",
+			"elem": "weak_unopposed_pawn",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pawns",
+			"elem": "double_attacked_pawn",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "minor_behind_pawn",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "bishop_pawns",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "rook_on_pawn",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "rook_on_file",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "trapped_rook",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "weak_queen",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "king_protector",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "long_diagonal_bishop",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "outpost_total",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Space",
+			"elem": "space",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "threat_safe_pawn",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "minor_threat",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "rook_threat",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "hanging",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "king_threat",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "pawn_push_threat",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "rank_threat",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "slider_on_queen",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "knight_on_queen",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "restricted",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Tempo",
+			"elem": "tempo",
+			"item": [28, 28, 28]
+		}
+	],
+	"6k1/5ppp/8/8/8/8/5PPP/6K1 w - - 0 1": [
+		{
+			"group": "Imbalance",
+			"elem": "imbalance",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Imbalance",
+			"elem": "bishop_pair",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Initiative",
+			"elem": "initiative",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "King",
+			"elem": "pawnless_flank",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "King",
+			"elem": "shelter_strength",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "King",
+			"elem": "shelter_storm",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "King",
+			"elem": "king_danger",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "King",
+			"elem": "close_enemies",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "King",
+			"elem": "king_pawn_distance",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "King",
+			"elem": "endgame_shelter",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Material",
+			"elem": "piece_value_bonus",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Material",
+			"elem": "psqt_bonus",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Mobility",
+			"elem": "mobility_bonus",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Passed pawns",
+			"elem": "passed_block",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Passed pawns",
+			"elem": "passed_file",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Passed pawns",
+			"elem": "passed_rank",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Passed pawns",
+			"elem": "king_proximity",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pawns",
+			"elem": "isolated",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pawns",
+			"elem": "backward",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pawns",
+			"elem": "doubled",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pawns",
+			"elem": "connected",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pawns",
+			"elem": "weak_unopposed_pawn",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pawns",
+			"elem": "double_attacked_pawn",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "minor_behind_pawn",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "bishop_pawns",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "rook_on_pawn",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "rook_on_file",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "trapped_rook",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "weak_queen",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "king_protector",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "long_diagonal_bishop",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "outpost_total",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Space",
+			"elem": "space",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "threat_safe_pawn",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "minor_threat",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "rook_threat",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "hanging",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "king_threat",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "pawn_push_threat",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "rank_threat",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "slider_on_queen",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "knight_on_queen",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "restricted",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Tempo",
+			"elem": "tempo",
+			"item": [28, 28, 28]
+		}
+	],
+	"r1bq1rk1/pp2bppp/2n1pn2/2pp4/3P1B2/2PBPN2/PP1N1PPP/R2Q1RK1 w - - 0 9": [
+		{
+			"group": "Imbalance",
+			"elem": "imbalance",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Imbalance",
+			"elem": "bishop_pair",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Initiative",
+			"elem": "initiative",
+			"item": [0, 28, 0]
+		},
+		{
+			"group": "King",
+			"elem": "pawnless_flank",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "King",
+			"elem": "shelter_strength",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "King",
+			"elem": "shelter_storm",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "King",
+			"elem": "king_danger",
+			"item": [33, 23, 33]
+		},
+		{
+			"group": "King",
+			"elem": "close_enemies",
+			"item": [48, 0, 48]
+		},
+		{
+			"group": "King",
+			"elem": "king_pawn_distance",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "King",
+			"elem": "endgame_shelter",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Material",
+			"elem": "piece_value_bonus",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Material",
+			"elem": "psqt_bonus",
+			"item": [43, 63, 43]
+		},
+		{
+			"group": "Mobility",
+			"elem": "mobility_bonus",
+			"item": [143, 234, 143]
+		},
+		{
+			"group": "Passed pawns",
+			"elem": "passed_block",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Passed pawns",
+			"elem": "passed_file",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Passed pawns",
+			"elem": "passed_rank",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Passed pawns",
+			"elem": "king_proximity",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pawns",
+			"elem": "isolated",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pawns",
+			"elem": "backward",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pawns",
+			"elem": "doubled",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pawns",
+			"elem": "connected",
+			"item": [18, -1, 18]
+		},
+		{
+			"group": "Pawns",
+			"elem": "weak_unopposed_pawn",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pawns",
+			"elem": "double_attacked_pawn",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "minor_behind_pawn",
+			"item": [-18, -3, -18]
+		},
+		{
+			"group": "Pieces",
+			"elem": "bishop_pawns",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "rook_on_pawn",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "rook_on_file",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "trapped_rook",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "weak_queen",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "king_protector",
+			"item": [7, 8, 7]
+		},
+		{
+			"group": "Pieces",
+			"elem": "long_diagonal_bishop",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "outpost_total",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Space",
+			"elem": "space",
+			"item": [-20, 0, -20]
+		},
+		{
+			"group": "Threats",
+			"elem": "threat_safe_pawn",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "minor_threat",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "rook_threat",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "hanging",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "king_threat",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "pawn_push_threat",
+			"item": [-48, -39, -48]
+		},
+		{
+			"group": "Threats",
+			"elem": "rank_threat",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "slider_on_queen",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "knight_on_queen",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "restricted",
+			"item": [-42, -42, -42]
+		},
+		{
+			"group": "Tempo",
+			"elem": "tempo",
+			"item": [28, 28, 28]
+		}
+	],
+	"2kr3r/ppp2ppp/2n1bq2/8/3P4/2N1BN2/PPP2PPP/R2Q1RK1 b - - 4 12": [
+		{
+			"group": "Imbalance",
+			"elem": "imbalance",
+			"item": [169, 169, 166]
+		},
+		{
+			"group": "Imbalance",
+			"elem": "bishop_pair",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Initiative",
+			"elem": "initiative",
+			"item": [0, 31, 2]
+		},
+		{
+			"group": "King",
+			"elem": "pawnless_flank",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "King",
+			"elem": "shelter_strength",
+			"item": [120, 0, 108]
+		},
+		{
+			"group": "King",
+			"elem": "shelter_storm",
+			"item": [-49, 0, -44]
+		},
+		{
+			"group": "King",
+			"elem": "king_danger",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "King",
+			"elem": "close_enemies",
+			"item": [-32, 0, -29]
+		},
+		{
+			"group": "King",
+			"elem": "king_pawn_distance",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "King",
+			"elem": "endgame_shelter",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Material",
+			"elem": "piece_value_bonus",
+			"item": [910, 1078, 909]
+		},
+		{
+			"group": "Material",
+			"elem": "psqt_bonus",
+			"item": [60, -67, 49]
+		},
+		{
+			"group": "Mobility",
+			"elem": "mobility_bonus",
+			"item": [-17, -52, -19]
+		},
+		{
+			"group": "Passed pawns",
+			"elem": "passed_block",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Passed pawns",
+			"elem": "passed_file",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Passed pawns",
+			"elem": "passed_rank",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Passed pawns",
+			"elem": "king_proximity",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pawns",
+			"elem": "isolated",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pawns",
+			"elem": "backward",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pawns",
+			"elem": "doubled",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pawns",
+			"elem": "connected",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pawns",
+			"elem": "weak_unopposed_pawn",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pawns",
+			"elem": "double_attacked_pawn",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "minor_behind_pawn",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "bishop_pawns",
+			"item": [-9, -21, -9]
+		},
+		{
+			"group": "Pieces",
+			"elem": "rook_on_pawn",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "rook_on_file",
+			"item": [-18, -7, -16]
+		},
+		{
+			"group": "Pieces",
+			"elem": "trapped_rook",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "weak_queen",
+			"item": [-49, -15, -45]
+		},
+		{
+			"group": "Pieces",
+			"elem": "king_protector",
+			"item": [-28, -32, -27]
+		},
+		{
+			"group": "Pieces",
+			"elem": "long_diagonal_bishop",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Pieces",
+			"elem": "outpost_total",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Space",
+			"elem": "space",
+			"item": [56, 0, 50]
+		},
+		{
+			"group": "Threats",
+			"elem": "threat_safe_pawn",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "minor_threat",
+			"item": [0, -31, -2]
+		},
+		{
+			"group": "Threats",
+			"elem": "rook_threat",
+			"item": [0, -24, -1]
+		},
+		{
+			"group": "Threats",
+			"elem": "hanging",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "king_threat",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "pawn_push_threat",
+			"item": [96, 78, 93]
+		},
+		{
+			"group": "Threats",
+			"elem": "rank_threat",
+			"item": [0, 0, 0]
+		},
+		{
+			"group": "Threats",
+			"elem": "slider_on_queen",
+			"item": [59, 18, 54]
+		},
+		{
+			"group": "Threats",
+			"elem": "knight_on_queen",
+			"item": [16, 12, 15]
+		},
+		{
+			"group": "Threats",
+			"elem": "restricted",
+			"item": [28, 28, 27]
+		},
+		{
+			"group": "Tempo",
+			"elem": "tempo",
+			"item": [-28, -28, -28]
+		}
+	]
+}

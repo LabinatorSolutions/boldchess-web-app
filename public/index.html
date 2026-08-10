@@ -12,20 +12,6 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="icon" type="image/svg+xml" sizes="96x96" href="BoldChess-Logo.svg">
     <title>Expert Free Chess App | Stockfish 18 GUI - BoldChess.com</title>
-    <script>
-        let _mobile = false;
-        document.addEventListener("DOMContentLoaded", () => {
-            try {
-                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|Windows Phone/i.test(navigator.userAgent) || window.location.href.includes("mobile=1");
-                if (isMobile && !window.location.href.includes("mobile=0")) {
-                    document.querySelector("meta[name='viewport']").setAttribute("content", "width=device-width, height=device-height, initial-scale=1, maximum-scale=1");
-                    _mobile = true;
-                }
-            } catch (error) {
-                console.error('Error during initialization:', error);
-            }
-        });
-    </script>
 </head>
 
 <body>
@@ -292,10 +278,7 @@
     </div>
     <div id="tooltip"></div>
     <div id="dragPiece" class="cb"></div>
-    <script type="application/javascript" src="./libs/tf-4.22.0.min.js" defer></script>
-    <script type="application/javascript" src="./libs/pako-2.1.0.min.js" defer></script>
-    <script type="application/javascript" src="./libs/protobuf-8.0.0.min.js" defer></script>
-    <script type="application/javascript" src="main.js" defer></script>
+    <script type="module" src="main.js"></script>
 </body>
 
 </html>
