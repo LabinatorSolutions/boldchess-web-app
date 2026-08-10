@@ -16,8 +16,7 @@ describe("move generation (perft)", () => {
 			if (depth > MAX_DEPTH) continue;
 			test(`${position.name} depth ${depth} = ${expected}`, () => {
 				expect(perft(core, core.parseFEN(position.fen), depth)).toBe(expected);
-			}, // Depth 4 runs into the hundreds of thousands of nodes.
-			60_000);
+			}, 60_000); // Depth 4 runs into the hundreds of thousands of nodes.
 		}
 	}
 });

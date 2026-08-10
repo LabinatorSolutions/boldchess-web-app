@@ -30,9 +30,12 @@ We actively welcome your pull requests:
 
 1. Fork the repo and create your branch from `main`.
 2. If you've added code, write clear, commented code and adhere to our coding conventions.
-3. Ensure your code lints (no compile errors).
-4. Issue your pull request to the `main` branch.
-5. Provide a clear description of the changes in the pull request. Include the purpose of the change and any relevant issues it addresses.
+3. Run `bun run ci` before opening the pull request. It is the same gate CI runs: the deploy
+   headers must be in sync, Biome must pass, and the test suite must be green.
+4. If your change touches the browser UI, also run `bun run smoke` — it loads the app in headless
+   Chromium and fails on any console error.
+5. Issue your pull request to the `main` branch.
+6. Provide a clear description of the changes in the pull request. Include the purpose of the change and any relevant issues it addresses.
 
 ## Coding Standards
 
@@ -41,7 +44,12 @@ Please ensure your code adheres to the following standards:
 1. Use clear and meaningful variable, method, and class names.
 2. Comment your code where necessary, especially for complex logic.
 3. Keep your code clean and readable.
-4. Follow the existing code format and structure.
+4. Follow the existing code format and structure. `bun run lint:fix` applies it for you.
+5. The client is ES modules under `public/src/` (see the Architecture section of the README).
+   Keep `chess/`, `eval/` and `engine/uci.js` free of DOM access — that is what makes them
+   testable — and put shared mutable state on the `state` object in `src/state.js`.
+6. Do not hand-edit `public/_headers` or `vercel.json`. They are generated from
+   `security-headers.js` by `bun run build`, and CI fails if they are out of sync.
 
 ## Community and Conduct
 
