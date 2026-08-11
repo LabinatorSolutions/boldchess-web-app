@@ -199,9 +199,12 @@ To ensure the engine functions correctly, you must configure the following HTTP 
 1. **Cross-Origin-Opener-Policy (COOP)**: Set to `same-origin`
 2. **Cross-Origin-Embedder-Policy (COEP)**: Set to `require-corp`
 3. **Content-Security-Policy (CSP)**: Must allow `blob:` URLs for the multi-part WASM architecture
-    - `script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:`
+    - `script-src 'self' 'unsafe-eval' blob:`
     - `connect-src 'self' blob:`
     - `worker-src 'self' blob:`
+
+   `script-src` carries no `'unsafe-inline'` — the page has no inline `<script>` tags. Do not
+   reintroduce it; the tightened policy is verified by `bun run smoke`.
 
 ### Why These Headers?
 
