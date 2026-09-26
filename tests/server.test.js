@@ -48,6 +48,20 @@ describe("static hosting", () => {
 	});
 });
 
+describe("rate limiting", () => {
+	// One page load fetches the shell, the stylesheet, ~30 ES modules and the
+	// engine, so a visitor reloading a few times must stay well under the limit.
+	test("a handful of full page loads are never throttled", async () => {
+		const statuses = new Set();
+		for (let i = 0; i < 150; i++) {
+			const response = await fetch(`${origin}/main.js`);
+			statuses.add(response.status);
+			await response.arrayBuffer();
+		}
+		expect([...statuses]).toEqual([200]);
+	});
+});
+
 describe("security headers", () => {
 	for (const [name, value] of Object.entries(securityHeaders())) {
 		test(`sends ${name}`, async () => {

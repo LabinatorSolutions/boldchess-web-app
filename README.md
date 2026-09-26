@@ -70,6 +70,7 @@ The application uses an optional `.env` file for configuration.
 | Variable | Description | Default |
 | :--- | :--- | :--- |
 | `PORT` | The port the server will listen on. | `3000` |
+| `RATE_LIMIT_MAX` | Requests allowed per IP per 15 minutes. One page load is ~40 requests. | `1000` |
 
 ---
 

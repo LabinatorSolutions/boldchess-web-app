@@ -7,7 +7,7 @@ const rateLimit = require("express-rate-limit");
 const { securityHeaders } = require("./security-headers");
 
 // Load environment variables from .env file
-require("dotenv").config();
+require("dotenv").config({ quiet: true });
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -36,12 +36,12 @@ if (process.env.NODE_ENV !== "test") app.use(morgan("combined"));
 // Compression middleware
 app.use(compression());
 
-// Rate limiting middleware. The smoke test loads the whole app twice from one
-// address, which is more requests than a real visitor makes in a window, so it
-// runs with a limit that does not cut the second page load short.
+// Rate limiting middleware. One page load is ~40 requests (the shell, the
+// stylesheet, every ES module under src/ and the engine), so the limit has to
+// let a visitor reload many times within the window. RATE_LIMIT_MAX overrides it.
 const limiter = rateLimit({
 	windowMs: 15 * 60 * 1000, // 15 minutes
-	max: process.env.NODE_ENV === "test" ? 1000 : 100, // per IP per window
+	limit: Number(process.env.RATE_LIMIT_MAX) || 1000, // per IP per window
 });
 app.use(limiter);
 
