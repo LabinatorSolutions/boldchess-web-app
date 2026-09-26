@@ -145,4 +145,13 @@ describe("rules", () => {
 		const after = core.doMove(position, { x: 4, y: 1 }, { x: 4, y: 0 }, "Q");
 		expect(core.generateFEN(after)).toBe("4Q3/8/8/8/8/8/4k3/4K3 b - - 0 1");
 	});
+
+	test("a lowercase promotion letter still promotes to the mover's piece", () => {
+		const white = core.parseFEN("8/4P3/8/8/8/8/k7/4K3 w - - 0 1");
+		expect(core.parseMove(white, "e8=q").p).toBe("Q");
+		const black = core.parseFEN("4k3/K7/8/8/8/8/4p3/8 b - - 0 1");
+		const move = core.parseMove(black, "e1=n");
+		const after = core.doMove(black, move.from, move.to, move.p);
+		expect(core.generateFEN(after)).toBe("4k3/K7/8/8/8/8/8/4n3 w - - 0 2");
+	});
 });

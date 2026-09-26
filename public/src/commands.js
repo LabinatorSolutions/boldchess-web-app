@@ -190,18 +190,22 @@ function isMoveList(text) {
 	return text.split(".").length > 1;
 }
 
+/**
+ * The value of one PGN tag pair, as in `[White "Carlsen, Magnus"]`. Standard
+ * PGN quotes with `"`; `'` is still accepted because earlier versions of this
+ * parser only understood that form.
+ */
+function pgnTag(text, name) {
+	const match = text.match(
+		new RegExp(`\\[${name}\\s+(["'])([^\\]]{1,127}?)\\1\\s*\\]`),
+	);
+	return match ? match[2] : null;
+}
+
 /** Replay a PGN move list, keeping the player names from its tag pairs. */
 function loadMoveList(text) {
-	let whitename = null,
-		blackname = null;
-	const wi = text.indexOf("[White '"),
-		bi = text.indexOf("[Black '");
-	if (wi >= 0 && bi > wi) {
-		const wil = text.substr(wi + 8).indexOf("']"),
-			bil = text.substr(bi + 8).indexOf("']");
-		if (wil > 0 && wil < 128) whitename = text.substr(wi + 8, wil);
-		if (bil > 0 && bil < 128) blackname = text.substr(bi + 8, bil);
-	}
+	const whitename = pgnTag(text, "White");
+	const blackname = pgnTag(text, "Black");
 
 	text = text.replace(/\u2605/g, "").replace(/\u0445/g, "x");
 	text =
@@ -209,7 +213,7 @@ function loadMoveList(text) {
 		text
 			.replace(/\./g, " ")
 			.replace(/(\[FEN [^\]]+\])+?/g, (_match, $1) =>
-				$1.replace(/\[|\]|'/g, "").replace(/\s/g, "."),
+				$1.replace(/\[|\]|'|"/g, "").replace(/\s/g, "."),
 			);
 	text = text
 		.replace(/\[Event /g, "* [Event ")
@@ -598,5 +602,10 @@ export function getParameterByName(name, url) {
 	const regex = new RegExp(`[?&]${name}(=([^&#]*)|&|#|$)`),
 		results = regex.exec(url);
 	if (!results?.[2]) return "";
-	return decodeURIComponent(results[2].replace(/\+/g, " "));
+	try {
+		return decodeURIComponent(results[2].replace(/\+/g, " "));
+	} catch {
+		// A malformed escape such as `%E0%A4%A` must not abort start up.
+		return "";
+	}
 }

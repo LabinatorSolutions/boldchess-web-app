@@ -179,35 +179,13 @@ export function parseBestMove(m) {
 	};
 }
 
-export function updateSkillLevelBasedOnDepth(depth) {
-	let skillLevel;
-	if (depth >= 1 && depth <= 10) {
-		skillLevel = depth;
-	} else {
-		switch (depth) {
-			case 11:
-				skillLevel = 12;
-				break;
-			case 12:
-				skillLevel = 14;
-				break;
-			case 13:
-				skillLevel = 16;
-				break;
-			case 14:
-				skillLevel = 18;
-				break;
-			default:
-				skillLevel = 20; // Any depth 15 or higher sets the skill to 20
-		}
-	}
-	state.analysisEngine.send(`setoption name Skill Level value ${skillLevel}`);
-}
-
 export function evalAll() {
 	if (state.coachMode === false && state.play != null) {
 		return;
 	}
+	// An engine that could not start never becomes ready; polling for it
+	// would keep a timer running every 50 ms for the life of the page.
+	if (state.analysisEngine?.failed) return;
 	if (
 		state.analysisEngine == null ||
 		!state.analysisEngine.ready ||
@@ -230,7 +208,10 @@ export function evalAll() {
 	const fen = getCurFEN();
 	state.analysisEngine.send("stop");
 	state.analysisEngine.send("ucinewgame");
-	updateSkillLevelBasedOnDepth(state.analysisEngine.depth);
+	// The analysis engine always searches at full strength. A Skill Level
+	// below 20 makes Stockfish search four lines and play a deliberately weaker
+	// one, so the score read back would belong to the wrong move. Lower depth
+	// is the speed knob; playing strength is set on the playing engine.
 	state.analysisEngine.score = null;
 	if (state.curmoves.length === 0) {
 		state.analysisEngine.waiting = true;

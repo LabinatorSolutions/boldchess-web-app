@@ -56,13 +56,16 @@ export const state = {
 	// Players
 	wname: "White",
 	bname: "Black",
-	/** 0 = analysis, 1 = engine plays one side, 2 = two players. */
+	/**
+	 * Menu mode: 1 = analysis, 2 = player (White) vs engine, 3 = engine vs
+	 * player (Black), 4 = two players.
+	 */
 	gameMode: 1,
 	isPlayerWhite: true,
-	/** Side the engine is playing, or null when nobody is playing. */
+	/** Side the engine plays (0 = Black, 1 = White), or null when it does not play. */
 	play: null,
 	coachMode: false,
-	coachModeLabel: "Active Coach Mode",
+	coachModeLabel: "Activate Coach Mode",
 
 	// Dragging and clicking
 	dragElement: null,

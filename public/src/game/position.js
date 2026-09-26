@@ -26,33 +26,62 @@ export function getCurSan(move) {
 	return null;
 }
 
+/**
+ * Whether the position shown has now occurred three times. Only the game up to
+ * the entry shown counts: stepping back through a game must not report a draw
+ * that only happens later.
+ */
 export function isThreefoldRepetition(fen) {
-	const pos = getFENPos(fen || getCurFEN());
+	const current = fen || getCurFEN();
+	const pos = getFENPos(current);
+	const last = Math.min(state.historyindex, state.history.length - 1);
 	let count = 0;
-	for (let i = 0; i < state.history.length; i++) {
+	for (let i = 0; i <= last; i++) {
 		if (getFENPos(state.history[i].fen) === pos) count++;
 	}
-	// If the current position is not yet in history (depends on call timing),
-	// we might need to add 1. However, typically history is updated on move.
-	// If we are checking the *current* state which is already valid,
-	// standard repetition requires the position to appear 3 times.
+	// A position not yet recorded (edited, or awaiting its history entry)
+	// is itself one more occurrence.
+	if (last < 0 || state.history[last].fen !== current) count++;
 	return count >= 3;
 }
 
+const PROMOTION_KEY = "promotionPiece";
+
+/** The preference for this page, used when storage is unavailable. */
+let sessionPromotionPiece = "Q";
+
+/** Menu label for the promotion preference. */
+export function promotionLabel(piece = getPromotionPiece()) {
+	return `Pawn Promotion: ${piece === "N" ? "Knight" : "Queen"}`;
+}
+
+/**
+ * Switch the promotion preference between queen and knight. Works whether or
+ * not the menu is open; the menu label is only refreshed when it exists.
+ */
 export function togglePromotionPiece() {
+	const next = getPromotionPiece() === "N" ? "Q" : "N";
+	try {
+		localStorage.setItem(PROMOTION_KEY, next);
+	} catch {
+		// Storage can be disabled (privacy mode, blocked site data); the
+		// preference then lasts for this page only.
+	}
+	sessionPromotionPiece = next;
 	const promotionItem = document.querySelector(
 		".menuItem.menuPromote span:first-child",
 	);
-	const currentText = promotionItem.innerText;
-	const newText = currentText.includes("Queen")
-		? "Pawn Promotion: Knight"
-		: "Pawn Promotion: Queen";
-	promotionItem.innerText = newText;
-	localStorage.setItem("promotionPiece", newText.includes("Queen") ? "Q" : "N");
+	if (promotionItem) promotionItem.textContent = promotionLabel(next);
 }
 
 export function getPromotionPiece() {
-	return localStorage.getItem("promotionPiece") || "Q";
+	try {
+		const stored = localStorage.getItem(PROMOTION_KEY);
+		if (stored === "Q" || stored === "N") return stored;
+		return "Q";
+	} catch {
+		return sessionPromotionPiece;
+	}
 }
 
 export function toggleCoachMode() {

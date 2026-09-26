@@ -5,7 +5,12 @@ import { doMove, fixCastling, isLegal } from "../chess/rules.js";
 import { START } from "../config.js";
 import { doComputerMove } from "../engine/analysis.js";
 import { historyAdd, historyMove } from "../game/history.js";
-import { getCurFEN, getCurSan, setCurFEN } from "../game/position.js";
+import {
+	getCurFEN,
+	getCurSan,
+	getPromotionPiece,
+	setCurFEN,
+} from "../game/position.js";
 import { state } from "../state.js";
 import { finalArrow3, showArrow3 } from "../ui/arrows.js";
 import { showBoard, showLegalMoves } from "../ui/board.js";
@@ -129,8 +134,15 @@ export function doMoveHandler(move, copy) {
 		isLegal(pos, move.from, move.to) &&
 		state.curmoves.length > 0;
 	if (legal) {
+		// A pawn dragged to the last rank carries no promotion piece; give it
+		// the player's choice so the SAN lookup and the board agree.
+		if (move.p == null && isPromotion(pos, move))
+			move = { ...move, p: getPromotionPiece() };
 		const san = getCurSan(move); // Get the SAN notation of the move
-		if (pos.w !== state.play) {
+		// `state.play` is the side the engine plays (0 = Black, 1 = White), or
+		// null when nobody is playing it. The player may only move their own side.
+		const enginesTurn = state.play != null && pos.w === (state.play === 1);
+		if (!enginesTurn) {
 			pos = doMove(pos, move.from, move.to, move.p); // Apply the move to the position
 		}
 		setCurFEN(generateFEN(pos)); // Update the current FEN to the new position
@@ -163,6 +175,14 @@ export function doMoveHandler(move, copy) {
 		});
 	} else return false;
 	return true;
+}
+
+/** A pawn move onto the first or last rank. */
+function isPromotion(pos, move) {
+	return (
+		pos.b[move.from.x][move.from.y].toUpperCase() === "P" &&
+		(move.to.y === 0 || move.to.y === 7)
+	);
 }
 
 export function onMouseMove(e) {

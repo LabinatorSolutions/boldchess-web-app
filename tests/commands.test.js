@@ -96,6 +96,24 @@ test("PGN tag pairs set the player names", () => {
 	expect(state.bname).toBe("Linus");
 });
 
+test("standard double-quoted PGN tag pairs set the player names", () => {
+	command(
+		'[Event "Casual"]\n[White "Ada Lovelace"]\n[Black "Linus"]\n\n1. d4 d5 *',
+	);
+	expect(state.wname).toBe("Ada Lovelace");
+	expect(state.bname).toBe("Linus");
+});
+
+test("a double-quoted FEN tag sets up the starting position", () => {
+	command(
+		'[FEN "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1"]\n\n1... e5 2. Nf3 *',
+	);
+	expect(dom.alerts).toEqual([]);
+	expect(getCurFEN()).toBe(
+		"rnbqkbnr/pppp1ppp/8/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2",
+	);
+});
+
 test("an illegal PGN move stops the replay and alerts", () => {
 	command("1. e4 e5 2. Qh9");
 	expect(dom.alerts.length).toBe(1);

@@ -37,12 +37,17 @@ export function refreshMoves() {
 				});
 			}
 
+			// Checkmate and stalemate end the game on the board itself, so they
+			// take precedence over the draw rules below: a mate delivered on the
+			// move that reaches the fifty-move limit still stands.
 			let drawReason = null;
-			if (isInsufficientMaterial(pos))
-				drawReason = "Draw - Insufficient Material";
-			else if (isFiftyMoveRule(pos)) drawReason = "Draw - 50-Move Rule";
-			else if (isThreefoldRepetition())
-				drawReason = "Draw - Threefold Repetition";
+			if (state.curmoves.length > 0) {
+				if (isInsufficientMaterial(pos))
+					drawReason = "Draw - Insufficient Material";
+				else if (isFiftyMoveRule(pos)) drawReason = "Draw - 50-Move Rule";
+				else if (isThreefoldRepetition())
+					drawReason = "Draw - Threefold Repetition";
+			}
 
 			if (drawReason != null) {
 				state.curmoves = []; // Clear legal moves to prevent further play

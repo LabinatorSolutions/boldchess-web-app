@@ -178,15 +178,14 @@ export function repaintStatic() {
 										s2 = { x: x2, y: y2 },
 										a = false;
 									if (terms.king_ring(p, s2)) {
-										// The pawn-direction ternary needs its own parens: without them
-										// `?:` (lowest precedence) swallowed the whole `||` chain, so both
-										// branches were truthy constants (1 / -1) and this `if` was always
-										// taken. `flipy` is a boolean, so the pawn's rank delta compares
-										// against the direction it selects, not against `flipy` itself.
+										// `p` is already seen from the attacking side (colorflip for
+										// Black), so the attacker is always a white pawn one rank below
+										// its target - `pawn_attack` looks for it at y + 1 - whichever
+										// side `flipy` says it really is.
 										if (
 											(terms.pawn_attack(p, s2) &&
 												Math.abs(x - x2) === 1 &&
-												y - y2 === (flipy ? 1 : -1)) ||
+												y - y2 === 1) ||
 											terms.knight_attack(p, s2, s) ||
 											terms.bishop_xray_attack(p, s2, s) ||
 											terms.rook_xray_attack(p, s2, s) ||

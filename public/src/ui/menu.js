@@ -1,12 +1,16 @@
 /** The main menu and the modes it switches between. */
 
 import { command } from "../commands.js";
-import { MAX_DEPTH } from "../config.js";
+import { DEFAULT_DEPTH, MAX_DEPTH } from "../config.js";
 import { doComputerMove } from "../engine/analysis.js";
 import { applyPlayStrength, ensurePlayEngine } from "../engine/engines.js";
 import { isMobile } from "../env.js";
 import { historyMove } from "../game/history.js";
-import { toggleCoachMode, togglePromotionPiece } from "../game/position.js";
+import {
+	promotionLabel,
+	toggleCoachMode,
+	togglePromotionPiece,
+} from "../game/position.js";
 import { state } from "../state.js";
 import { showBoard } from "./board.js";
 import { setElemText } from "./dom.js";
@@ -69,7 +73,7 @@ export function setBoardColor(c) {
 export function setEngineValue(elem) {
 	setElemText(
 		elem,
-		state.analysisEngine?.ready ? state.analysisEngine.depth : "18",
+		state.analysisEngine?.ready ? state.analysisEngine.depth : DEFAULT_DEPTH,
 	);
 	elem.removeAttribute("title");
 }
@@ -121,7 +125,9 @@ export function reloadMenu() {
 			span3.id = "buttonEngineValue";
 			span3.onclick = () => {
 				if (state.analysisEngine?.ready)
-					command(`depth ${state.analysisEngine.depth !== 0 ? "0" : "28"}`);
+					command(
+						`depth ${state.analysisEngine.depth !== 0 ? "0" : DEFAULT_DEPTH}`,
+					);
 				showBoard(false, true);
 				setEngineValue(document.getElementById("buttonEngineValue"));
 			};
@@ -274,11 +280,11 @@ export function reloadMenu() {
 		addMenuItemEngine("menuAnalysisEngine", "Analysis Engine Depth");
 		addMenuItemUciElo("menuPlayingEngine", "Playing Engine Rating");
 		addMenuLine();
-		addMenuItem("menuPromote", "Pawn Promotion: Queen", "P", true, () => {
+		addMenuItem("menuPromote", promotionLabel(), "P", true, () => {
 			togglePromotionPiece();
 		});
 		addMenuLine();
-		addMenuItem("menuCoach", state.coachModeLabel, "C", true, () => {
+		addMenuItem("menuCoach", state.coachModeLabel, null, true, () => {
 			toggleCoachMode();
 			showHideMenu(false);
 		});

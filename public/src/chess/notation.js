@@ -7,7 +7,9 @@ export function parseMove(pos, s) {
 	let promotion = null;
 	s = s.replace(/[+|#|?|!|x]/g, "");
 	if (s.length >= 2 && s[s.length - 2] === "=") {
-		promotion = s[s.length - 1];
+		// doMove expects the piece from White's side and recolours it for
+		// Black, so `e8=q` must still mean a queen of the mover's colour.
+		promotion = s[s.length - 1].toUpperCase();
 		s = s.substring(0, s.length - 2);
 	}
 	if (s.length >= 3 && "NBRQ".indexOf(s[s.length - 1]) >= 0) {
