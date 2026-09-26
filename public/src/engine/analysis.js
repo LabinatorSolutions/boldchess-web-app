@@ -206,8 +206,10 @@ export function evalAll() {
 		return;
 	}
 	const fen = getCurFEN();
+	// No `ucinewgame` here: it clears the engine's hash table, and consecutive
+	// positions (stepping through a game, trying a move) share most of their
+	// search tree, so keeping it makes re-analysis noticeably faster.
 	state.analysisEngine.send("stop");
-	state.analysisEngine.send("ucinewgame");
 	// The analysis engine always searches at full strength. A Skill Level
 	// below 20 makes Stockfish search four lines and play a deliberately weaker
 	// one, so the score read back would belong to the wrong move. Lower depth
@@ -257,6 +259,9 @@ export function evalAll() {
 export function doComputerMove() {
 	if (state.play == null) return;
 	const fen = getCurFEN();
+	// Stockfish 19 aborts its worker on a position without both kings, which
+	// the board editor can produce mid-game; there is nothing to play anyway.
+	if (checkPosition(parseFEN(fen)).length > 0) return;
 	if (state.isPlayerWhite && fen.indexOf(" w ") > 0) return;
 	if (!state.isPlayerWhite && fen.indexOf(" b ") > 0) return;
 

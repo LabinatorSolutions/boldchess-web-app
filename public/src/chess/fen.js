@@ -92,7 +92,10 @@ export function parseFEN(fen) {
 	if (a.length > 3 && a[3].length === 2) {
 		const ex = "abcdefgh".indexOf(a[3][0]);
 		const ey = "87654321".indexOf(a[3][1]);
-		enpassant = ex >= 0 && ey >= 0 ? [ex, ey] : null;
+		enpassant =
+			ex >= 0 && ey >= 0 && isEnPassantSquare(board, whitemove, ex, ey)
+				? [ex, ey]
+				: null;
 	} else {
 		enpassant = null;
 	}
@@ -111,6 +114,24 @@ export function parseFEN(fen) {
 		w: whitemove,
 		m: movecount,
 	};
+}
+
+/**
+ * Whether a double pawn push can have left `[x, y]` as the en passant square:
+ * it is on the side to move's sixth rank, it and the pawn's start square are
+ * empty, and the pushed pawn stands in front of it. Anything else is dropped -
+ * Stockfish 19 aborts its worker on an en passant square on the wrong rank,
+ * and the move generator would otherwise offer captures of a pawn that is not
+ * there.
+ */
+function isEnPassantSquare(board, whitemove, x, y) {
+	const [rank, pawn, start] = whitemove ? [2, "p", 1] : [5, "P", 6];
+	return (
+		y === rank &&
+		board[x][y] === "-" &&
+		board[x][start] === "-" &&
+		board[x][whitemove ? 3 : 4] === pawn
+	);
 }
 
 export function generateFEN(pos) {

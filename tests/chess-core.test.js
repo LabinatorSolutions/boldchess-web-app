@@ -28,6 +28,27 @@ describe("FEN", () => {
 		});
 	}
 
+	test("keeps a usable en passant square", () => {
+		const fen = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1";
+		expect(core.generateFEN(core.parseFEN(fen))).toBe(fen);
+	});
+
+	test("drops an en passant square that no double push could have made", () => {
+		for (const fen of [
+			// wrong rank for the side to move (Stockfish 19 aborts on these)
+			"rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq e3 0 1",
+			"rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e4 0 1",
+			// right rank, but no pawn in front of it
+			"rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq d3 0 1",
+			// the square itself is occupied
+			"rnbqkbnr/pppppppp/8/8/4P3/4N3/PPPP1PPP/RNBQKB1R b KQkq e3 0 1",
+		]) {
+			const pos = core.parseFEN(fen);
+			expect(pos.e).toBeNull();
+			expect(core.generateFEN(pos).split(" ")[3]).toBe("-");
+		}
+	});
+
 	test("getFENPos drops the clocks", () => {
 		expect(core.getFENPos(START_FEN)).toBe(
 			"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -",

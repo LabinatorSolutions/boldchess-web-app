@@ -1,5 +1,6 @@
 /** Thin UCI wrapper around the Stockfish Web Worker. Contains no DOM access. */
 
+import { generateFEN, parseFEN } from "../chess/fen.js";
 import { DEFAULT_DEPTH } from "../config.js";
 
 export function loadEngine(onReady) {
@@ -41,7 +42,10 @@ export function loadEngine(onReady) {
 		worker.postMessage(cmd);
 	};
 	engine.eval = function evaluate(fen, done, info) {
-		engine.send(`position fen ${fen}`);
+		// Round-trip through the parser so nothing malformed reaches the engine:
+		// Stockfish 19 aborts its worker (for good) on an invalid FEN. `fen`
+		// itself stays the key the callbacks below compare against.
+		engine.send(`position fen ${generateFEN(parseFEN(fen))}`);
 		engine.send(`go depth ${engine.depth}`, function message(str) {
 			let matches = str.match(
 				/depth (\d+) .*score (cp|mate) ([-\d]+) .*nodes (\d+) .*pv (.+)/,

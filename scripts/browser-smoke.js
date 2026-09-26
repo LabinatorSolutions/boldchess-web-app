@@ -148,6 +148,36 @@ async function main() {
 			squares: document.getElementById("chessboard1").children.length,
 			moves: document.getElementById("moves").children.length,
 			info: document.getElementById("positionInfo").textContent,
+			evaluated: [...document.querySelectorAll("#moves .eval")].filter((e) =>
+				/[0-9]/.test(e.textContent),
+			).length,
+		})`),
+	);
+
+	// Load a short game and step back through it: every position change
+	// restarts the analysis, and the engine must evaluate the new position.
+	await evaluate(`(() => {
+		document.getElementById("searchInput").value = "1. e4 e5 2. Nf3";
+		document.getElementById("simpleSearch").onsubmit();
+	})()`);
+	await sleep(300);
+	for (let i = 0; i < 2; i++) {
+		for (const type of ["keyDown", "keyUp"]) {
+			await send("Input.dispatchKeyEvent", {
+				type,
+				key: "ArrowLeft",
+				windowsVirtualKeyCode: 37,
+			});
+		}
+		await sleep(300);
+	}
+	await sleep(SETTLE_MS);
+	const browsed = JSON.parse(
+		await evaluate(`JSON.stringify({
+			info: document.getElementById("positionInfo").textContent,
+			evaluated: [...document.querySelectorAll("#moves .eval")].filter((e) =>
+				/[0-9]/.test(e.textContent),
+			).length,
 		})`),
 	);
 
@@ -276,6 +306,12 @@ async function main() {
 		["board rendered 64 squares", dom.squares === 64],
 		["move list populated", dom.moves > 0],
 		["position info rendered", dom.info.length > 0],
+		["engine evaluated the legal moves", dom.evaluated > 0],
+		[
+			"stepping back through a loaded game",
+			browsed.info.startsWith("Position: 2 of 4"),
+		],
+		["engine re-evaluates after stepping back", browsed.evaluated > 0],
 		[
 			"board intact after exercising the input handlers",
 			afterInteraction.squares === 64,

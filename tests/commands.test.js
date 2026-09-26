@@ -148,6 +148,16 @@ test("sidetomove swaps only the side to move", () => {
 	expect(getCurFEN()).toBe(START);
 });
 
+test("sidetomove drops an en passant square the new side cannot use", () => {
+	// Stockfish 19 rejects an en passant square on the wrong rank for the side
+	// to move and its worker dies, so the swapped FEN must not carry one.
+	command("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1");
+	command("sidetomove");
+	expect(getCurFEN()).toBe(
+		"rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 1",
+	);
+});
+
 test("depth clamps to the engine range and falls back on nonsense", () => {
 	state.analysisEngine = { ready: true, depth: 16 };
 	command("depth 8");

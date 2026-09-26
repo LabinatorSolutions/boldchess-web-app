@@ -292,14 +292,15 @@ function colorflipPosition() {
 	showBoard();
 }
 
-/** `sidetomove` - hand the move to the other side, position untouched. */
+/**
+ * `sidetomove` - hand the move to the other side, pieces untouched. Any en
+ * passant square belonged to the side that just lost the move, so it goes.
+ */
 function swapSideToMove() {
-	setCurFEN(
-		getCurFEN()
-			.replace(" w ", " ! ")
-			.replace(" b ", " w ")
-			.replace(" ! ", " b "),
-	);
+	const pos = parseFEN(getCurFEN());
+	pos.w = !pos.w;
+	pos.e = null;
+	setCurFEN(generateFEN(pos));
 	showBoard();
 }
 
