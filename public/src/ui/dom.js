@@ -8,6 +8,35 @@ export function setElemText(elem, value) {
 	elem.appendChild(document.createTextNode(value));
 }
 
+/**
+ * Let the keyboard press a `role="button"` element: Enter or Space runs its
+ * click handler, as they would on a real <button>.
+ */
+function addKeyActivation(elem) {
+	elem.addEventListener("keydown", (event) => {
+		if (event.key !== "Enter" && event.key !== " ") return;
+		event.preventDefault();
+		elem.click();
+	});
+}
+
+/**
+ * Turn a clickable element built in script into a keyboard-operable button:
+ * focusable, announced as a button with `label` as its name.
+ */
+export function makeButton(elem, label) {
+	elem.setAttribute("role", "button");
+	elem.tabIndex = 0;
+	if (label) elem.setAttribute("aria-label", label);
+	addKeyActivation(elem);
+}
+
+/** Mirror an `on`/`off` toolbar state for assistive technology. */
+export function setButtonEnabled(elem, enabled) {
+	elem.className = enabled ? "on" : "off";
+	elem.setAttribute("aria-disabled", String(!enabled));
+}
+
 export function getElemText(elem) {
 	return elem.textContent;
 }

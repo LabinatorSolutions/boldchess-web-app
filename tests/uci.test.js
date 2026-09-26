@@ -2,7 +2,7 @@
  * The UCI wrapper, driven against a fake Worker that records what it is sent.
  *
  * Stockfish 19 aborts its worker on some malformed FENs, so every position the
- * wrapper sends has to have been normalised first.
+ * wrapper sends has to have been normalized first.
  */
 
 import { afterAll, beforeAll, expect, test } from "bun:test";
@@ -24,7 +24,7 @@ afterAll(() => {
 	globalThis.Worker = RealWorker;
 });
 
-test("positions are normalised before they reach the engine", () => {
+test("positions are normalized before they reach the engine", () => {
 	const engine = loadEngine();
 	sent.length = 0;
 	engine.eval(

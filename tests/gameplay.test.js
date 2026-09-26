@@ -106,7 +106,7 @@ test("a promotion dragged on the board is recorded with its SAN", () => {
 	expect(state.history[1].san).toBe("e8=Q");
 });
 
-test("a dragged promotion honours the promotion preference", () => {
+test("a dragged promotion honors the promotion preference", () => {
 	globalThis.localStorage.setItem("promotionPiece", "N");
 	setUp("8/4P3/8/8/8/8/k7/4K3 w - - 0 1");
 	doMoveHandler({ from: { x: 4, y: 1 }, to: { x: 4, y: 0 } });

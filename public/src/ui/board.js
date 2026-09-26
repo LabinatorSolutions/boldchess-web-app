@@ -13,6 +13,7 @@ import {
 	getElemText,
 	getEvalText,
 	scrollReset,
+	setButtonEnabled,
 	setElemText,
 } from "./dom.js";
 import { getGraphPointColor, repaintGraph } from "./graph.js";
@@ -309,12 +310,12 @@ export function doFlip() {
 }
 
 export function refreshButtonRevert() {
+	const button = document.getElementById("buttonRevert");
+	setButtonEnabled(button, state.history2 != null);
 	if (state.history2 == null) {
-		document.getElementById("buttonRevert").className = "off";
-		document.getElementById("buttonRevert").onclick = null;
+		button.onclick = null;
 	} else {
-		document.getElementById("buttonRevert").className = "on";
-		document.getElementById("buttonRevert").onclick = (e) => {
+		button.onclick = (e) => {
 			command(e.ctrlKey ? "keep" : "revert");
 		};
 	}

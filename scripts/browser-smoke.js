@@ -279,6 +279,48 @@ async function main() {
 	await clickAt(centerOfElement("buttonMovesPv"));
 	await sleep(400);
 
+	// Keyboard access: a script-built window-bar button and a markup <button>
+	// both answer Space/Enter like a native control.
+	const pressKey = async (key, code) => {
+		for (const type of ["keyDown", "keyUp"]) {
+			await send("Input.dispatchKeyEvent", {
+				type,
+				key,
+				code,
+				windowsVirtualKeyCode: key === " " ? 32 : 13,
+				// A native button activates on the keypress a real key produces,
+				// which CDP only sends when the event carries its text.
+				text: type === "keyDown" ? (key === " " ? " " : "\r") : undefined,
+			});
+		}
+		await sleep(300);
+	};
+	const historyShown = () =>
+		evaluate(`document.getElementById("wHistory").style.display !== "none"`);
+	const historyBefore = await historyShown();
+	await evaluate(`document.getElementById("wbHistory").focus()`);
+	await pressKey(" ", "Space");
+	const historyAfterSpace = await historyShown();
+	await pressKey("Enter", "Enter");
+	const historyAfterEnter = await historyShown();
+	const flippedBefore = await evaluate(
+		`document.querySelector("#cbTable td:nth-child(2)").textContent`,
+	);
+	await evaluate(`document.getElementById("buttonFlip").focus()`);
+	await pressKey("Enter", "Enter");
+	const flippedAfter = await evaluate(
+		`document.querySelector("#cbTable td:nth-child(2)").textContent`,
+	);
+	const keyboard = {
+		panelToggles:
+			historyAfterSpace === !historyBefore &&
+			historyAfterEnter === historyBefore,
+		flipButton: flippedBefore !== flippedAfter,
+		focusRing: await evaluate(
+			`getComputedStyle(document.getElementById("buttonFlip")).outlineStyle`,
+		),
+	};
+
 	const afterInteraction = JSON.parse(
 		await evaluate(`JSON.stringify({
 			squares: document.getElementById("chessboard1").children.length,
@@ -337,6 +379,9 @@ async function main() {
 		],
 		["arrow line keeps its stroke width", palette.strokeWidth === "6px"],
 		["edit panel opens from the window bar", afterInteraction.editOpen],
+		["window bar buttons work from the keyboard", keyboard.panelToggles],
+		["toolbar buttons work from the keyboard", keyboard.flipButton],
+		["keyboard focus is visible", keyboard.focusRing === "solid"],
 		["no console errors", errors.length === 0],
 	];
 

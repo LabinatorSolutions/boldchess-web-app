@@ -28,7 +28,7 @@ if (isMobile) {
 	if (viewport) {
 		viewport.setAttribute(
 			"content",
-			"width=device-width, height=device-height, initial-scale=1, maximum-scale=1",
+			"width=device-width, height=device-height, initial-scale=1",
 		);
 	}
 }

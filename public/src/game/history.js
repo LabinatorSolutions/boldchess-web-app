@@ -2,13 +2,18 @@
 
 import { historyEntry, state } from "../state.js";
 import { refreshButtonRevert, showBoard } from "../ui/board.js";
+import { setButtonEnabled } from "../ui/dom.js";
 import { getCurFEN, setCurFEN } from "./position.js";
 
 export function historyButtons() {
-	document.getElementById("buttonBack").className =
-		state.historyindex > 0 ? "on" : "off";
-	document.getElementById("buttonForward").className =
-		state.historyindex < state.history.length - 1 ? "on" : "off";
+	setButtonEnabled(
+		document.getElementById("buttonBack"),
+		state.historyindex > 0,
+	);
+	setButtonEnabled(
+		document.getElementById("buttonForward"),
+		state.historyindex < state.history.length - 1,
+	);
 }
 
 export function historyAdd(fen, oldhistory, move, san) {

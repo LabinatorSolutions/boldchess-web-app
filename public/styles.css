@@ -18,6 +18,46 @@
 	--bc-overlay-faint: rgba(255, 255, 255, 0.1);
 }
 
+html {
+	/* Pinch-zoom stays available; only double-tap zoom is turned off, so quick
+	   taps on the toolbar are never read as a zoom gesture. */
+	touch-action: manipulation;
+}
+
+/* The board and the edit palette handle touch themselves (drag to move). */
+#chessboard1,
+#editWrapper {
+	touch-action: none;
+}
+
+/* The toolbar and header controls are real <button>s. Strip the browser's
+   button look so they lay out exactly like the divs they replaced; the rules
+   further down, keyed by id and class, still style each one. */
+button {
+	appearance: none;
+	display: block;
+	box-sizing: content-box;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	background: none;
+	color: inherit;
+	font: inherit;
+	line-height: inherit;
+	letter-spacing: inherit;
+	text-align: inherit;
+	text-transform: inherit;
+	cursor: auto;
+}
+
+/* Keyboard focus ring, for the <button>s and the role="button" controls
+   built in script. */
+button:focus-visible,
+[role="button"]:focus-visible {
+	outline: 2px solid #64c4db;
+	outline-offset: 2px;
+}
+
 html,
 body {
 	height: 100%;
@@ -620,7 +660,18 @@ li {
 	opacity: 0.6;
 }
 
+/* A <button> centers its content vertically, which would move an icon that
+   is absolutely positioned at its static position. The toolbar icons fill
+   the button exactly, so laying them out in flow puts them in the same spot. */
+button.on svg,
+button.off svg {
+	position: static;
+	display: block;
+}
+
 #buttonFlip {
+	/* fill the table cell, as the div it replaced did */
+	width: 100%;
 	line-height: 18px;
 	height: 16px;
 	padding-top: 2.5px;
@@ -641,7 +692,8 @@ li {
 	border-radius: 2px;
 }
 
-#buttonStm div {
+#buttonStm .stmDot {
+	display: block;
 	width: 9px;
 	height: 9px;
 	border-radius: 4.5px;
@@ -651,11 +703,11 @@ li {
 	background-color: var(--bc-overlay-faint);
 }
 
-#buttonStm.white div {
+#buttonStm.white .stmDot {
 	background-color: var(--bc-paper);
 }
 
-#buttonStm.black div {
+#buttonStm.black .stmDot {
 	background-color: var(--bc-ink);
 }
 
@@ -853,7 +905,6 @@ li {
 	-moz-user-select: text;
 }
 
-/* biome-ignore lint/style/noDescendingSpecificity: paired against `#buttonStm.white div`, whose ancestor is a different top-level element in index.html — the two can never match the same node. */
 #history > div {
 	padding: 8px;
 }
@@ -1190,7 +1241,6 @@ li {
 	box-shadow: 0 0 4px rgba(255, 255, 255, 1);
 }
 
-/* biome-ignore lint/style/noDescendingSpecificity: paired against `#buttonStm.white div`; `#icolor` is built inside a `.menuItem` (src/ui/menu.js), never inside `#buttonStm`. */
 #icolor > div {
 	width: 10px;
 	height: 10px;
@@ -1198,7 +1248,6 @@ li {
 	position: relative;
 }
 
-/* biome-ignore lint/style/noDescendingSpecificity: same disjoint ancestors as the rule above. */
 #icolor > div > div {
 	width: 5px;
 	height: 5px;

@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description"
         content="Expert free chess app powered by Stockfish 19. Professional GUI for all your chess needs.">
     <meta name="author" content="BoldChess.com">
@@ -50,34 +50,34 @@
                     <div id="logotextsub">Expert Stockfish 19 Chess App</div>
                 </a>
                 <div id="toolbar" class="toolbar">
-                    <div id="buttonBack" class="off" title="Go back">
+                    <button type="button" id="buttonBack" class="off" title="Go back" aria-label="Go back" aria-disabled="true">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"
-                            role="img" aria-label="Go back">
+                            aria-hidden="true" focusable="false">
                             <path
                                 d="M15 7H3.414l4.293-4.293a1 1 0 0 0-1.414-1.414l-6 6a1 1 0 0 0 0 1.414l6 6a1 1 0 0 0 1.414-1.414L3.414 9H15a1 1 0 0 0 0-2z" />
                         </svg>
-                    </div>
-                    <div id="buttonForward" class="off" title="Go forward">
+                    </button>
+                    <button type="button" id="buttonForward" class="off" title="Go forward" aria-label="Go forward" aria-disabled="true">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"
-                            role="img" aria-label="Go forward">
+                            aria-hidden="true" focusable="false">
                             <path
                                 d="M15.707 7.293l-6-6a1 1 0 0 0-1.414 1.414L12.586 7H1a1 1 0 0 0 0 2h11.586l-4.293 4.293a1 1 0 1 0 1.414 1.414l6-6a1 1 0 0 0 0-1.414z" />
                         </svg>
-                    </div>
-                    <div id="buttonRevert" class="off" title="Revert changes">
+                    </button>
+                    <button type="button" id="buttonRevert" class="off" title="Revert changes" aria-label="Revert changes" aria-disabled="true">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="16" height="16"
-                            role="img" aria-label="Revert changes">
+                            aria-hidden="true" focusable="false">
                             <path
                                 d="M431.85,79.13l-433.36,433.37l433.37,431.64v-273.34c463.64,-39.79 591.66,197.22 591.66,197.22c0,0 0,-431.63 -591.66,-512.94z" />
                         </svg>
-                    </div>
-                    <div id="buttonMenu" class="on" title="Menu">
+                    </button>
+                    <button type="button" id="buttonMenu" class="on" title="Menu" aria-label="Menu" aria-haspopup="true" aria-expanded="false">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"
-                            role="img" aria-label="Menu">
+                            aria-hidden="true" focusable="false">
                             <path
                                 d="M0,3c0,-0.55 0.45,-1 1,-1h14c0.55,0 1,0.45 1,1c0,0.55 -0.45,1 -1,1h-14c-0.55,0 -1,-0.45 -1,-1zM0,8c0,-0.55 0.45,-1 1,-1h14c0.55,0 1,0.45 1,1c0,0.55 -0.45,1 -1,1h-14c-0.55,0 -1,-0.45 -1,-1zM15,12c0.55,0 1,0.45 1,1c0,0.55 -0.45,1 -1,1h-14c-0.55,0 -1,-0.45 -1,-1c0,-0.55 0.45,-1 1,-1z" />
                         </svg>
-                    </div>
+                    </button>
                 </div>
             </div>
             <div class="box" id="wChessboard">
@@ -85,14 +85,14 @@
                 <div id="searchWrapper" class="boxMid">
                     <form id="simpleSearch">
                         <input name="search" placeholder="Enter FEN, PGN or command" id="searchInput" type="search">
-                        <div id="buttonGo" title="Load FEN, PGN or command">
+                        <button type="button" id="buttonGo" title="Load FEN, PGN or command" aria-label="Load FEN, PGN or command">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"
-                                role="img" aria-label="Load FEN, PGN or command">
+                                aria-hidden="true" focusable="false">
                                 <path
                                     d="M15.707 7.293l-6-6a1 1 0 0 0-1.414 1.414L12.586 7H1a1 1 0 0 0 0 2h11.586l-4.293 4.293a1 1 0 1 0 1.414 1.414l6-6a1 1 0 0 0 0-1.414z"
                                     opacity="0.6" />
                             </svg>
-                        </div>
+                        </button>
                     </form>
                 </div>
                 <div id="boxBoardOuter">
@@ -147,9 +147,9 @@
                                         <td>g</td>
                                         <td>h</td>
                                         <td>
-                                            <div id="buttonStm" class="white" title="Change side to move">
-                                                <div></div>
-                                            </div>
+                                            <button type="button" id="buttonStm" class="white" title="Change side to move" aria-label="Change side to move">
+                                                <span class="stmDot"></span>
+                                            </button>
                                         </td>
                                     </tr>
                                     <tr>
@@ -198,14 +198,13 @@
                                         <td>g</td>
                                         <td>h</td>
                                         <td>
-                                            <div id="buttonFlip" title="Flip board">
+                                            <button type="button" id="buttonFlip" title="Flip board" aria-label="Flip board">
                                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 443 443" width="16"
-                                                    height="16" fill="currentColor" role="img"
-                                                    aria-label="Flip board">
+                                                    height="16" fill="currentColor" aria-hidden="true" focusable="false">
                                                     <path
                                                         d="M254.56,118.55v205.9l68.77,-27.17c2.31,-0.9 4.93,-0.16 6.43,1.81c0.73,0.99 1.11,2.16 1.11,3.32c0,1.17 -0.38,2.36 -1.14,3.36l-103.85,135.08c-1.05,1.35 -2.66,2.15 -4.37,2.15c-1.71,0 -3.33,-0.8 -4.38,-2.15l-103.84,-135.08c-1.53,-1.97 -1.53,-4.69 -0.04,-6.69c1.49,-1.96 4.11,-2.7 6.42,-1.8l68.77,27.16v-205.89l-68.76,27.16c-2.31,0.9 -4.93,0.16 -6.43,-1.8c-0.74,-0.99 -1.11,-2.17 -1.11,-3.32c0,-1.17 0.38,-2.36 1.14,-3.36l103.85,-135.08c1.05,-1.35 2.66,-2.15 4.37,-2.15c1.71,0 3.33,0.8 4.38,2.15l103.83,135.08c1.52,1.97 1.54,4.69 0.04,6.68c-1.48,1.97 -4.11,2.7 -6.42,1.8z" />
                                                 </svg>
-                                            </div>
+                                            </button>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -225,7 +224,7 @@
                 <div id="movesHeader">
                     <div class="san">Move</div>
                     <div class="eval">Evaluation</div>
-                    <div class="pv" id="buttonMovesPv">PV</div>
+                    <button type="button" class="pv" id="buttonMovesPv" title="Show the full line or only the reply">PV</button>
                     <div class="depth">Depth</div>
                 </div>
                 <div id="moves" class="boxMid"></div>
@@ -245,8 +244,8 @@
                 <div id="staticHeader">
                     <div class="group">Group</div>
                     <div class="name">Evaluation term</div>
-                    <div class="eval" id="buttonStaticSortByValue">Value</div>
-                    <div class="rel" id="buttonStaticSortByChange">Change</div>
+                    <button type="button" class="eval" id="buttonStaticSortByValue" aria-label="Sort by value">Value</button>
+                    <button type="button" class="rel" id="buttonStaticSortByChange" aria-label="Sort by change">Change</button>
                 </div>
                 <div id="static" class="boxMid"></div>
             </div>

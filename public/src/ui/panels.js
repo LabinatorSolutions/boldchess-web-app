@@ -6,9 +6,24 @@ import { getCurFEN } from "../game/position.js";
 import { defaultMouseMove, isEdit, onMouseUp } from "../input/mouse.js";
 import { state } from "../state.js";
 import { showLegalMoves } from "./board.js";
+import { makeButton } from "./dom.js";
 import { graphMouseMove } from "./graph.js";
 import { checkSizes, setupTouchEvents } from "./layout.js";
 import { repaintStatic } from "./static-view.js";
+
+/** Spoken names of the panels, keyed by the suffix of their `w<Name>` id. */
+const PANEL_NAMES = {
+	Chessboard: "Chessboard",
+	Moves: "Moves",
+	History: "History of moves",
+	Graph: "Evaluation graph",
+	Static: "Static evaluation",
+	Edit: "Chessboard editor",
+};
+
+function panelName(id) {
+	return PANEL_NAMES[id] || id;
+}
 
 export function repaintSidebars() {
 	requestAnimationFrame(() => {
@@ -95,6 +110,7 @@ export function showHideWindow(name, targetState) {
 			document.getElementById(`w${wbId}`).style.display = "none";
 			const wbElem = document.getElementById(`wb${wbId}`);
 			wbElem.className = wbElem.className.replace(" selected", "");
+			wbElem.setAttribute("aria-pressed", "false");
 		}
 	}
 	const boxElem = document.getElementById(`w${name}`);
@@ -104,6 +120,7 @@ export function showHideWindow(name, targetState) {
 	const wbElem = document.getElementById(`wb${name}`);
 	wbElem.className =
 		wbElem.className.replace(" selected", "") + (newState ? " selected" : "");
+	wbElem.setAttribute("aria-pressed", String(newState));
 	checkSizes();
 	if ((name === "Edit" || isMobile) && isEdit()) showLegalMoves(null);
 	if (name === "Graph" && document.onmousemove === graphMouseMove)
@@ -125,6 +142,7 @@ export function setupBoxes() {
 				setupDragElement(div);
 				const divCloseIcon = document.createElement("div");
 				divCloseIcon.className = "closeIcon";
+				makeButton(divCloseIcon, `Close ${panelName(div.id.substring(1))}`);
 				divCloseIcon.onclick = function () {
 					const boxElem = this.parentElement;
 					showHideWindow(boxElem.id.substring(1));
@@ -139,7 +157,10 @@ export function setupBoxes() {
 			const wbIcon = document.createElement("div");
 			wbIcon.id = `wb${div.id.substring(1)}`;
 			wbIcon.className = `wbButton icon${div.id.substring(1)}`;
-			if (div.style.display !== "none") wbIcon.className += " selected";
+			const shown = div.style.display !== "none";
+			if (shown) wbIcon.className += " selected";
+			makeButton(wbIcon, panelName(div.id.substring(1)));
+			wbIcon.setAttribute("aria-pressed", String(shown));
 
 			wbIcon.onclick = function () {
 				showHideWindow(this.id.substring(2));

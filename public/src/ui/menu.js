@@ -13,7 +13,7 @@ import {
 } from "../game/position.js";
 import { state } from "../state.js";
 import { showBoard } from "./board.js";
-import { setElemText } from "./dom.js";
+import { makeButton, setElemText } from "./dom.js";
 
 export function showHideMenu(open, e) {
 	if (e != null) {
@@ -34,6 +34,7 @@ export function showHideMenu(open, e) {
 	const bElem = document.getElementById("buttonMenu");
 	const mElem = document.getElementById("menu");
 	bElem.className = state.menu ? "on down" : "on";
+	bElem.setAttribute("aria-expanded", String(state.menu));
 	mElem.style.top =
 		(bElem.getBoundingClientRect().bottom -
 			document.getElementById("container").getBoundingClientRect().top) *
@@ -71,9 +72,13 @@ export function setBoardColor(c) {
 }
 
 export function setEngineValue(elem) {
-	setElemText(
-		elem,
-		state.analysisEngine?.ready ? state.analysisEngine.depth : DEFAULT_DEPTH,
+	const depth = state.analysisEngine?.ready
+		? state.analysisEngine.depth
+		: DEFAULT_DEPTH;
+	setElemText(elem, depth);
+	elem.setAttribute(
+		"aria-label",
+		`Analysis depth ${depth}. Press to switch analysis off or on.`,
 	);
 	elem.removeAttribute("title");
 }
@@ -93,6 +98,8 @@ export function reloadMenu() {
 			const div = document.createElement("div");
 			div.className = `menuItem ${className}`;
 			if (!enabled) div.className += " disabled";
+			if (enabled) makeButton(div);
+			else div.setAttribute("aria-disabled", "true");
 			const span1 = document.createElement("span");
 			setElemText(span1, text);
 			div.appendChild(span1);
@@ -112,6 +119,7 @@ export function reloadMenu() {
 			div.appendChild(span1);
 			const span2 = document.createElement("span");
 			span2.id = "buttonEnginePlus";
+			makeButton(span2, "Increase analysis depth");
 			span2.onclick = () => {
 				if (state.analysisEngine?.ready)
 					command(
@@ -123,6 +131,7 @@ export function reloadMenu() {
 			div.appendChild(span2);
 			const span3 = document.createElement("span");
 			span3.id = "buttonEngineValue";
+			makeButton(span3);
 			span3.onclick = () => {
 				if (state.analysisEngine?.ready)
 					command(
@@ -135,6 +144,7 @@ export function reloadMenu() {
 			div.appendChild(span3);
 			const span4 = document.createElement("span");
 			span4.id = "buttonEngineMinus";
+			makeButton(span4, "Decrease analysis depth");
 			span4.onclick = () => {
 				if (state.analysisEngine?.ready)
 					command(`depth ${Math.max(0, state.analysisEngine.depth - 1)}`);
@@ -156,6 +166,7 @@ export function reloadMenu() {
 			// '+' button
 			const span2 = document.createElement("span");
 			span2.id = "buttonUciEloPlus";
+			makeButton(span2, "Raise playing engine rating");
 			span2.onclick = () => {
 				state.userUciEloRating = Math.min(3190, state.userUciEloRating + 10);
 				updateUciEloValue(span3);
@@ -172,6 +183,7 @@ export function reloadMenu() {
 			// '-' button
 			const span4 = document.createElement("span");
 			span4.id = "buttonUciEloMinus";
+			makeButton(span4, "Lower playing engine rating");
 			span4.onclick = () => {
 				state.userUciEloRating = Math.max(1320, state.userUciEloRating - 10);
 				updateUciEloValue(span3);
@@ -195,12 +207,14 @@ export function reloadMenu() {
 
 			const span2 = document.createElement("span");
 			span2.id = "buttonColorNext";
+			makeButton(span2, "Next board theme");
 			span2.onclick = () => {
 				setBoardColor(state.boardColor + 1);
 			};
 			div.appendChild(span2);
 			const div1 = document.createElement("div");
 			div1.id = "icolor";
+			makeButton(div1, "Default board theme");
 			div1.className = `c${state.boardColor}`;
 			div1.onclick = () => {
 				setBoardColor(0);
@@ -232,6 +246,7 @@ export function reloadMenu() {
 
 			const span4 = document.createElement("span");
 			span4.id = "buttonColorPrev";
+			makeButton(span4, "Previous board theme");
 			span4.onclick = () => {
 				setBoardColor(state.boardColor - 1);
 			};
