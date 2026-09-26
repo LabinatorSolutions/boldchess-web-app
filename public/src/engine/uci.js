@@ -28,7 +28,7 @@ export function loadEngine(onReady) {
 	}
 	let worker;
 	try {
-		worker = new Worker("./engine/stockfish-18-lite.js");
+		worker = new Worker("./engine/stockfish-19-lite.js");
 	} catch (error) {
 		return disable(error.message);
 	}

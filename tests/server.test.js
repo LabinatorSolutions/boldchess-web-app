@@ -25,7 +25,7 @@ describe("static hosting", () => {
 	});
 
 	test("serves the engine worker", async () => {
-		const response = await fetch(`${origin}/engine/stockfish-18-lite.js`);
+		const response = await fetch(`${origin}/engine/stockfish-19-lite.js`);
 		expect(response.status).toBe(200);
 	});
 

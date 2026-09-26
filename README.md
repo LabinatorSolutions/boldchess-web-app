@@ -2,7 +2,7 @@
 
 ![Bun](https://img.shields.io/badge/Bun-%23000000.svg?style=flat&logo=bun&logoColor=white)
 ![Biome](https://img.shields.io/badge/Biome-60a5fa?style=flat&logo=biome&logoColor=white)
-![Stockfish Chess Engine](https://img.shields.io/badge/Stockfish_Version-18-358853)
+![Stockfish Chess Engine](https://img.shields.io/badge/Stockfish_Version-19-358853)
 ![Mobile Ready](https://img.shields.io/badge/Mobile_Ready-Yes-985b68)
 ![License](https://img.shields.io/badge/License-AGPL_v3-663366)
 
@@ -190,7 +190,7 @@ split into modules.
 
 ## HTTP Headers Setup
 
-The app uses **Stockfish 18 JS**, which utilizes `SharedArrayBuffer` for multi-threaded performance.
+The app uses **Stockfish 19 JS**, which utilizes `SharedArrayBuffer` for multi-threaded performance.
 
 To ensure the engine functions correctly, you must configure the following HTTP headers on your server:
 

@@ -3,7 +3,7 @@
  *
  * Two Stockfish instances are used: one analyses whatever position is on the
  * board, the other plays at a limited strength. Each one instantiates the
- * ~7 MB WASM build, so the playing engine is only started when the player
+ * ~1.6 MB WASM build, so the playing engine is only started when the player
  * actually enters a play mode - analysis-only sessions never pay for it.
  */
 
