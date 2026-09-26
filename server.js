@@ -4,13 +4,29 @@ const helmet = require("helmet");
 const morgan = require("morgan");
 const compression = require("compression");
 const rateLimit = require("express-rate-limit");
-const { securityHeaders } = require("./security-headers");
+const { pathHeaders, securityHeaders } = require("./security-headers");
 
 // Load environment variables from .env file
 require("dotenv").config({ quiet: true });
 
 const app = express();
 const port = process.env.PORT || 3000;
+
+/**
+ * TRUST_PROXY, for running behind a reverse proxy or a PaaS router. Without
+ * it every visitor arrives from the proxy's address and shares one rate-limit
+ * bucket. Give the number of proxy hops (usually 1), or any value Express's
+ * "trust proxy" setting accepts (an address, a subnet, "loopback").
+ */
+function parseTrustProxy(value) {
+	if (value == null || value.trim() === "") return undefined;
+	if (/^\d+$/.test(value)) return Number(value);
+	if (value === "true") return true;
+	if (value === "false") return false;
+	return value;
+}
+const trustProxy = parseTrustProxy(process.env.TRUST_PROXY);
+if (trustProxy !== undefined) app.set("trust proxy", trustProxy);
 
 // Helmet's baseline hardening. CSP and the cross-origin isolation headers are
 // disabled here and set below from security-headers.js instead, so that this
@@ -45,12 +61,33 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-// Serve static files from the public directory
-app.use(express.static(path.join(__dirname, "public")));
+// Serve static files from the public directory, adding the per-path headers
+// (security-headers.js) that Netlify and Vercel get from their config files.
+const publicDir = path.join(__dirname, "public");
+const extraHeaders = pathHeaders().map(({ prefix, headers }) => ({
+	dir: path.resolve(publicDir, `.${prefix}`) + path.sep,
+	headers: Object.entries(headers),
+}));
+app.use(
+	express.static(publicDir, {
+		setHeaders(res, filePath) {
+			for (const { dir, headers } of extraHeaders) {
+				if (!filePath.startsWith(dir)) continue;
+				for (const [name, value] of headers) res.setHeader(name, value);
+			}
+		},
+	}),
+);
 
-// Send the main HTML file for any other requests (Single Page Application)
+// Any other page URL gets the app shell (Single Page Application). A missing
+// file - anything with an extension - is a real 404: answering a module or
+// the engine with HTML would only surface later as a confusing MIME error.
+app.use((req, res, next) => {
+	if (path.extname(req.path) !== "") return next();
+	res.sendFile(path.join(publicDir, "index.html"));
+});
 app.use((_req, res) => {
-	res.sendFile(path.join(__dirname, "public", "index.html"));
+	res.status(404).type("text/plain").send("Not found");
 });
 
 // Error handling middleware

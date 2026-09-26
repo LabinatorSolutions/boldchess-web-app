@@ -9,7 +9,7 @@
 
 const fs = require("node:fs");
 const path = require("node:path");
-const { securityHeaders } = require("../security-headers");
+const { pathHeaders, securityHeaders } = require("../security-headers");
 
 const root = path.join(__dirname, "..");
 const headersPath = path.join(root, "public", "_headers");
@@ -28,6 +28,12 @@ function renderNetlify() {
 	for (const [name, value] of Object.entries(headers)) {
 		lines.push(`  ${name}: ${value}`);
 	}
+	for (const { prefix, headers: extra } of pathHeaders()) {
+		lines.push("", `${prefix}*`);
+		for (const [name, value] of Object.entries(extra)) {
+			lines.push(`  ${name}: ${value}`);
+		}
+	}
 	return `${lines.join("\n")}\n`;
 }
 
@@ -38,6 +44,10 @@ function renderVercel() {
 			source: "/(.*)",
 			headers: Object.entries(headers).map(([key, value]) => ({ key, value })),
 		},
+		...pathHeaders().map(({ prefix, headers: extra }) => ({
+			source: `${prefix}(.*)`,
+			headers: Object.entries(extra).map(([key, value]) => ({ key, value })),
+		})),
 	];
 	return `${JSON.stringify(config, null, "\t")}\n`;
 }

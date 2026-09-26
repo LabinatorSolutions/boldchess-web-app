@@ -1,7 +1,7 @@
 /** Verifies the Express server serves the app with the shared security headers. */
 
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
-import { securityHeaders } from "../security-headers.js";
+import { pathHeaders, securityHeaders } from "../security-headers.js";
 import app from "../server.js";
 
 let server;
@@ -42,9 +42,57 @@ describe("static hosting", () => {
 			"protobuf-8.0.0.min.js",
 		]) {
 			const response = await fetch(`${origin}/libs/${file}`);
-			// The SPA fallback answers with the shell, never the deleted bundle.
-			expect(response.headers.get("content-type")).toContain("text/html");
+			expect(response.status).toBe(404);
 		}
+	});
+
+	test("a missing asset is a 404, not the app shell", async () => {
+		const response = await fetch(`${origin}/src/missing-module.js`);
+		expect(response.status).toBe(404);
+		expect(response.headers.get("content-type")).not.toContain("text/html");
+	});
+
+	test("the engine build is cached long-term", async () => {
+		for (const file of ["stockfish-19-lite.js", "stockfish-19-lite.wasm"]) {
+			const response = await fetch(`${origin}/engine/${file}`);
+			expect(response.status).toBe(200);
+			expect(response.headers.get("cache-control")).toBe(
+				pathHeaders()[0].headers["Cache-Control"],
+			);
+		}
+	});
+
+	test("everything else is revalidated on each load", async () => {
+		const response = await fetch(`${origin}/main.js`);
+		expect(response.headers.get("cache-control")).toBe("public, max-age=0");
+	});
+});
+
+describe("TRUST_PROXY", () => {
+	/** Load the app in a fresh process and read back its trust proxy setting. */
+	function trustProxy(value) {
+		const result = Bun.spawnSync({
+			cmd: [
+				process.execPath,
+				"-e",
+				'console.log(JSON.stringify(require("./server.js").get("trust proxy")))',
+			],
+			cwd: `${import.meta.dir}/..`,
+			env: { ...process.env, NODE_ENV: "test", TRUST_PROXY: value },
+		});
+		return JSON.parse(result.stdout.toString().trim());
+	}
+
+	test("is off unless set", () => {
+		expect(trustProxy("")).toBe(false);
+	});
+
+	test("a hop count is passed through as a number", () => {
+		expect(trustProxy("1")).toBe(1);
+	});
+
+	test("an address or keyword is passed through as text", () => {
+		expect(trustProxy("loopback")).toBe("loopback");
 	});
 });
 
