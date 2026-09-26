@@ -138,11 +138,37 @@ describe("rules", () => {
 		expect(core.isInsufficientMaterial(core.parseFEN(START_FEN))).toBe(false);
 	});
 
+	test("bishops that all share one square color are a dead position", () => {
+		const dead = [
+			"8/8/8/4k3/8/b7/4K3/2B5 w - - 0 1", // c1 and a3, both dark
+			"8/8/8/4k3/8/8/4K3/2B1B3 w - - 0 1", // two bishops of one side, both dark
+			"8/8/8/4k3/8/8/4K3/2B5 w - - 0 1", // a lone bishop
+		];
+		for (const fen of dead)
+			expect(core.isInsufficientMaterial(core.parseFEN(fen))).toBe(true);
+		const alive = [
+			"8/8/8/4k3/8/8/4K3/2B2b2 w - - 0 1", // c1 dark, f1 light
+			"8/8/8/4k3/8/8/4K3/2B1N3 w - - 0 1", // bishop and knight
+			"8/8/8/4k3/8/8/4K3/2B2n2 w - - 0 1", // bishop against knight
+			"8/8/8/4k3/8/8/4K3/2N2n2 w - - 0 1", // knight against knight
+			"8/8/8/4k3/8/8/4KP2/8 w - - 0 1", // a pawn can still promote
+		];
+		for (const fen of alive)
+			expect(core.isInsufficientMaterial(core.parseFEN(fen))).toBe(false);
+	});
+
 	test("fifty-move rule reads the halfmove clock", () => {
 		expect(core.isFiftyMoveRule(core.parseFEN(START_FEN))).toBe(false);
 		expect(
 			core.isFiftyMoveRule(core.parseFEN("8/8/8/4k3/8/8/4K3/6R1 w - - 100 80")),
 		).toBe(true);
+	});
+
+	test("the seventy-five-move rule ends the game on its own", () => {
+		const at = (clock) =>
+			core.parseFEN(`8/8/8/4k3/8/8/4K3/6R1 w - - ${clock} 120`);
+		expect(core.isSeventyFiveMoveRule(at(149))).toBe(false);
+		expect(core.isSeventyFiveMoveRule(at(150))).toBe(true);
 	});
 
 	test("en passant capture removes the passed pawn", () => {

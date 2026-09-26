@@ -1,6 +1,7 @@
 /** The position currently on the board, and the toolbar toggles that change how it is played. */
 
-import { getFENPos } from "../chess/fen.js";
+import { isFiftyMoveRule } from "../chess/draws.js";
+import { getFENPos, parseFEN } from "../chess/fen.js";
 import { state } from "../state.js";
 import { getElemText, setElemText } from "../ui/dom.js";
 
@@ -27,11 +28,11 @@ export function getCurSan(move) {
 }
 
 /**
- * Whether the position shown has now occurred three times. Only the game up to
- * the entry shown counts: stepping back through a game must not report a draw
+ * How many times the position shown has occurred. Only the game up to the
+ * entry shown counts: stepping back through a game must not report a draw
  * that only happens later.
  */
-export function isThreefoldRepetition(fen) {
+export function repetitionCount(fen) {
 	const current = fen || getCurFEN();
 	const pos = getFENPos(current);
 	const last = Math.min(state.historyindex, state.history.length - 1);
@@ -42,7 +43,28 @@ export function isThreefoldRepetition(fen) {
 	// A position not yet recorded (edited, or awaiting its history entry)
 	// is itself one more occurrence.
 	if (last < 0 || state.history[last].fen !== current) count++;
-	return count >= 3;
+	return count;
+}
+
+/** Threefold repetition: a draw may be claimed. */
+export function isThreefoldRepetition(fen) {
+	return repetitionCount(fen) >= 3;
+}
+
+/** Fivefold repetition: the game is drawn without a claim. */
+export function isFivefoldRepetition(fen) {
+	return repetitionCount(fen) >= 5;
+}
+
+/**
+ * The rule under which the side to move could claim a draw here, or null.
+ * The app does not end the game for these; it says so and play goes on.
+ */
+export function claimableDraw(fen) {
+	const current = fen || getCurFEN();
+	if (isThreefoldRepetition(current)) return "Threefold Repetition";
+	if (isFiftyMoveRule(parseFEN(current))) return "50-Move Rule";
+	return null;
 }
 
 const PROMOTION_KEY = "promotionPiece";

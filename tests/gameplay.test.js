@@ -18,6 +18,8 @@ let historyEntry;
 let getCurFEN;
 let setCurFEN;
 let isThreefoldRepetition;
+let isFivefoldRepetition;
+let claimableDraw;
 let togglePromotionPiece;
 let getPromotionPiece;
 let doMoveHandler;
@@ -34,6 +36,8 @@ beforeAll(async () => {
 		getCurFEN,
 		setCurFEN,
 		isThreefoldRepetition,
+		isFivefoldRepetition,
+		claimableDraw,
 		togglePromotionPiece,
 		getPromotionPiece,
 	} = await import("../public/src/game/position.js"));
@@ -164,6 +168,36 @@ test("threefold repetition only counts positions up to the one shown", () => {
 	state.historyindex = 4;
 	setCurFEN(state.history[4].fen);
 	expect(isThreefoldRepetition()).toBe(false);
+});
+
+/** Shuffle both knights out and back `times` times from the start position. */
+function shuffleKnights(times) {
+	const cycle = [
+		[6, 7, 5, 5],
+		[6, 0, 5, 2],
+		[5, 5, 6, 7],
+		[5, 2, 6, 0],
+	];
+	for (let i = 0; i < times; i++)
+		for (const [x1, y1, x2, y2] of cycle)
+			doMoveHandler({ from: { x: x1, y: y1 }, to: { x: x2, y: y2 } });
+}
+
+test("threefold repetition can be claimed, fivefold ends the game", () => {
+	shuffleKnights(2); // the start position has now occurred three times
+	expect(isThreefoldRepetition()).toBe(true);
+	expect(isFivefoldRepetition()).toBe(false);
+	expect(claimableDraw()).toBe("Threefold Repetition");
+
+	shuffleKnights(2); // five times
+	expect(isFivefoldRepetition()).toBe(true);
+});
+
+test("the fifty-move rule is a claim, not the end of the game", () => {
+	setUp("8/8/8/4k3/8/8/4K3/6R1 w - - 100 80");
+	expect(claimableDraw()).toBe("50-Move Rule");
+	setUp("8/8/8/4k3/8/8/4K3/6R1 w - - 99 80");
+	expect(claimableDraw()).toBeNull();
 });
 
 test("the analysis loop gives up on an engine that failed to start", () => {

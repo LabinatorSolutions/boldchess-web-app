@@ -1,6 +1,9 @@
 /** The move list panel and its evaluations. */
 
-import { isFiftyMoveRule, isInsufficientMaterial } from "../chess/draws.js";
+import {
+	isInsufficientMaterial,
+	isSeventyFiveMoveRule,
+} from "../chess/draws.js";
 import { colorflip, generateFEN, parseFEN } from "../chess/fen.js";
 import { sanMove } from "../chess/notation.js";
 import {
@@ -9,7 +12,7 @@ import {
 	genMoves,
 	isWhiteCheck,
 } from "../chess/rules.js";
-import { getCurFEN, isThreefoldRepetition } from "../game/position.js";
+import { getCurFEN, isFivefoldRepetition } from "../game/position.js";
 import { doMoveHandler } from "../input/mouse.js";
 import { state } from "../state.js";
 import { setArrow } from "./arrows.js";
@@ -39,14 +42,16 @@ export function refreshMoves() {
 
 			// Checkmate and stalemate end the game on the board itself, so they
 			// take precedence over the draw rules below: a mate delivered on the
-			// move that reaches the fifty-move limit still stands.
+			// move that reaches the move limit still stands. Only the draws that
+			// need no claim end the game here; claimable ones (threefold, fifty
+			// moves) are shown in the header by updateInfo and play goes on.
 			let drawReason = null;
 			if (state.curmoves.length > 0) {
 				if (isInsufficientMaterial(pos))
 					drawReason = "Draw - Insufficient Material";
-				else if (isFiftyMoveRule(pos)) drawReason = "Draw - 50-Move Rule";
-				else if (isThreefoldRepetition())
-					drawReason = "Draw - Threefold Repetition";
+				else if (isSeventyFiveMoveRule(pos)) drawReason = "Draw - 75-Move Rule";
+				else if (isFivefoldRepetition())
+					drawReason = "Draw - Fivefold Repetition";
 			}
 
 			if (drawReason != null) {

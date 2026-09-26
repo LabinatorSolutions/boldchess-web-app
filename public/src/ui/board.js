@@ -5,7 +5,7 @@ import { isLegal, isWhiteCheck } from "../chess/rules.js";
 import { command } from "../commands.js";
 import { evalAll } from "../engine/analysis.js";
 import { historyMove } from "../game/history.js";
-import { getCurFEN } from "../game/position.js";
+import { claimableDraw, getCurFEN } from "../game/position.js";
 import { state } from "../state.js";
 import { repaintLastMoveArrow, setArrow, showArrow3 } from "./arrows.js";
 import {
@@ -241,7 +241,8 @@ export function updateInfo() {
 		state.curmoves.length +
 		" Legal Move" +
 		(state.curmoves.length === 1 ? "" : "s") +
-		")";
+		")" +
+		drawClaimText(curfen);
 
 	// Batch DOM updates
 	const positionInfoElem = document.getElementById("positionInfo");
@@ -288,6 +289,13 @@ export function updateInfo() {
 		historyFragment.appendChild(document.createTextNode(" "));
 	}
 	historyElem.appendChild(historyFragment);
+}
+
+/** Header note for a draw the side to move could claim; play is not stopped. */
+function drawClaimText(fen) {
+	if (state.curmoves.length === 0) return "";
+	const rule = claimableDraw(fen);
+	return rule == null ? "" : ` - Draw Can Be Claimed (${rule})`;
 }
 
 export function refreshFlip() {
