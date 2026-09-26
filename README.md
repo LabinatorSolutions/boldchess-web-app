@@ -71,6 +71,7 @@ The application uses an optional `.env` file for configuration.
 | :--- | :--- | :--- |
 | `PORT` | The port the server will listen on. | `3000` |
 | `RATE_LIMIT_MAX` | Requests allowed per IP per 15 minutes. One page load is ~40 requests. | `1000` |
+| `TRUST_PROXY` | Set behind a reverse proxy so each visitor is rate-limited on their own address: the number of proxy hops (usually `1`), or any Express `trust proxy` value. | unset |
 
 ---
 
@@ -223,6 +224,10 @@ All three deploy targets read from a single source, [`security-headers.js`](secu
 
 Edit `security-headers.js`, run `bun run build`, and commit the regenerated files. CI fails if they
 drift (`node scripts/generate-headers.js --check`).
+
+The same file also holds per-path headers (`pathHeaders()`): the engine under `/engine/` is served
+with a one-year immutable `Cache-Control`, because its file names carry the Stockfish version.
+Give a replacement build a new file name rather than overwriting the old one.
 
 Read more about `SharedArrayBuffer` at the [MDN documentation](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SharedArrayBuffer).
 
