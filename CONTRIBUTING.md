@@ -28,13 +28,13 @@ We welcome suggestions for enhancements! If you have an idea to improve the app:
 
 We actively welcome your pull requests:
 
-1. Fork the repo and create your branch from `main`.
+1. Fork the repo and create your branch from `master`.
 2. If you've added code, write clear, commented code and adhere to our coding conventions.
 3. Run `bun run ci` before opening the pull request. It is the same gate CI runs: the deploy
    headers must be in sync, Biome must pass, and the test suite must be green.
 4. If your change touches the browser UI, also run `bun run smoke` — it loads the app in headless
    Chromium and fails on any console error.
-5. Issue your pull request to the `main` branch.
+5. Issue your pull request to the `master` branch.
 6. Provide a clear description of the changes in the pull request. Include the purpose of the change and any relevant issues it addresses.
 
 ## Coding Standards
