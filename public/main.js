@@ -32,6 +32,7 @@ import {
 import {
 	checkSizes,
 	observeSizes,
+	requestInfoUpdate,
 	setupMobileLayout,
 	setupTouchEvents,
 } from "./src/ui/layout.js";
@@ -84,7 +85,15 @@ window.onload = () => {
 	// Load The Analysis & Playing Engines
 	// The playing engine starts on demand (see engine/engines.js).
 	startAnalysisEngine();
-	loadBook();
+	// Book moves are graded without the engine, so when the book arrives the
+	// grades change: redraw History (via the info refresh, which also covers the
+	// report and Opening windows) and the graph. With analysis running they would
+	// catch up anyway; with it off (depth 0, or a game without coach mode)
+	// nothing else would redraw them.
+	loadBook().then(() => {
+		requestInfoUpdate();
+		repaintGraph();
+	});
 
 	document.onmousedown = onMouseDown;
 	document.onmouseup = onMouseUp;
