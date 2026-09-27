@@ -38,7 +38,10 @@ export function loadEngine(onReady) {
 	};
 	engine.send = function send(cmd, message) {
 		cmd = String(cmd).trim();
-		engine.messagefunc = message;
+		// A command without a listener (setoption, stop) leaves the current one
+		// in place: replacing it would swallow a running search's bestmove, its
+		// done() would never fire, and the analysis loop would wait forever.
+		if (message !== undefined) engine.messagefunc = message;
 		worker.postMessage(cmd);
 	};
 	engine.eval = function evaluate(fen, done, info) {

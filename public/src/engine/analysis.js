@@ -36,8 +36,13 @@ export function evalNext() {
 				curpos,
 				function done(str) {
 					state.analysisEngine.waiting = true;
-					if (i >= state.curmoves.length || state.curmoves[i].fen !== curpos)
+					// The move list was rebuilt while this searched (showBoard
+					// refreshes it a frame after starting the analysis, and a mate
+					// in one answers sooner): drop the stale result, keep going.
+					if (i >= state.curmoves.length || state.curmoves[i].fen !== curpos) {
+						if (!state.analysisEngine.kill) evalNext();
 						return;
+					}
 					if (
 						state.analysisEngine.score != null &&
 						state.analysisEngine.depth === initialdepth
@@ -114,8 +119,12 @@ export function evalNext() {
 				state.analysisEngine.waiting = false;
 				state.analysisEngine.eval(curpos, function done(str) {
 					state.analysisEngine.waiting = true;
-					if (i >= state.history.length || state.history[i].fen !== curpos)
+					// The history changed while this searched: drop the stale
+					// result and carry on with the history as it is now.
+					if (i >= state.history.length || state.history[i].fen !== curpos) {
+						if (!state.analysisEngine.kill) evalNext();
 						return;
+					}
 					if (state.analysisEngine.score != null) {
 						const m = str.match(/^bestmove\s(\S+)(?:\sponder\s(\S+))?/);
 						const answer =
