@@ -97,6 +97,24 @@ function history(sans, fen = START) {
 const last = (entries) => entries.length - 1;
 
 describe("book index", () => {
+	test("continuations carry their SAN and break ties by it", () => {
+		// After 1.e3 e5, Bc4 and c4 each have one named line.
+		const fen = "rnbqkbnr/pppp1ppp/8/4p3/8/4P3/PPPP1PPP/RNBQKBNR w KQkq - 0 2";
+		const rows = continuations(BOOK, fen);
+		const tied = rows.filter((r) => r.san === "Bc4" || r.san === "c4");
+		expect(tied.map((r) => [r.san, r.lineCount])).toEqual([
+			["Bc4", 1],
+			["c4", 1],
+		]);
+		for (let i = 1; i < rows.length; i++) {
+			const [a, b] = [rows[i - 1], rows[i]];
+			expect(
+				a.lineCount > b.lineCount ||
+					(a.lineCount === b.lineCount && a.san < b.san),
+			).toBe(true);
+		}
+	});
+
 	test("every real line builds into the index", () => {
 		expect(BOOK.size).toBeGreaterThan(3000);
 		expect(isBookPosition(BOOK, START)).toBe(true);

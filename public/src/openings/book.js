@@ -7,7 +7,8 @@
  */
 
 import { generateFEN, getFENPos, parseFEN } from "../chess/fen.js";
-import { doMove, isLegal } from "../chess/rules.js";
+import { sanMove } from "../chess/notation.js";
+import { doMove, genMoves, isLegal } from "../chess/rules.js";
 import { START } from "../config.js";
 
 const FILES = "abcdefgh";
@@ -167,18 +168,21 @@ export function openingAt(book, entries, index) {
 
 /**
  * Book moves from `fen`, most established first: by the number of named lines
- * through the move, then by the move string.
+ * through the move, then by SAN.
  */
 export function continuations(book, fen) {
 	const n = book.get(positionKey(fen));
 	if (n == null) return [];
 	const lines = LINES.get(book);
+	const pos = parseFEN(fen);
+	const legal = genMoves(pos);
 	const rows = [];
 	for (const [move, edge] of n.next) {
 		const child = book.get(edge.key);
 		const named = child.name != null ? child : null;
 		rows.push({
 			move,
+			san: sanMove(pos, moveFromString(move), legal),
 			key: edge.key,
 			name: named ? named.name : lines[edge.lineIndex][1],
 			eco: named ? named.eco : lines[edge.lineIndex][0],
@@ -186,7 +190,7 @@ export function continuations(book, fen) {
 		});
 	}
 	return rows.sort(
-		(a, b) => b.lineCount - a.lineCount || (a.move < b.move ? -1 : 1),
+		(a, b) => b.lineCount - a.lineCount || (a.san < b.san ? -1 : 1),
 	);
 }
 

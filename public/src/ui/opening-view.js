@@ -59,11 +59,9 @@ function span(className, text) {
 
 /** Book moves from `fen` as rows; buttons in analysis, text in a game. */
 function renderContinuations(movesElem, book, fen, analysis) {
-	const pos = parseFEN(fen);
-	const legal = genMoves(pos);
 	for (const row of continuations(book, fen)) {
 		const move = moveFromString(row.move);
-		const san = sanMove(pos, move, legal);
+		const san = row.san;
 		const elem = document.createElement("DIV");
 		elem.className = "openingMove";
 		elem.title = `${row.eco} ${row.name}`;
