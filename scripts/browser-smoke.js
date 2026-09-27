@@ -300,6 +300,18 @@ async function main() {
 			arrows: document.getElementById("arrowWrapper4").style.display,
 			best: document.getElementById("arrowWrapper1").style.display,
 			last: document.getElementById("arrowWrapper2").style.display,
+			// The arrows' box must cover the board exactly, or every arrow
+			// is drawn off its squares.
+			aligned: (() => {
+				const a = document.getElementById("arrowWrapper4").getBoundingClientRect();
+				// #chessboard1 has no height of its own (its squares are
+				// absolutely placed), so the box is checked against its width.
+				const b = document.getElementById("chessboard1").getBoundingClientRect();
+				return (
+					["top", "left", "width"].every((k) => Math.abs(a[k] - b[k]) < 1) &&
+					Math.abs(a.height - b.width) < 1
+				);
+			})(),
 		})`),
 	);
 	await evaluate(`document.getElementById("wbReport").click()`);
@@ -589,6 +601,7 @@ async function main() {
 				reviewed.best === "none" &&
 				reviewed.last === "none",
 		],
+		["the review arrows sit on the board's squares", reviewed.aligned],
 		["a click across a board redraw selects its piece", selectedAcrossRedraw],
 		[
 			"board intact after exercising the input handlers",

@@ -147,25 +147,23 @@ window.onload = () => {
 		showGraphTooltip(state.historyindex, event);
 	};
 
-	document.getElementById("arrowWrapper1").style.top =
-		document.getElementById("arrowWrapper2").style.top =
-		document.getElementById("arrowWrapper3").style.top =
-			document.getElementById("chessboard1").getBoundingClientRect().top -
-			document.getElementById("boardWrapper").getBoundingClientRect().top +
-			"px";
-	document.getElementById("arrowWrapper1").style.left =
-		document.getElementById("arrowWrapper2").style.left =
-		document.getElementById("arrowWrapper3").style.left =
-			document.getElementById("chessboard1").getBoundingClientRect().left -
-			document.getElementById("boardWrapper").getBoundingClientRect().left +
-			"px";
-	document.getElementById("arrowWrapper1").style.width =
-		document.getElementById("arrowWrapper2").style.width =
-		document.getElementById("arrowWrapper3").style.width =
-		document.getElementById("arrowWrapper1").style.height =
-		document.getElementById("arrowWrapper2").style.height =
-		document.getElementById("arrowWrapper3").style.height =
-			`${40 * 8}px`;
+	// Every arrow layer covers the board exactly: the arrows are drawn in board
+	// coordinates (40px squares), so an unplaced layer draws them off-square.
+	const board = document.getElementById("chessboard1").getBoundingClientRect();
+	const wrapper = document
+		.getElementById("boardWrapper")
+		.getBoundingClientRect();
+	for (const id of [
+		"arrowWrapper1",
+		"arrowWrapper2",
+		"arrowWrapper3",
+		"arrowWrapper4",
+	]) {
+		const layer = document.getElementById(id);
+		layer.style.top = `${board.top - wrapper.top}px`;
+		layer.style.left = `${board.left - wrapper.left}px`;
+		layer.style.width = layer.style.height = `${40 * 8}px`;
+	}
 
 	if (isMobile) setupMobileLayout(true);
 	setupTouchEvents(
