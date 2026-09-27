@@ -270,18 +270,22 @@ export function updateInfo() {
 		historyElem.removeChild(historyElem.firstChild);
 
 	const historyFragment = document.createDocumentFragment();
-	let lastmn = null,
-		mn = null;
 	const grades = gradeGame(state.history, getBook());
 
 	for (let i = 0; i < state.history.length; i++) {
-		mn = parseMoveNumber(state.history[i].fen);
-		if (mn !== lastmn) {
-			const span1 = document.createElement("span");
-			setElemText(span1, `${mn}. `);
-			span1.style.color = "#64c4db";
-			historyFragment.appendChild(span1);
-			lastmn = mn;
+		// A move takes its number from the position it was played in: "3." before
+		// White's move, and "3…" before Black's only when nothing precedes it (the
+		// first move, or one after a set-up position).
+		if (i > 0 && state.history[i].san != null) {
+			const before = state.history[i - 1];
+			const white = before.fen.split(" ")[1] === "w";
+			if (white || i === 1 || before.san == null) {
+				const span1 = document.createElement("span");
+				const mn = parseMoveNumber(before.fen);
+				setElemText(span1, white ? `${mn}. ` : `${mn}… `);
+				span1.style.color = "#64c4db";
+				historyFragment.appendChild(span1);
+			}
 		}
 		const san = state.history[i].san != null ? state.history[i].san : "\u2605";
 		const span2 = document.createElement("span");
