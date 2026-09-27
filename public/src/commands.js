@@ -544,7 +544,8 @@ export function dosearch() {
 }
 
 export function showHideButtonGo(visible) {
-	if (!searchInput().focus) visible = false;
+	// `.focus` is the method, always truthy; the focus itself is activeElement.
+	if (document.activeElement !== searchInput()) visible = false;
 	if (visible && searchInput().value === getCurFEN()) visible = false;
 	document.getElementById("buttonGo").style.display = visible ? "" : "none";
 }

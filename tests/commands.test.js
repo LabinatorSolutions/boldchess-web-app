@@ -301,3 +301,22 @@ test("a lichess moves pane is scraped into a replayable game", () => {
 		"Nc6",
 	]);
 });
+
+test("the Go button shows only while the command box has focus", async () => {
+	const { showHideButtonGo } = await import("../public/src/commands.js");
+	const input = dom.getElementById("searchInput");
+	const go = dom.getElementById("buttonGo");
+	const before = document.activeElement;
+	input.focus = () => {}; // a real input has the method, so `.focus` is truthy
+	input.value = "1. e4";
+	try {
+		document.activeElement = null;
+		showHideButtonGo(true);
+		expect(go.style.display).toBe("none");
+		document.activeElement = input;
+		showHideButtonGo(true);
+		expect(go.style.display).toBe("");
+	} finally {
+		document.activeElement = before;
+	}
+});
