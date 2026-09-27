@@ -181,6 +181,31 @@ async function main() {
 		})`),
 	);
 
+	// Reach the start position a third time. Analysis keeps it open for the
+	// engine; a game (key 4, two players) ends it as a draw at once.
+	const typeKey = async (key) => {
+		for (const type of ["keyDown", "keyUp"])
+			await send("Input.dispatchKeyEvent", { type, key, text: key });
+		await sleep(300);
+	};
+	const repetitionStatus = () =>
+		evaluate(`JSON.stringify({
+			status: document.querySelector("#moves .positionStatus")?.textContent ?? "",
+			evaluated: [...document.querySelectorAll("#moves .eval")].filter((e) =>
+				/[0-9]/.test(e.textContent),
+			).length,
+		})`);
+	await evaluate(`(() => {
+		document.getElementById("searchInput").value =
+			"1. Nf3 Nf6 2. Ng1 Ng8 3. Nf3 Nf6 4. Ng1 Ng8";
+		document.getElementById("simpleSearch").onsubmit();
+	})()`);
+	await sleep(SETTLE_MS);
+	const repeatedInAnalysis = JSON.parse(await repetitionStatus());
+	await typeKey("4");
+	const repeatedInGame = JSON.parse(await repetitionStatus());
+	await typeKey("1");
+
 	// The edit palette and the arrow markers are built without style attributes
 	// in the markup, because CSP's style-src does not allow them. Check that the
 	// palette is there and still carries the inline offsets the edit handlers
@@ -354,6 +379,14 @@ async function main() {
 			browsed.info.startsWith("Position: 2 of 4"),
 		],
 		["engine re-evaluates after stepping back", browsed.evaluated > 0],
+		[
+			"analysis keeps evaluating a threefold repetition",
+			repeatedInAnalysis.status === "" && repeatedInAnalysis.evaluated > 0,
+		],
+		[
+			"a game ends on threefold repetition",
+			repeatedInGame.status === "Draw - Threefold Repetition",
+		],
 		[
 			"board intact after exercising the input handlers",
 			afterInteraction.squares === 64,

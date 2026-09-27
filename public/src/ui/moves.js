@@ -1,9 +1,5 @@
 /** The move list panel and its evaluations. */
 
-import {
-	isInsufficientMaterial,
-	isSeventyFiveMoveRule,
-} from "../chess/draws.js";
 import { colorflip, generateFEN, parseFEN } from "../chess/fen.js";
 import { sanMove } from "../chess/notation.js";
 import {
@@ -12,7 +8,7 @@ import {
 	genMoves,
 	isWhiteCheck,
 } from "../chess/rules.js";
-import { getCurFEN, isFivefoldRepetition } from "../game/position.js";
+import { gameDrawReason, getCurFEN } from "../game/position.js";
 import { doMoveHandler } from "../input/mouse.js";
 import { state } from "../state.js";
 import { setArrow } from "./arrows.js";
@@ -41,18 +37,10 @@ export function refreshMoves() {
 			}
 
 			// Checkmate and stalemate end the game on the board itself, so they
-			// take precedence over the draw rules below: a mate delivered on the
-			// move that reaches the move limit still stands. Only the draws that
-			// need no claim end the game here; claimable ones (threefold, fifty
-			// moves) are shown in the header by updateInfo and play goes on.
-			let drawReason = null;
-			if (state.curmoves.length > 0) {
-				if (isInsufficientMaterial(pos))
-					drawReason = "Draw - Insufficient Material";
-				else if (isSeventyFiveMoveRule(pos)) drawReason = "Draw - 75-Move Rule";
-				else if (isFivefoldRepetition())
-					drawReason = "Draw - Fivefold Repetition";
-			}
+			// take precedence over the draw rules: a mate delivered on the move
+			// that completes a repetition still stands.
+			const drawReason =
+				state.curmoves.length > 0 ? gameDrawReason(getCurFEN()) : null;
 
 			if (drawReason != null) {
 				state.curmoves = []; // Clear legal moves to prevent further play
@@ -62,7 +50,7 @@ export function refreshMoves() {
 				const div = document.createElement("div");
 				div.style.backgroundColor = "#894e00"; // distinct color for draw
 				div.className = "positionStatus";
-				setElemText(div, drawReason);
+				setElemText(div, `Draw - ${drawReason}`);
 				div0.appendChild(div);
 				const ul = document.createElement("ul"),
 					li = document.createElement("li");

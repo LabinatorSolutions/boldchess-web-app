@@ -1,9 +1,6 @@
 /**
- * Draw conditions that depend only on the current position.
- *
- * FIDE separates the two kinds: a dead position and the seventy-five-move rule
- * end the game on their own, while the fifty-move rule (like threefold
- * repetition, see game/position.js) only lets a player claim a draw.
+ * Draw conditions that depend only on the current position. Repetition needs
+ * the game history, so it lives in game/position.js with `gameDrawReason`.
  */
 
 /**
@@ -27,12 +24,7 @@ export function isInsufficientMaterial(pos) {
 	return knights === 1 && bishopColors.size === 0;
 }
 
-/** Fifty moves by each side without a capture or pawn move: a draw may be claimed. */
+/** Fifty moves by each side without a capture or pawn move. */
 export function isFiftyMoveRule(pos) {
 	return pos.m[0] >= 100;
-}
-
-/** Seventy-five moves by each side: the game is drawn without a claim. */
-export function isSeventyFiveMoveRule(pos) {
-	return pos.m[0] >= 150;
 }

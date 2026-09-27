@@ -4,7 +4,7 @@ import { generateFEN, parseFEN } from "../chess/fen.js";
 import { sanMove } from "../chess/notation.js";
 import { checkPosition, doMove, genMoves } from "../chess/rules.js";
 import { historyAdd } from "../game/history.js";
-import { getCurFEN, setCurFEN } from "../game/position.js";
+import { gameDrawReason, getCurFEN, setCurFEN } from "../game/position.js";
 import { state } from "../state.js";
 import { showBoard } from "../ui/board.js";
 import { repaintGraph } from "../ui/graph.js";
@@ -262,6 +262,8 @@ export function doComputerMove() {
 	// Stockfish 19 aborts its worker on a position without both kings, which
 	// the board editor can produce mid-game; there is nothing to play anyway.
 	if (checkPosition(parseFEN(fen)).length > 0) return;
+	// The game is over; the move list says why.
+	if (gameDrawReason(fen) != null) return;
 	if (state.isPlayerWhite && fen.indexOf(" w ") > 0) return;
 	if (!state.isPlayerWhite && fen.indexOf(" b ") > 0) return;
 

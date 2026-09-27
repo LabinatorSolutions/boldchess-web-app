@@ -18,8 +18,7 @@ let historyEntry;
 let getCurFEN;
 let setCurFEN;
 let isThreefoldRepetition;
-let isFivefoldRepetition;
-let claimableDraw;
+let gameDrawReason;
 let togglePromotionPiece;
 let getPromotionPiece;
 let doMoveHandler;
@@ -36,8 +35,7 @@ beforeAll(async () => {
 		getCurFEN,
 		setCurFEN,
 		isThreefoldRepetition,
-		isFivefoldRepetition,
-		claimableDraw,
+		gameDrawReason,
 		togglePromotionPiece,
 		getPromotionPiece,
 	} = await import("../public/src/game/position.js"));
@@ -69,6 +67,7 @@ function setUp(fen) {
 }
 
 beforeEach(() => {
+	state.gameMode = 1; // analysis
 	state.play = null;
 	state.analysisEngine = undefined;
 	globalThis.localStorage.removeItem("promotionPiece");
@@ -183,21 +182,35 @@ function shuffleKnights(times) {
 			doMoveHandler({ from: { x: x1, y: y1 }, to: { x: x2, y: y2 } });
 }
 
-test("threefold repetition can be claimed, fivefold ends the game", () => {
-	shuffleKnights(2); // the start position has now occurred three times
-	expect(isThreefoldRepetition()).toBe(true);
-	expect(isFivefoldRepetition()).toBe(false);
-	expect(claimableDraw()).toBe("Threefold Repetition");
-
-	shuffleKnights(2); // five times
-	expect(isFivefoldRepetition()).toBe(true);
+test("in a game, threefold repetition is an immediate draw", () => {
+	state.gameMode = 4; // two players
+	shuffleKnights(1); // the start position has occurred twice
+	expect(gameDrawReason()).toBeNull();
+	shuffleKnights(1); // three times
+	expect(gameDrawReason()).toBe("Threefold Repetition");
 });
 
-test("the fifty-move rule is a claim, not the end of the game", () => {
+test("in a game, the fifty-move rule is an immediate draw", () => {
+	state.gameMode = 2; // playing White against the engine
 	setUp("8/8/8/4k3/8/8/4K3/6R1 w - - 100 80");
-	expect(claimableDraw()).toBe("50-Move Rule");
+	expect(gameDrawReason()).toBe("50-Move Rule");
 	setUp("8/8/8/4k3/8/8/4K3/6R1 w - - 99 80");
-	expect(claimableDraw()).toBeNull();
+	expect(gameDrawReason()).toBeNull();
+});
+
+test("in a game, a dead position is a draw", () => {
+	state.gameMode = 3;
+	setUp("8/8/8/4k3/8/8/4K3/6N1 w - - 0 80");
+	expect(gameDrawReason()).toBe("Insufficient Material");
+});
+
+test("analysis never declares a draw", () => {
+	shuffleKnights(4); // the start position has occurred five times
+	expect(gameDrawReason()).toBeNull();
+	setUp("8/8/8/4k3/8/8/4K3/6R1 w - - 150 120");
+	expect(gameDrawReason()).toBeNull();
+	setUp("8/8/8/4k3/8/8/4K3/8 w - - 0 80");
+	expect(gameDrawReason()).toBeNull();
 });
 
 test("the analysis loop gives up on an engine that failed to start", () => {

@@ -1,6 +1,6 @@
 /** The position currently on the board, and the toolbar toggles that change how it is played. */
 
-import { isFiftyMoveRule } from "../chess/draws.js";
+import { isFiftyMoveRule, isInsufficientMaterial } from "../chess/draws.js";
 import { getFENPos, parseFEN } from "../chess/fen.js";
 import { state } from "../state.js";
 import { getElemText, setElemText } from "../ui/dom.js";
@@ -46,24 +46,25 @@ export function repetitionCount(fen) {
 	return count;
 }
 
-/** Threefold repetition: a draw may be claimed. */
+/** The position shown has occurred three times. */
 export function isThreefoldRepetition(fen) {
 	return repetitionCount(fen) >= 3;
 }
 
-/** Fivefold repetition: the game is drawn without a claim. */
-export function isFivefoldRepetition(fen) {
-	return repetitionCount(fen) >= 5;
-}
-
 /**
- * The rule under which the side to move could claim a draw here, or null.
- * The app does not end the game for these; it says so and play goes on.
+ * Why the game on the board is drawn, or null. Only games (menu modes 2-4)
+ * are drawn, and without a claim, as online play does it: threefold repetition
+ * and the fifty-move rule end the game at once. In analysis a draw means
+ * nothing, so the position stays open and the engine keeps evaluating it.
+ * Checkmate and stalemate are not draws here; the caller checks them first.
  */
-export function claimableDraw(fen) {
+export function gameDrawReason(fen) {
+	if (state.gameMode === 1) return null;
 	const current = fen || getCurFEN();
+	const pos = parseFEN(current);
+	if (isInsufficientMaterial(pos)) return "Insufficient Material";
+	if (isFiftyMoveRule(pos)) return "50-Move Rule";
 	if (isThreefoldRepetition(current)) return "Threefold Repetition";
-	if (isFiftyMoveRule(parseFEN(current))) return "50-Move Rule";
 	return null;
 }
 

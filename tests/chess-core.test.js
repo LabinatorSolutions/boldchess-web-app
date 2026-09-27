@@ -164,13 +164,6 @@ describe("rules", () => {
 		).toBe(true);
 	});
 
-	test("the seventy-five-move rule ends the game on its own", () => {
-		const at = (clock) =>
-			core.parseFEN(`8/8/8/4k3/8/8/4K3/6R1 w - - ${clock} 120`);
-		expect(core.isSeventyFiveMoveRule(at(149))).toBe(false);
-		expect(core.isSeventyFiveMoveRule(at(150))).toBe(true);
-	});
-
 	test("en passant capture removes the passed pawn", () => {
 		const position = core.parseFEN(
 			"rnbqkbnr/ppp1p1pp/8/3pPp2/8/8/PPPP1PPP/RNBQKBNR w KQkq f6 0 3",
