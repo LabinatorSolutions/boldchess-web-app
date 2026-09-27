@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /**
- * Generates public/_headers (Netlify) and the "headers" block of vercel.json
- * from security-headers.js, so the three deploy targets cannot drift.
+ * Generates public/_headers (Netlify), the "headers" block of vercel.json and
+ * the header table of the Netlify CSP-nonce edge function from
+ * security-headers.js, so the deploy targets cannot drift.
  *
  *   node scripts/generate-headers.js            write the files
  *   node scripts/generate-headers.js --check    exit 1 if they are stale (CI)
@@ -14,6 +15,13 @@ const { pathHeaders, securityHeaders } = require("../security-headers");
 const root = path.join(__dirname, "..");
 const headersPath = path.join(root, "public", "_headers");
 const vercelPath = path.join(root, "vercel.json");
+const edgePath = path.join(
+	root,
+	"netlify",
+	"edge-functions",
+	"csp-nonce",
+	"headers.js",
+);
 const check = process.argv.includes("--check");
 
 const headers = securityHeaders();
@@ -52,9 +60,20 @@ function renderVercel() {
 	return `${JSON.stringify(config, null, "\t")}\n`;
 }
 
+function renderEdge() {
+	return [
+		"// GENERATED FILE - do not edit.",
+		"// Source: security-headers.js | Regenerate: bun run build",
+		"",
+		`export const HEADERS = ${JSON.stringify(headers, null, "\t")};`,
+		"",
+	].join("\n");
+}
+
 const outputs = [
 	[headersPath, renderNetlify()],
 	[vercelPath, renderVercel()],
+	[edgePath, renderEdge()],
 ];
 
 let stale = false;

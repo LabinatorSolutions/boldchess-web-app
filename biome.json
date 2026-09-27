@@ -7,7 +7,13 @@
 	},
 	"files": {
 		"ignoreUnknown": false,
-		"includes": ["**", "!public/engine", "!public/data", "!**/*.svg"]
+		"includes": [
+			"**",
+			"!public/engine",
+			"!public/data",
+			"!**/*.svg",
+			"!netlify/edge-functions/csp-nonce/headers.js"
+		]
 	},
 	"formatter": {
 		"enabled": true,

@@ -214,7 +214,9 @@ To ensure the engine functions correctly, you must configure the following HTTP 
     - `worker-src 'self' blob:`
 
    `script-src` carries no `'unsafe-inline'` — the page has no inline `<script>` tags. Do not
-   reintroduce it; the tightened policy is verified by `bun run smoke`.
+   reintroduce it; the tightened policy is verified by `bun run smoke`. On Netlify, the
+   `csp-nonce` edge function adds a per-response nonce to `script-src` for the page, so the
+   inline bot-detection script Cloudflare's proxy injects can run.
 
 ### Why These Headers?
 
