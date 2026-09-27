@@ -138,7 +138,8 @@ export function buildBook(lines) {
 
 /**
  * The opening of `entries[index]` (entries shaped like `state.history`): the
- * most recent named position at or before it. `lastBookIndex` is the latest
+ * most recent named position at or before it, walking back only across
+ * entries reached by a move. `lastBookIndex` is the latest
  * entry still in the book, so the move after it is where the game left book.
  */
 export function openingAt(book, entries, index) {
@@ -146,12 +147,19 @@ export function openingAt(book, entries, index) {
 	let found = null;
 	for (let i = index; i >= 0; i--) {
 		const n = book.get(positionKey(entries[i].fen));
-		if (n == null) continue;
+		// An entry without a move (a board edit, a FEN jump, a color flip) was
+		// not reached from the one before it, so the walk stops there.
+		const reachedByMove = entries[i].san != null;
+		if (n == null) {
+			if (!reachedByMove) break;
+			continue;
+		}
 		if (lastBookIndex < 0) lastBookIndex = i;
 		if (n.name != null) {
 			found = { eco: n.eco, name: n.name, lineIndex: n.lineIndex, plyIndex: i };
 			break;
 		}
+		if (!reachedByMove) break;
 	}
 	if (found == null) return null;
 	return { ...found, inBook: lastBookIndex === index, lastBookIndex };

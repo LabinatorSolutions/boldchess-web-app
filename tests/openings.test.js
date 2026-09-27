@@ -138,6 +138,15 @@ describe("book index", () => {
 		});
 	});
 
+	test("the walk-back stops where the history jumps without a move", () => {
+		const h = history(["e4", "e5", "Nf3", "Nc6", "Bb5"]);
+		// A board edit or a FEN jump: the next position is not reached by a move.
+		h.push({ fen: "8/8/8/4k3/8/8/8/4K3 w - - 0 1", san: null });
+		expect(openingAt(BOOK, h, last(h))).toBeNull();
+		// Book positions before the jump still resolve.
+		expect(openingAt(BOOK, h, 5).name.startsWith("Ruy Lopez")).toBe(true);
+	});
+
 	test("a custom position has no opening", () => {
 		const fen = "8/8/8/4k3/8/8/8/4K3 w - - 0 1";
 		expect(openingAt(BOOK, [{ fen, san: null }], 0)).toBeNull();

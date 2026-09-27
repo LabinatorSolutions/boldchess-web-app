@@ -17,6 +17,7 @@ import { doMoveHandler } from "../input/mouse.js";
 import {
 	continuations,
 	getBook,
+	isBookPosition,
 	lineMoves,
 	loadBook,
 	moveFromString,
@@ -56,8 +57,46 @@ function span(className, text) {
 	return elem;
 }
 
+/** Book moves from `fen` as rows; buttons in analysis, text in a game. */
+function renderContinuations(movesElem, book, fen, analysis) {
+	const pos = parseFEN(fen);
+	const legal = genMoves(pos);
+	for (const row of continuations(book, fen)) {
+		const move = moveFromString(row.move);
+		const san = sanMove(pos, move, legal);
+		const elem = document.createElement("DIV");
+		elem.className = "openingMove";
+		elem.title = `${row.eco} ${row.name}`;
+		elem.appendChild(span("san", san));
+		elem.appendChild(span("name", row.name));
+		elem.appendChild(span("count", String(row.lineCount)));
+		if (analysis) {
+			makeButton(elem, `Play ${san}, ${row.name}`);
+			elem.onclick = () => doMoveHandler(move);
+		}
+		movesElem.appendChild(elem);
+	}
+}
+
+/**
+ * What the last render showed. The analysis loop refreshes the info panels
+ * several times while the engine deepens; rebuilding identical rows then
+ * would drop a click in progress and the keyboard focus on a row.
+ */
+let rendered = "";
+
 /** Render the window and the header segment for the position shown. */
 export function refreshOpening() {
+	const book = getBook();
+	const entries = shownEntries();
+	const signature = [
+		book === undefined ? "loading" : book === null ? "none" : "book",
+		state.gameMode,
+		...entries.map((entry) => entry.fen),
+	].join("|");
+	if (signature === rendered) return;
+	rendered = signature;
+
 	const nameElem = document.getElementById("openingName");
 	const statusElem = document.getElementById("openingStatus");
 	const movesElem = document.getElementById("openingMoves");
@@ -69,7 +108,6 @@ export function refreshOpening() {
 	infoElem.className = "";
 	infoElem.title = "";
 
-	const book = getBook();
 	if (book === undefined) {
 		setElemText(statusElem, "Loading opening book…");
 		if (!waiting) {
@@ -83,14 +121,18 @@ export function refreshOpening() {
 		return;
 	}
 
-	const entries = shownEntries();
+	const analysis = state.gameMode === 1;
+	const fen = entries[entries.length - 1].fen;
 	const found = openingAt(book, entries, entries.length - 1);
 	if (found == null) {
+		// The start position, or an unnamed book position set up by hand:
+		// nothing to name, but the book moves from here still apply.
 		setElemText(statusElem, "No opening");
+		if (isBookPosition(book, fen))
+			renderContinuations(movesElem, book, fen, analysis);
 		return;
 	}
 
-	const analysis = state.gameMode === 1;
 	const fullName = `${found.eco} ${found.name}`;
 	nameElem.appendChild(span("openingEco", found.eco));
 	const title = span("openingTitle", found.name);
@@ -112,26 +154,7 @@ export function refreshOpening() {
 		statusElem,
 		found.inBook ? "" : outOfBookText(entries, found.lastBookIndex),
 	);
-	if (!found.inBook) return;
-
-	const fen = entries[entries.length - 1].fen;
-	const pos = parseFEN(fen);
-	const legal = genMoves(pos);
-	for (const row of continuations(book, fen)) {
-		const move = moveFromString(row.move);
-		const san = sanMove(pos, move, legal);
-		const elem = document.createElement("DIV");
-		elem.className = "openingMove";
-		elem.title = `${row.eco} ${row.name}`;
-		elem.appendChild(span("san", san));
-		elem.appendChild(span("name", row.name));
-		elem.appendChild(span("count", String(row.lineCount)));
-		if (analysis) {
-			makeButton(elem, `Play ${san}, ${row.name}`);
-			elem.onclick = () => doMoveHandler(move);
-		}
-		movesElem.appendChild(elem);
-	}
+	if (found.inBook) renderContinuations(movesElem, book, fen, analysis);
 }
 
 /**

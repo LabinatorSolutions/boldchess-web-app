@@ -67,6 +67,24 @@ test("leaving book keeps the name and says where", () => {
 	expect(rows().length).toBe(0);
 });
 
+test("the start position lists the book moves under No opening", () => {
+	refreshOpening();
+	expect(text("openingStatus")).toBe("No opening");
+	expect(rows().length).toBe(20);
+	expect(rows()[0].onclick).toBeDefined();
+});
+
+test("an unchanged position is not rebuilt, so focus and clicks survive", () => {
+	command(RUY_LOPEZ);
+	refreshOpening();
+	const first = rows()[0];
+	refreshOpening();
+	expect(rows()[0]).toBe(first);
+	state.gameMode = 2;
+	refreshOpening();
+	expect(rows()[0]).not.toBe(first);
+});
+
 test("a custom position has no opening", () => {
 	command("8/8/8/4k3/8/8/8/4K3 w - - 0 1");
 	refreshOpening();
