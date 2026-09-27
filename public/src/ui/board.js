@@ -7,9 +7,14 @@ import { evalAll } from "../engine/analysis.js";
 import { historyMove } from "../game/history.js";
 import { getCurFEN } from "../game/position.js";
 import { getBook } from "../openings/book.js";
-import { ERRORS, gradeGame } from "../report/grade.js";
+import { bestMoveSan, ERRORS, gradeGame } from "../report/grade.js";
 import { state } from "../state.js";
-import { repaintLastMoveArrow, setArrow, showArrow3 } from "./arrows.js";
+import {
+	repaintLastMoveArrow,
+	repaintReviewArrows,
+	setArrow,
+	showArrow3,
+} from "./arrows.js";
 import {
 	getCircleClassName,
 	getElemText,
@@ -214,6 +219,7 @@ export function showBoard(noeval, refreshhistory, keepcontent) {
 		// Batch updates
 		setArrow(true);
 		repaintLastMoveArrow();
+		repaintReviewArrows();
 		showArrow3(null);
 
 		if (state.menu) reloadMenu();
@@ -285,10 +291,13 @@ export function updateInfo() {
 		const grade = grades[i];
 		if (grade != null) {
 			const error = ERRORS[grade.category];
-			span2.title =
-				grade.category === "Book" || grade.category === "Best Move"
-					? grade.category
-					: `${grade.category} (\u2212${grade.loss.toFixed(1)}%)`;
+			const plain = grade.category === "Book" || grade.category === "Best Move";
+			const best = plain ? null : bestMoveSan(state.history, i);
+			span2.title = plain
+				? grade.category
+				: `${grade.category} (\u2212${grade.loss.toFixed(1)}%)${
+						best == null ? "" : ` \u00b7 best ${best}`
+					}`;
 			if (error != null) {
 				const mark = document.createElement("span");
 				setElemText(mark, error.mark);

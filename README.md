@@ -38,7 +38,7 @@ A live version is only available for the BoldChess.com paid members. As this is 
 - Draw arrows or highlight squares on the chessboard.
 - Visualize relevant squares based on Stockfish's static evaluation.
 - Name the opening as you play or browse (about 3,700 named lines, transpositions included), list the book moves from the current position, and play a named line or a book move as a variation.
-- Review a game in the Game Report: every move graded (Best Move, Excellent, Good, Book, Inaccuracy, Mistake, Blunder) by how much winning chance it gave away, counted per side, with each error one click away. History marks errors with `?!`, `?` and `??`.
+- Review a game in the Game Report: every move graded (Best Move, Excellent, Good, Book, Inaccuracy, Mistake, Blunder) by how much winning chance it gave away, counted per side. Each error names the engine's better move, and one click shows the position before it with both moves drawn on the board. History marks errors with `?!`, `?` and `??`.
 - Dark interface with a pitch-black background for OLED screens, improving battery life and user experience.
 - Support for PCs, tablets, smartphones, and touch devices.
 

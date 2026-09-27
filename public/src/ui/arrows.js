@@ -5,9 +5,47 @@ import { getCurFEN } from "../game/position.js";
 import { state } from "../state.js";
 import { getGraphPointColor } from "./graph.js";
 
+/**
+ * The played and the engine's move while the board shows the position a move
+ * opened from the game report was played in, else null.
+ *
+ * @returns {{played: any, best: any}|null}
+ */
+export function reviewArrows() {
+	const review = state.reviewMove;
+	if (review == null) return null;
+	const played = state.history[review.index];
+	const before = state.history[review.index - 1];
+	if (played?.fen !== review.fen || played.move == null) return null;
+	if (
+		state.historyindex !== review.index - 1 ||
+		getCurFEN() !== before.fen ||
+		before.evaluation?.move == null
+	)
+		return null;
+	return { played: played.move, best: before.evaluation.move };
+}
+
+/** Draw or hide the report's review arrows (see `reviewArrows`). */
+export function repaintReviewArrows() {
+	requestAnimationFrame(() => {
+		const arrows = reviewArrows();
+		const elem = document.getElementById("arrowWrapper4");
+		if (arrows == null) {
+			elem.style.display = "none";
+			return;
+		}
+		const svg = elem.children[0];
+		placeLine(/** @type {SVGElement} */ (svg.children[1]), arrows.played);
+		placeLine(/** @type {SVGElement} */ (svg.children[2]), arrows.best);
+		elem.style.display = "block";
+	});
+}
+
 export function setArrow(on) {
 	state.arrow = on;
 	if (
+		reviewArrows() == null &&
 		state.arrow &&
 		state.curmoves.length > 0 &&
 		state.curmoves[0].eval != null
@@ -35,8 +73,18 @@ export function repaintLastMoveArrow() {
 				});
 			}
 		}
-		showArrow2(lastmove);
+		showArrow2(reviewArrows() == null ? lastmove : null);
 	});
+}
+
+/** Point an arrow line from `move.from` to `move.to` on the board. */
+function placeLine(line, move) {
+	/** Pixel center of a board square along one axis. */
+	const center = (c) => String(20 + (state.flip ? 7 - c : c) * 40);
+	line.setAttribute("x1", center(move.from.x));
+	line.setAttribute("y1", center(move.from.y));
+	line.setAttribute("x2", center(move.to.x));
+	line.setAttribute("y2", center(move.to.y));
 }
 
 export function showArrowInternal(move, wrapperId, opacity = 1) {
@@ -47,12 +95,7 @@ export function showArrowInternal(move, wrapperId, opacity = 1) {
 	}
 	if (elem.children[0].children == null) return;
 	const line = /** @type {SVGElement} */ (elem.children[0].children[1]);
-	/** Pixel center of a board square along one axis. */
-	const center = (c) => String(20 + (state.flip ? 7 - c : c) * 40);
-	line.setAttribute("x1", center(move.from.x));
-	line.setAttribute("y1", center(move.from.y));
-	line.setAttribute("x2", center(move.to.x));
-	line.setAttribute("y2", center(move.to.y));
+	placeLine(line, move);
 	line.style.opacity = opacity.toFixed(2);
 	elem.style.display = "block";
 }

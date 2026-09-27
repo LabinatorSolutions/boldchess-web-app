@@ -9,6 +9,7 @@
  */
 
 import { colorflip, parseFEN } from "../chess/fen.js";
+import { sanMove } from "../chess/notation.js";
 import { genMoves, isWhiteCheck } from "../chess/rules.js";
 import { isBookPosition } from "../openings/book.js";
 
@@ -170,4 +171,22 @@ export function summarize(grades, history) {
 		(whiteToMove(history[i - 1].fen) ? white : black)[g.category]++;
 	}
 	return { white, black, graded, total };
+}
+
+/**
+ * The engine's choice where the move to entry `i` was played, as SAN: what
+ * the report offers instead of an error. Null when the position before has
+ * no best move yet, or the stored one is not legal there.
+ *
+ * @param {Array<any>} history
+ * @param {number} i
+ * @returns {string|null}
+ */
+export function bestMoveSan(history, i) {
+	const best = history[i - 1]?.evaluation?.move;
+	if (best == null) return null;
+	const pos = parseFEN(history[i - 1].fen);
+	const legal = genMoves(pos);
+	if (!legal.some((move) => sameMove(move, best))) return null;
+	return sanMove(pos, best, legal);
 }

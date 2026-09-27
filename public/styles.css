@@ -1282,6 +1282,36 @@ button.off svg {
 	fill: #475d8c;
 }
 
+/* The report's review arrows: the move played (red) and the engine's (green). */
+#arrowWrapper4 {
+	position: absolute;
+	pointer-events: none;
+	display: none;
+	filter: drop-shadow(-1px -1px 1px white)
+		drop-shadow(1px 1px 1px var(--bc-ink));
+	z-index: 4;
+}
+
+#arrowWrapper4 svg {
+	opacity: 0.66;
+}
+
+#arrowWrapper4 .reviewPlayed {
+	stroke: #bb0000;
+}
+
+#markerPlayed {
+	fill: #bb0000;
+}
+
+#arrowWrapper4 .reviewBest {
+	stroke: #008800;
+}
+
+#markerBest {
+	fill: #008800;
+}
+
 /* Menu */
 #menu {
 	background-color: var(--bc-surface);

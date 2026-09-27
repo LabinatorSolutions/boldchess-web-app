@@ -16,6 +16,7 @@ import {
 	moveFromString,
 } from "../public/src/openings/book.js";
 import {
+	bestMoveSan,
 	CATEGORIES,
 	categoryFor,
 	gradeGame,
@@ -227,5 +228,22 @@ describe("gradeGame and summarize", () => {
 		const grades = gradeGame(h, BOOK);
 		expect(performance.now() - t).toBeLessThan(100);
 		expect(grades.filter((g) => g != null).length).toBe(400);
+	});
+});
+
+describe("bestMoveSan", () => {
+	test("names the engine's move in the position before the move", () => {
+		const h = line(["e4", "e5", "Qh5", "Nc6", "Bc4", "Nf6"]);
+		evaluate(h, 5, -30, moveFromString("d8e7"));
+		expect(bestMoveSan(h, 6)).toBe("Qe7");
+	});
+
+	test("is null without a move, or with one that is not legal there", () => {
+		const h = line(["e4"]);
+		expect(bestMoveSan(h, 1)).toBeNull();
+		evaluate(h, 0, 0);
+		expect(bestMoveSan(h, 1)).toBeNull();
+		h[0].evaluation.move = moveFromString("e7e5");
+		expect(bestMoveSan(h, 1)).toBeNull();
 	});
 });

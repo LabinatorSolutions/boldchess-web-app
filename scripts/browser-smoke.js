@@ -268,6 +268,21 @@ async function main() {
 			),
 		})`),
 	);
+	// Reviewing the blunder shows the position before it, with the played and
+	// the engine's move drawn and the other two engine arrows hidden.
+	await evaluate(
+		`document.querySelector("#reportErrors .reportError")?.click()`,
+	);
+	await sleep(500);
+	const reviewed = JSON.parse(
+		await evaluate(`JSON.stringify({
+			row: document.querySelector("#reportErrors .reportError")?.textContent ?? "",
+			position: document.getElementById("positionText").textContent,
+			arrows: document.getElementById("arrowWrapper4").style.display,
+			best: document.getElementById("arrowWrapper1").style.display,
+			last: document.getElementById("arrowWrapper2").style.display,
+		})`),
+	);
 	await evaluate(`document.getElementById("wbReport").click()`);
 	await sleep(300);
 
@@ -501,6 +516,17 @@ async function main() {
 		],
 		["a blunder is marked in the history", report.history.includes("??")],
 		["the game report counts Black's blunder", report.blackBlunders >= 1],
+		[
+			"the game report names the better move",
+			reviewed.row.includes(" \u00b7 best "),
+		],
+		[
+			"reviewing a blunder shows both moves before it",
+			reviewed.position.startsWith("Position: 6 of 7") &&
+				reviewed.arrows === "block" &&
+				reviewed.best === "none" &&
+				reviewed.last === "none",
+		],
 		[
 			"board intact after exercising the input handlers",
 			afterInteraction.squares === 64,

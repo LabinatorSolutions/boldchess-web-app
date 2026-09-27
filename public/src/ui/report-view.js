@@ -8,7 +8,13 @@
 import { parseFEN } from "../chess/fen.js";
 import { historyMove } from "../game/history.js";
 import { getBook, loadBook, moveToString } from "../openings/book.js";
-import { CATEGORIES, ERRORS, gradeGame, summarize } from "../report/grade.js";
+import {
+	bestMoveSan,
+	CATEGORIES,
+	ERRORS,
+	gradeGame,
+	summarize,
+} from "../report/grade.js";
 import { state } from "../state.js";
 import { makeButton, setElemText } from "./dom.js";
 
@@ -44,12 +50,23 @@ function row(className, texts) {
 	return elem;
 }
 
-/** "12. Qxb7?? Blunder (−34.5%)", numbered from the position the move was played in. */
+/** "12. Qxb7?? Blunder (−34.5%) · best Rb1", numbered from the position the move was played in. */
 function errorText(i, grade) {
 	const pos = parseFEN(state.history[i - 1].fen);
 	const number = `${pos.m[1]}${pos.w ? "." : "…"}`;
 	const mark = ERRORS[grade.category].mark;
-	return `${number} ${state.history[i].san}${mark} ${grade.category} (−${grade.loss.toFixed(1)}%)`;
+	const best = bestMoveSan(state.history, i);
+	const suffix = best == null ? "" : ` · best ${best}`;
+	return `${number} ${state.history[i].san}${mark} ${grade.category} (−${grade.loss.toFixed(1)}%)${suffix}`;
+}
+
+/**
+ * Show the position the move to entry `i` was played in, with the played and
+ * the engine's move drawn on it.
+ */
+function review(i) {
+	state.reviewMove = { index: i, fen: state.history[i].fen };
+	historyMove(i - 1 - state.historyindex);
 }
 
 /** Render the window for the history as it stands. */
@@ -114,8 +131,8 @@ export function refreshReport() {
 		const elem = document.createElement("DIV");
 		elem.className = `reportError ${error.className}`;
 		elem.appendChild(document.createTextNode(text));
-		makeButton(elem, `Go to ${text}`);
-		elem.onclick = () => historyMove(i - state.historyindex);
+		makeButton(elem, `Review ${text}`);
+		elem.onclick = () => review(i);
 		errorsElem.appendChild(elem);
 	});
 }

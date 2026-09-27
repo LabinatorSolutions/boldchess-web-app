@@ -83,4 +83,12 @@ export const state = {
 	wantUpdateInfo: true,
 	staticSortByChange: false,
 	movesPv: false,
+
+	// Game report
+	/**
+	 * The move opened from the report, as `{index, fen}` of the entry it
+	 * reached, or null. While the board shows entry `index - 1`, the played
+	 * and the engine's move are drawn there (see `reviewArrows`).
+	 */
+	reviewMove: null,
 };

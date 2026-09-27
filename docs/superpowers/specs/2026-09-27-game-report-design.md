@@ -142,6 +142,33 @@ wins:
   from an error row as soon as it is used (amended in the final review).
 - The History marks are part of the existing History rebuild and need no extra guard.
 
+### The better move (added after the first release)
+
+The owner's playtest: the report shows that a move was wrong but not what to play instead, so
+reviewing meant turning on coach mode, stepping back, and stepping forward again. The engine's
+choice is already stored as `history[i − 1].evaluation.move`, so no new analysis is needed.
+
+- `bestMoveSan(history, i)` in `report/grade.js` (no DOM): the SAN of
+  `history[i − 1].evaluation.move` in `history[i − 1].fen`, or null when there is no move or it
+  is not legal there.
+- Text: error rows read `3… Nf6?? Blunder (−47.2%) · best Qe7`. History titles of graded moves
+  other than Book and Best Move gain ` · best Qe7`. Either part is left out when
+  `bestMoveSan` is null.
+- A click on an error row jumps to the position **before** the move (`i − 1`), not after it,
+  and marks the move for review: `state.reviewMove = {index: i, fen: history[i].fen}`.
+- While the board shows entry `i − 1` of a history whose entry `i` still has that FEN, two
+  arrows are drawn in `#arrowWrapper4`: the played move in red (`#bb0000`) and the engine's
+  move in green (`#008800`). The best-move arrow (`#arrowWrapper1`) and the last-move arrow
+  (`#arrowWrapper2`) are hidden meanwhile, so the board carries only these two.
+- Stepping forward shows the move that was played, as usual. Stepping back to `i − 1` shows
+  the two arrows again. Any change to the history that alters entry `i` ends the review.
+- Testing:
+  - Unit: `bestMoveSan` returns the SAN, and null for a missing or illegal move.
+  - dom stub: a row's text and click (the index lands on `i − 1`, and `state.reviewMove` is
+    set); `reviewArrows()` returns `{played, best}` only at `i − 1`; the History title.
+  - Smoke: click the error row. The position reads `6 of 7`, `#arrowWrapper4` is displayed, and
+    the row text includes ` · best `.
+
 ## Error handling
 
 - Book not loaded or unavailable: rule 2 never matches, and moves are graded by the engine

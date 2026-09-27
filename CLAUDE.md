@@ -85,6 +85,8 @@ The repo has no GitHub Actions workflows. "CI" means running `bun run ci` locall
   stored; the thresholds are the exported `THRESHOLDS`. History marks, the graph points and the
   last-move arrow all color by the grade (one measure). `ui/report-view.js` renders the Game
   Report window from `updateInfo()` and, like the Opening window, skips unchanged renders.
+  An error row opens the position before the move with the played and the engine's move drawn
+  in `#arrowWrapper4` (`state.reviewMove`, `reviewArrows()` in `ui/arrows.js`).
 - **Classical static eval**: `eval/terms-data.js` holds ~1600 lines of term sources as strings
   that call each other by name (`$pawns(pos)`). `eval/terms.js` compiles them into one generated
   scope, so no globals are created. The evaluation is pinned by the snapshot test, so any

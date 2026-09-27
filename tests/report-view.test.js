@@ -21,6 +21,7 @@ let updateInfo;
 let getGraphPointColor;
 let refreshReport;
 let historyMove;
+let reviewArrows;
 let book;
 
 beforeAll(async () => {
@@ -31,6 +32,7 @@ beforeAll(async () => {
 	({ getGraphPointColor } = await import("../public/src/ui/graph.js"));
 	({ refreshReport } = await import("../public/src/ui/report-view.js"));
 	({ historyMove } = await import("../public/src/game/history.js"));
+	({ reviewArrows } = await import("../public/src/ui/arrows.js"));
 	book = await import("../public/src/openings/book.js");
 	book.useBook(book.buildBook(DATA));
 });
@@ -53,6 +55,8 @@ function loadGame() {
 			move: book.moveFromString("a2a3"),
 		};
 	});
+	// Before 3...Nf6 the engine prefers 3...Qe7, which defends f7.
+	state.history[5].evaluation.move = book.moveFromString("d8e7");
 }
 
 /** The History span of a move, found by its SAN. */
@@ -145,7 +149,7 @@ test("the table counts each category per side", () => {
 	expect(blunderRow.className).toContain("blunder");
 });
 
-test("an error row names the move and jumps to it", () => {
+test("an error row names the move and jumps to the position before it", () => {
 	loadGame();
 	historyMove(-4);
 	expect(state.historyindex).toBe(2);
@@ -156,7 +160,7 @@ test("an error row names the move and jumps to it", () => {
 		true,
 	);
 	rows[0].onclick();
-	expect(state.historyindex).toBe(6);
+	expect(state.historyindex).toBe(5);
 });
 
 test("an unchanged report is not rebuilt, a deeper evaluation is", () => {
@@ -200,4 +204,31 @@ test("grade text is readable on the panel background (WCAG AA)", () => {
 		const ratio = (luminance(color) + 0.05) / (panel + 0.05);
 		expect({ name, ratio: ratio >= 4.5 }).toEqual({ name, ratio: true });
 	}
+});
+
+test("an error row and the History title name the better move", () => {
+	loadGame();
+	refreshReport();
+	updateInfo();
+	const row = dom.getElementById("reportErrors").children[0];
+	expect(row.textContent.endsWith(" \u00b7 best Qe7")).toBe(true);
+	expect(historySpan("Nf6").title.endsWith(" \u00b7 best Qe7")).toBe(true);
+});
+
+test("an error row shows the position before the move, with both arrows", () => {
+	loadGame();
+	refreshReport();
+	expect(reviewArrows()).toBeNull();
+	dom.getElementById("reportErrors").children[0].onclick();
+	expect(state.historyindex).toBe(5);
+	expect(state.reviewMove).toEqual({ index: 6, fen: state.history[6].fen });
+	const arrows = reviewArrows();
+	expect(book.moveToString(arrows.played)).toBe("g8f6");
+	expect(book.moveToString(arrows.best)).toBe("d8e7");
+	historyMove(1);
+	expect(reviewArrows()).toBeNull();
+	historyMove(-1);
+	expect(reviewArrows()).not.toBeNull();
+	command("reset");
+	expect(reviewArrows()).toBeNull();
 });
