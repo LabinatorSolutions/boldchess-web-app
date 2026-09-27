@@ -79,13 +79,10 @@ app.use(
 	}),
 );
 
-// Any other page URL gets the app shell (Single Page Application). A missing
-// file - anything with an extension - is a real 404: answering a module or
-// the engine with HTML would only surface later as a confusing MIME error.
-app.use((req, res, next) => {
-	if (path.extname(req.path) !== "") return next();
-	res.sendFile(path.join(publicDir, "index.html"));
-});
+// The app lives at / (express.static serves index.html there) and keeps its
+// state in query parameters, so anything else is a real 404, as on Netlify.
+// Answering a missing module or engine file with the HTML shell would only
+// surface later as a confusing MIME error.
 app.use((_req, res) => {
 	res.status(404).type("text/plain").send("Not found");
 });

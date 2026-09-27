@@ -29,8 +29,14 @@ describe("static hosting", () => {
 		expect(response.status).toBe(200);
 	});
 
-	test("falls back to the app shell for unknown routes", async () => {
+	test("an unknown route is a 404, not the app shell", async () => {
 		const response = await fetch(`${origin}/some/deep/route`);
+		expect(response.status).toBe(404);
+		expect(response.headers.get("content-type")).not.toContain("text/html");
+	});
+
+	test("query parameters still load the app", async () => {
+		const response = await fetch(`${origin}/?mode=play&a=e4`);
 		expect(response.status).toBe(200);
 		expect(response.headers.get("content-type")).toContain("text/html");
 	});
