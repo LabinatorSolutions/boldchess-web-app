@@ -21,7 +21,8 @@ and run under Node.
 ```bash
 bun install
 bun start                    # http://localhost:3000 (PORT from .env)
-bun run ci                   # the full gate: header-drift check + biome ci + bun test
+bun run ci                   # the full gate: header-drift check + biome ci + tsc + bun test
+bun run typecheck            # tsc --checkJs over the client (jsconfig.json); nothing is emitted
 bun test                     # all tests
 bun test tests/history.test.js           # one file
 bun test -t "perft"                      # tests whose name matches a pattern
@@ -42,6 +43,12 @@ The repo has no GitHub Actions workflows. "CI" means running `bun run ci` locall
   eval), `engine/` (UCI worker wrapper, engine lifecycle, analysis loop), `game/`, `ui/`, `input/`,
   plus `commands.js` (the text box: FEN/PGN/SAN input, keyword commands, the shareable `~` game
   string).
+- **Types come from JSDoc, checked by `tsc` (`jsconfig.json`), with no build step.** The check
+  covers `public/main.js` and `public/src/` in non-strict mode. `getElementById` and `.children`
+  give generic element types, so narrow them with a cast such as
+  `/** @type {HTMLInputElement} */ (document.getElementById("searchInput"))`. Values the app
+  stores on DOM nodes (`tooltip`, `index`, ...) are declared in `types/globals.d.ts`; add new ones
+  there. Event handlers use arrow functions over the element variable, not `this`.
 - **`chess/`, `eval/` and `engine/uci.js` must not touch the DOM.** That keeps them importable under
   `bun test`. For the same reason, `doMove` gets its default promotion piece from a provider that
   the app installs at startup instead of reading the toolbar.

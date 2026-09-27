@@ -492,8 +492,8 @@ function applyLayout(text) {
 			cur = cur.substring(1);
 			const b = cur.length === 0 ? [] : cur.split(",");
 			const elem = document.getElementById(`w${winId}`);
-			if (elem.firstElementChild.ondblclick != null)
-				elem.firstElementChild.ondblclick();
+			// The title bar's double-click restores the window's default size.
+			elem.firstElementChild.dispatchEvent(new MouseEvent("dblclick"));
 			if (b.length >= 2) {
 				elem.style.width = `${b[0]}px`;
 				elem.style.height = `${b[1]}px`;
@@ -521,18 +521,24 @@ function playSanMove(text) {
 		}
 }
 
+function searchInput() {
+	return /** @type {HTMLInputElement} */ (
+		document.getElementById("searchInput")
+	);
+}
+
 export function dosearch() {
-	const text = document.getElementById("searchInput").value;
-	document.getElementById("searchInput").value = getCurFEN();
+	const input = searchInput();
+	const text = input.value;
+	input.value = getCurFEN();
 	command(text);
-	document.getElementById("searchInput").value = getCurFEN();
-	document.getElementById("searchInput").blur();
+	input.value = getCurFEN();
+	input.blur();
 }
 
 export function showHideButtonGo(visible) {
-	if (!document.getElementById("searchInput").focus) visible = false;
-	if (visible && document.getElementById("searchInput").value === getCurFEN())
-		visible = false;
+	if (!searchInput().focus) visible = false;
+	if (visible && searchInput().value === getCurFEN()) visible = false;
 	document.getElementById("buttonGo").style.display = visible ? "" : "none";
 }
 
@@ -543,32 +549,32 @@ export function setupInput() {
 	document.getElementById("buttonGo").onmousedown = (event) => {
 		event.preventDefault();
 	};
-	const input = document.getElementById("searchInput");
-	input.onmousedown = function () {
-		this.focuswithmouse = 1;
+	const input = searchInput();
+	input.onmousedown = () => {
+		input.focuswithmouse = 1;
 	};
-	input.onmouseup = function () {
+	input.onmouseup = () => {
 		if (
-			this.focuswithmouse === 2 &&
+			input.focuswithmouse === 2 &&
 			input.selectionStart === input.selectionEnd
 		)
-			this.select();
-		this.focuswithmouse = 0;
+			input.select();
+		input.focuswithmouse = 0;
 	};
-	input.onfocus = function () {
-		if (this.focuswithmouse === 1) this.focuswithmouse = 2;
+	input.onfocus = () => {
+		if (input.focuswithmouse === 1) input.focuswithmouse = 2;
 		else {
 			input.select();
-			this.focuswithmouse = 0;
+			input.focuswithmouse = 0;
 		}
 		showHideButtonGo(true);
 		document.onkeydown = null;
 	};
-	input.onblur = function () {
+	input.onblur = () => {
 		input.selectionStart = input.selectionEnd;
 		showHideButtonGo(false);
 		document.onkeydown = onKeyDown;
-		this.focuswithmouse = 0;
+		input.focuswithmouse = 0;
 	};
 	input.onpaste = () => {
 		window.setTimeout(() => {
@@ -584,10 +590,10 @@ export function setupInput() {
 			}, 0);
 		}
 	};
-	input.onkeyup = function (e) {
+	input.onkeyup = (e) => {
 		if (e.key === "Escape") {
 			input.value = getCurFEN(); // Reset input value to the current FEN
-			this.select(); // Select the content of the input
+			input.select(); // Select the content of the input
 			showHideButtonGo(true); // Update the visibility state of the button
 		}
 	};

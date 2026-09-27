@@ -27,9 +27,11 @@ export function repaintLastMoveArrow() {
 			if (elem.children[0].children != null) {
 				const arrowFillColor = getGraphPointColor(state.historyindex);
 				requestAnimationFrame(() => {
-					elem.children[0].children[0].children[0].children[0].style.fill =
+					const svg = elem.children[0];
+					const head = svg.children[0].children[0].children[0];
+					/** @type {SVGElement} */ (head).style.fill = arrowFillColor;
+					/** @type {SVGElement} */ (svg.children[1]).style.stroke =
 						arrowFillColor;
-					elem.children[0].children[1].style.stroke = arrowFillColor;
 				});
 			}
 		}
@@ -44,17 +46,13 @@ export function showArrowInternal(move, wrapperId, opacity = 1) {
 		return;
 	}
 	if (elem.children[0].children == null) return;
-	const line = elem.children[0].children[1];
-	line.setAttribute(
-		"x1",
-		20 + (state.flip ? 7 - move.from.x : move.from.x) * 40,
-	);
-	line.setAttribute(
-		"y1",
-		20 + (state.flip ? 7 - move.from.y : move.from.y) * 40,
-	);
-	line.setAttribute("x2", 20 + (state.flip ? 7 - move.to.x : move.to.x) * 40);
-	line.setAttribute("y2", 20 + (state.flip ? 7 - move.to.y : move.to.y) * 40);
+	const line = /** @type {SVGElement} */ (elem.children[0].children[1]);
+	/** Pixel center of a board square along one axis. */
+	const center = (c) => String(20 + (state.flip ? 7 - c : c) * 40);
+	line.setAttribute("x1", center(move.from.x));
+	line.setAttribute("y1", center(move.from.y));
+	line.setAttribute("x2", center(move.to.x));
+	line.setAttribute("y2", center(move.to.y));
 	line.style.opacity = opacity.toFixed(2);
 	elem.style.display = "block";
 }
@@ -84,9 +82,9 @@ export function showArrow3(move) {
 		!bounds(move.from.x, move.from.y) ||
 		!bounds(move.to.x, move.to.y)
 	) {
-		elem0.children[1].style.display = "none";
+		/** @type {SVGElement} */ (elem0.children[1]).style.display = "none";
 	} else {
-		elem0.children[1].style.display = "";
+		/** @type {SVGElement} */ (elem0.children[1]).style.display = "";
 	}
 	showArrowInternal(move, "arrowWrapper3");
 }
@@ -96,7 +94,8 @@ export function finalArrow3() {
 	let list = elem.children[0].children,
 		remElem = null;
 	if (list == null) return;
-	if (list[1].style.display === "none") return;
+	const drawn = /** @type {SVGElement} */ (list[1]);
+	if (drawn.style.display === "none") return;
 	for (let i = 2; i < list.length; i++) {
 		if (
 			list[i].getAttribute("x1") === list[1].getAttribute("x1") &&
@@ -111,5 +110,5 @@ export function finalArrow3() {
 	} else {
 		elem.children[0].removeChild(remElem);
 	}
-	list[1].style.display = "none";
+	drawn.style.display = "none";
 }

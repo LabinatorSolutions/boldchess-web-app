@@ -71,7 +71,9 @@ export function checkSizes() {
 	// Graph
 	const cw = document.getElementById("graphWrapper").clientWidth;
 	const ch = document.getElementById("graphWrapper").clientHeight;
-	const canvas = document.getElementById("graph");
+	const canvas = /** @type {HTMLCanvasElement} */ (
+		document.getElementById("graph")
+	);
 	if (canvas.width !== cw || canvas.height !== ch) repaintGraph();
 
 	// Chessboard
@@ -176,7 +178,7 @@ export function setupMobileLayout(init) {
 
 	const elems = document.getElementById("colRight");
 	for (let i = 0; i < elems.children.length; i++) {
-		const div = elems.children[i];
+		const div = /** @type {HTMLElement} */ (elems.children[i]);
 		if (div.tagName !== "DIV" || div.className !== "box") continue;
 		div.style.height = `${horiz ? 243 + height - 280 : 121 + height - 490}px`;
 		div.style.margin = "0";

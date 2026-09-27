@@ -143,7 +143,9 @@ export function showEvals() {
 			);
 		const node7 = document.createElement("SPAN");
 		node7.className = "depth";
-		node7.appendChild(document.createTextNode(state.curmoves[i].depth | "?"));
+		node7.appendChild(
+			document.createTextNode(String(state.curmoves[i].depth ?? "?")),
+		);
 
 		const text = getEvalText(state.curmoves[i].eval, false);
 		if (text.indexOf(".") >= 0) {
@@ -168,15 +170,15 @@ export function showEvals() {
 		node1.appendChild(node6);
 		node1.appendChild(node7);
 		node1.index = i;
-		node1.onmouseover = function () {
-			highlightMove(this.index, true);
+		node1.onmouseover = () => {
+			highlightMove(node1.index, true);
 		};
-		node1.onmouseout = function () {
-			highlightMove(this.index, false);
+		node1.onmouseout = () => {
+			highlightMove(node1.index, false);
 		};
-		node1.onmousedown = function () {
+		node1.onmousedown = () => {
 			if (state.menu) showHideMenu(false);
-			doMoveHandler(state.curmoves[this.index].move);
+			doMoveHandler(state.curmoves[node1.index].move);
 		};
 		if (
 			state.historyindex + 1 < state.history.length &&
@@ -199,9 +201,9 @@ export function highlightMove(index, on) {
 	const y2 = state.curmoves[index].move.to.y;
 	const text = getEvalText(state.curmoves[index].eval, true);
 	for (let i = 0; i < elem.children.length; i++) {
-		const div = elem.children[i];
+		const div = /** @type {HTMLElement} */ (elem.children[i]);
 		if (div.tagName !== "DIV") continue;
-		if (div.style.zIndex > 0) continue;
+		if (Number(div.style.zIndex) > 0) continue;
 		let x = parseInt(div.style.left.replace("px", ""), 10) / 40;
 		let y = parseInt(div.style.top.replace("px", ""), 10) / 40;
 		if (state.flip) {

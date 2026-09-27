@@ -48,8 +48,8 @@ export function isWhiteCheck(pos) {
 	)
 		return true;
 	for (let i = 0; i < 8; i++) {
-		const ix = ((i + (i > 3)) % 3) - 1;
-		const iy = (((i + (i > 3)) / 3) << 0) - 1;
+		const ix = ((i + Number(i > 3)) % 3) - 1;
+		const iy = (((i + Number(i > 3)) / 3) << 0) - 1;
 		for (let d = 1; d < 8; d++) {
 			const b = board(pos, kx + d * ix, ky + d * iy);
 			const line = ix === 0 || iy === 0;
@@ -313,10 +313,10 @@ export function genMoves(pos) {
 }
 
 export function fixCastling(pos) {
-	pos.c[0] &= !(pos.b[7][7] !== "R" || pos.b[4][7] !== "K");
-	pos.c[1] &= !(pos.b[0][7] !== "R" || pos.b[4][7] !== "K");
-	pos.c[2] &= !(pos.b[7][0] !== "r" || pos.b[4][0] !== "k");
-	pos.c[3] &= !(pos.b[0][0] !== "r" || pos.b[4][0] !== "k");
+	pos.c[0] &= Number(!(pos.b[7][7] !== "R" || pos.b[4][7] !== "K"));
+	pos.c[1] &= Number(!(pos.b[0][7] !== "R" || pos.b[4][7] !== "K"));
+	pos.c[2] &= Number(!(pos.b[7][0] !== "r" || pos.b[4][0] !== "k"));
+	pos.c[3] &= Number(!(pos.b[0][0] !== "r" || pos.b[4][0] !== "k"));
 }
 
 export function checkPosition(pos) {

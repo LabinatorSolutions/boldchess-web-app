@@ -80,7 +80,7 @@ export function repaintSidebars() {
 			const node1 = document.createElement("DIV");
 			node1.appendChild(document.createTextNode(`+${Math.abs(points)}`));
 			const down = (points > 0 && !state.flip) || (points < 0 && state.flip);
-			const d = `${(state.flip ^ down ? whitemat.length : blackmat.length) * 16}px`;
+			const d = `${(state.flip !== down ? whitemat.length : blackmat.length) * 16}px`;
 			if (down) node1.style.bottom = d;
 			else node1.style.top = d;
 			elem.appendChild(node1);
@@ -124,7 +124,9 @@ export function showHideWindow(name, targetState) {
 	checkSizes();
 	if ((name === "Edit" || isMobile) && isEdit()) showLegalMoves(null);
 	if (name === "Graph" && document.onmousemove === graphMouseMove)
-		document.getElementById("graphWrapper").onmouseout();
+		document
+			.getElementById("graphWrapper")
+			.dispatchEvent(new MouseEvent("mouseout"));
 	if (name === "Static" && newState) repaintStatic();
 }
 
@@ -135,7 +137,7 @@ export function setupBoxes() {
 	];
 	for (let j = 0; j < elems.length; j++)
 		for (let i = 0; i < elems[j].children.length; i++) {
-			const div = elems[j].children[i];
+			const div = /** @type {HTMLElement} */ (elems[j].children[i]);
 			if (div.tagName !== "DIV") continue;
 			if (div.className !== "box") continue;
 			if (!isMobile) {
@@ -143,9 +145,8 @@ export function setupBoxes() {
 				const divCloseIcon = document.createElement("div");
 				divCloseIcon.className = "closeIcon";
 				makeButton(divCloseIcon, `Close ${panelName(div.id.substring(1))}`);
-				divCloseIcon.onclick = function () {
-					const boxElem = this.parentElement;
-					showHideWindow(boxElem.id.substring(1));
+				divCloseIcon.onclick = () => {
+					showHideWindow(div.id.substring(1));
 				};
 				div.appendChild(divCloseIcon);
 			}
@@ -162,8 +163,8 @@ export function setupBoxes() {
 			makeButton(wbIcon, panelName(div.id.substring(1)));
 			wbIcon.setAttribute("aria-pressed", String(shown));
 
-			wbIcon.onclick = function () {
-				showHideWindow(this.id.substring(2));
+			wbIcon.onclick = () => {
+				showHideWindow(wbIcon.id.substring(2));
 			};
 			document.getElementById("wb").appendChild(wbIcon);
 		}

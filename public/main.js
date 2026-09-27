@@ -90,11 +90,11 @@ window.onload = () => {
 	document.onkeydown = onKeyDown;
 
 	document.getElementById("chessboard1").oncontextmenu =
-		document.getElementById("chessboard1").parentNode.oncontextmenu =
+		document.getElementById("chessboard1").parentElement.oncontextmenu =
 		document.getElementById("editWrapper").oncontextmenu =
 			() => false;
 
-	document.getElementById("chessboard1").parentNode.onwheel =
+	document.getElementById("chessboard1").parentElement.onwheel =
 		document.getElementById("editWrapper").onwheel = onWheel;
 	document.getElementById("buttonStm").onclick = () => {
 		command("sidetomove");
@@ -131,7 +131,7 @@ window.onload = () => {
 		if (document.onmousemove === defaultMouseMove) {
 			document.onmousemove = graphMouseMove;
 			graphMouseMove(event);
-			graphMouseDown(event);
+			graphMouseDown();
 		}
 	};
 	document.getElementById("graphWrapper").onmouseout = () => {

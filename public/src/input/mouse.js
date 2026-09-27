@@ -30,9 +30,11 @@ export function onMouseDown(e) {
 		target.id !== "graphWrapper" &&
 		target.id !== "graph"
 	) {
-		document.getElementById("graphWrapper").onmouseout();
+		document
+			.getElementById("graphWrapper")
+			.dispatchEvent(new MouseEvent("mouseout"));
 	} else if (document.onmousemove === graphMouseMove) {
-		graphMouseDown(e);
+		graphMouseDown();
 		return;
 	}
 	if (state.dragElement != null) return true;

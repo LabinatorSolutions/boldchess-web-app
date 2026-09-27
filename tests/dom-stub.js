@@ -71,6 +71,11 @@ function createElement(tagName = "DIV", id = "") {
 		removeAttribute() {},
 		getAttribute: () => null,
 		addEventListener() {},
+		// Only the `on<type>` property handlers, which is all the app assigns.
+		dispatchEvent(event) {
+			this[`on${event.type}`]?.(event);
+			return true;
+		},
 		getBoundingClientRect: () => ({
 			top: 0,
 			left: 0,
@@ -126,6 +131,11 @@ export function installDomStub() {
 	globalThis.navigator = { userAgent: "node" };
 	globalThis.alert = (message) => alerts.push(message);
 	globalThis.requestAnimationFrame = () => 0;
+	globalThis.MouseEvent = class MouseEvent {
+		constructor(type) {
+			this.type = type;
+		}
+	};
 	globalThis.localStorage = {
 		getItem: (key) => (store.has(key) ? store.get(key) : null),
 		setItem: (key, value) => store.set(key, String(value)),

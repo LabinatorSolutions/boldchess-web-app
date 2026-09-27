@@ -142,20 +142,20 @@ export function repaintStatic() {
 			node1.appendChild(node3);
 			node1.appendChild(node7);
 			node1.name = staticEvalList[i].elem.toLowerCase().replace(/ /g, "_");
-			node1.onclick = function () {
+			node1.onclick = () => {
 				let data = STATIC_EVAL_TERMS,
 					sei = null;
 				for (let j = 0; j < data.length; j++) {
 					const n = data[j].name.toLowerCase().replace(/ /g, "_");
-					if (n === this.name) sei = data[j];
+					if (n === node1.name) sei = data[j];
 				}
 				if (sei == null) return;
-				const n2 = this.name.toLowerCase().replace(/ /g, "_");
+				const n2 = node1.name.toLowerCase().replace(/ /g, "_");
 				const func = terms[n2] != null ? terms[n2] : null;
 				const elem = document.getElementById("chessboard1");
 				for (let i = 0; i < elem.children.length; i++) {
-					const div = elem.children[i];
-					if (div.tagName !== "DIV" || div.style.zIndex > 0) continue;
+					const div = /** @type {HTMLElement} */ (elem.children[i]);
+					if (div.tagName !== "DIV" || Number(div.style.zIndex) > 0) continue;
 					let x = parseInt(div.style.left.replace("px", ""), 10) / 40;
 					let y = parseInt(div.style.top.replace("px", ""), 10) / 40;
 					if (state.flip) {

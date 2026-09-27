@@ -114,7 +114,9 @@ export function repaintGraph(event) {
 			state.lastMouseDataPos = mouseDataPos;
 		}
 
-		const canvas = document.getElementById("graph");
+		const canvas = /** @type {HTMLCanvasElement} */ (
+			document.getElementById("graph")
+		);
 		const ctx = canvas.getContext("2d");
 		canvas.width = cw;
 		canvas.height = ch;
@@ -165,7 +167,11 @@ export function repaintGraph(event) {
 		ctx.strokeStyle = "#a0aab4";
 		for (let i = 0; i <= xMax; i += xStep) {
 			const x = Math.round((i * xUnit) / xStep);
-			ctx.fillText(i / 2, border2 + x, border1 + yTotal + border2 / 2 + 2);
+			ctx.fillText(
+				String(i / 2),
+				border2 + x,
+				border1 + yTotal + border2 / 2 + 2,
+			);
 			ctx.moveTo(border2 + x, border1 + yTotal);
 			ctx.lineTo(border2 + x, border1 + yTotal + 3);
 		}

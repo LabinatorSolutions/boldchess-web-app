@@ -26,11 +26,12 @@ import { updateTooltip } from "./tooltip.js";
 export function showLegalMoves(from) {
 	setArrow(from == null);
 	const pos = parseFEN(getCurFEN());
+	/** @type {Element} */
 	let elem = document.getElementById("chessboard1");
 	for (let i = 0; i < elem.children.length; i++) {
-		const div = elem.children[i];
+		const div = /** @type {HTMLElement} */ (elem.children[i]);
 		if (div.tagName !== "DIV") continue;
-		if (div.style.zIndex > 0) continue;
+		if (Number(div.style.zIndex) > 0) continue;
 		let x = parseInt(div.style.left.replace("px", ""), 10) / 40;
 		let y = parseInt(div.style.top.replace("px", ""), 10) / 40;
 		if (state.flip) {
@@ -77,8 +78,8 @@ export function showLegalMoves(from) {
 			div.tooltip = san + (text.length > 0 ? ` ${text}` : "");
 			div.answerpv = answerpv == null ? [] : answerpv;
 			div.cl = cl == null ? "circle" : cl;
-			div.onmouseover = function (e) {
-				updateTooltip(this.tooltip, this.answerpv, null, this.cl, e);
+			div.onmouseover = (e) => {
+				updateTooltip(div.tooltip, div.answerpv, null, div.cl, e);
 			};
 			div.onmouseout = () => {
 				updateTooltip("");
@@ -89,9 +90,9 @@ export function showLegalMoves(from) {
 
 	elem = document.getElementById("editWrapper").children[0];
 	for (let i = 0; i < elem.children.length; i++) {
-		const div = elem.children[i];
+		const div = /** @type {HTMLElement} */ (elem.children[i]);
 		if (div.tagName !== "DIV") continue;
-		if (div.style.zIndex > 0) continue;
+		if (Number(div.style.zIndex) > 0) continue;
 		const x = -parseInt(div.style.left.replace("px", ""), 10) / 40 - 1;
 		const y = -parseInt(div.style.top.replace("px", ""), 10) / 40 - 1;
 		const c = `${div.className.split(" ")[0]} ${div.className.split(" ")[1]}`;
@@ -111,10 +112,10 @@ export function showLegalMoves(from) {
 export function updateLegalMoves() {
 	const elem = document.getElementById("chessboard1");
 	for (let i = 0; i < elem.children.length; i++) {
-		const div = elem.children[i];
+		const div = /** @type {HTMLElement} */ (elem.children[i]);
 		if (
 			div.tagName !== "DIV" ||
-			div.style.zIndex > 0 ||
+			Number(div.style.zIndex) > 0 ||
 			div.className.indexOf(" h1") < 0 ||
 			div.cl !== "circle"
 		)
@@ -129,8 +130,8 @@ export function updateLegalMoves() {
 				div.tooltip = san + (text.length > 0 ? ` ${text}` : "");
 				div.answerpv = answerpv == null ? [] : answerpv;
 				div.cl = cl == null ? "circle" : cl;
-				div.onmouseover = function (e) {
-					updateTooltip(this.tooltip, this.answerpv, null, this.cl, e);
+				div.onmouseover = (e) => {
+					updateTooltip(div.tooltip, div.answerpv, null, div.cl, e);
 				};
 				div.onmouseout = () => {
 					updateTooltip("");
@@ -162,7 +163,7 @@ export function showBoard(noeval, refreshhistory, keepcontent) {
 		for (let x = 0; x < 8; x++) {
 			for (let y = 0; y < 8; y++) {
 				const div = keepcontent
-					? elem.children[index]
+					? /** @type {HTMLElement} */ (elem.children[index])
 					: document.createElement("div");
 				index++;
 				div.style.left = `${(state.flip ? 7 - x : x) * 40}px`;
@@ -187,7 +188,9 @@ export function showBoard(noeval, refreshhistory, keepcontent) {
 			state.clickFrom.y >= 0
 		)
 			state.clickFromElem = null;
-		document.getElementById("searchInput").value = getCurFEN();
+		/** @type {HTMLInputElement} */ (
+			document.getElementById("searchInput")
+		).value = getCurFEN();
 
 		if (!noeval) {
 			refreshMoves();
@@ -274,8 +277,8 @@ export function updateInfo() {
 		span2.targetindex = i;
 		const c = getGraphPointColor(i);
 		if (c !== "#008800") span2.style.borderBottomColor = c;
-		span2.onclick = function () {
-			const targetIndex = this.targetindex;
+		span2.onclick = () => {
+			const targetIndex = span2.targetindex;
 			if (
 				targetIndex < state.history.length &&
 				targetIndex >= 0 &&
@@ -293,12 +296,12 @@ export function updateInfo() {
 export function refreshFlip() {
 	const elem = document.getElementById("cbTable");
 	for (let i = 0; i < 8; i++) {
-		elem.children[0].children[0].children[1 + i].innerText =
-			elem.children[0].children[9].children[1 + i].innerText = "abcdefgh"[
+		elem.children[0].children[0].children[1 + i].textContent =
+			elem.children[0].children[9].children[1 + i].textContent = "abcdefgh"[
 				state.flip ? 7 - i : i
 			];
-		elem.children[0].children[1 + i].children[0].innerText =
-			elem.children[0].children[1 + i].children[i === 0 ? 2 : 1].innerText =
+		elem.children[0].children[1 + i].children[0].textContent =
+			elem.children[0].children[1 + i].children[i === 0 ? 2 : 1].textContent =
 				"12345678"[state.flip ? i : 7 - i];
 	}
 	showBoard(true);
