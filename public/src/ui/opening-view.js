@@ -38,7 +38,12 @@ function shownEntries() {
 	return entries;
 }
 
-/** "Out of book after 7… Nd4": the move that followed the last book position. */
+/**
+ * "Out of book after 7… Nd4": the move that followed the last book position.
+ *
+ * @param {import("../state.js").HistoryEntry[]} entries
+ * @param {number} lastBookIndex
+ */
 function outOfBookText(entries, lastBookIndex) {
 	const next = entries[lastBookIndex + 1];
 	if (next?.san == null) return "Out of book";
@@ -46,10 +51,15 @@ function outOfBookText(entries, lastBookIndex) {
 	return `Out of book after ${pos.m[1]}${pos.w ? "." : "…"} ${next.san}`;
 }
 
+/** @param {Node} elem */
 function clear(elem) {
 	while (elem.firstChild) elem.removeChild(elem.firstChild);
 }
 
+/**
+ * @param {string} className
+ * @param {string} text
+ */
 function span(className, text) {
 	const elem = document.createElement("SPAN");
 	elem.className = className;
@@ -57,7 +67,14 @@ function span(className, text) {
 	return elem;
 }
 
-/** Book moves from `fen` as rows; buttons in analysis, text in a game. */
+/**
+ * Book moves from `fen` as rows; buttons in analysis, text in a game.
+ *
+ * @param {HTMLElement} movesElem
+ * @param {import("../openings/book.js").Book} book
+ * @param {string} fen
+ * @param {boolean} analysis
+ */
 function renderContinuations(movesElem, book, fen, analysis) {
 	for (const row of continuations(book, fen)) {
 		const move = moveFromString(row.move);
@@ -159,6 +176,8 @@ export function refreshOpening() {
  * Play a line from the starting position as a variation. The game is
  * snapshotted first (unless a variation already holds the snapshot), so
  * Revert brings it back.
+ *
+ * @param {string[]} moves Move strings, as `lineMoves` returns them.
  */
 export function playLine(moves) {
 	if (state.history2 == null) {

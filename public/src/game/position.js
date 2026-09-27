@@ -5,6 +5,7 @@ import { getFENPos, parseFEN } from "../chess/fen.js";
 import { state } from "../state.js";
 import { getElemText, setElemText } from "../ui/dom.js";
 
+/** @param {string} fen */
 export function setCurFEN(fen) {
 	setElemText(document.getElementById("fen"), fen);
 }
@@ -13,6 +14,7 @@ export function getCurFEN() {
 	return getElemText(document.getElementById("fen"));
 }
 
+/** @param {import("../chess/rules.js").Move | null} move */
 export function getCurSan(move) {
 	if (move == null) return null;
 	for (let i = 0; i < state.curmoves.length; i++)
@@ -31,6 +33,8 @@ export function getCurSan(move) {
  * How many times the position shown has occurred. Only the game up to the
  * entry shown counts: stepping back through a game must not report a draw
  * that only happens later.
+ *
+ * @param {string} [fen]
  */
 export function repetitionCount(fen) {
 	const current = fen || getCurFEN();
@@ -46,7 +50,11 @@ export function repetitionCount(fen) {
 	return count;
 }
 
-/** The position shown has occurred three times. */
+/**
+ * The position shown has occurred three times.
+ *
+ * @param {string} [fen]
+ */
 export function isThreefoldRepetition(fen) {
 	return repetitionCount(fen) >= 3;
 }
@@ -57,6 +65,8 @@ export function isThreefoldRepetition(fen) {
  * and the fifty-move rule end the game at once. In analysis a draw means
  * nothing, so the position stays open and the engine keeps evaluating it.
  * Checkmate and stalemate are not draws here; the caller checks them first.
+ *
+ * @param {string} [fen]
  */
 export function gameDrawReason(fen) {
 	if (state.gameMode === 1) return null;

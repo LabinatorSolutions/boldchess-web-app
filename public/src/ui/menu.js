@@ -15,16 +15,23 @@ import { state } from "../state.js";
 import { showBoard } from "./board.js";
 import { makeButton, setElemText } from "./dom.js";
 
+/**
+ * @param {boolean} open Toggle the menu; false closes it.
+ * @param {{target: EventTarget | null, srcElement?: EventTarget | null, type?: string, detail?: number}} [e]
+ *   The click or press, to ignore one inside the menu.
+ */
 export function showHideMenu(open, e) {
 	if (e != null) {
-		let target = e.target != null ? e.target : e.srcElement;
+		let target = /** @type {HTMLElement} */ (
+			e.target != null ? e.target : e.srcElement
+		);
 		while (
 			target != null &&
 			target.id !== "buttonMenu" &&
 			target.id !== "menu" &&
 			target.tagName !== "BODY"
 		)
-			target = target.parentNode;
+			target = /** @type {HTMLElement} */ (target.parentNode);
 		if (target == null) return;
 		if (!open && (target.id === "buttonMenu" || target.id === "menu")) return;
 	}
@@ -64,6 +71,7 @@ export function showHideMenu(open, e) {
 	if (state.menu) reloadMenu(fromKeyboard);
 }
 
+/** @param {number} c */
 export function setBoardColor(c) {
 	const count = 6;
 	if (c < 0) c = count - 1;
@@ -76,11 +84,12 @@ export function setBoardColor(c) {
 	state.boardColor = c;
 }
 
+/** @param {HTMLElement} elem */
 export function setEngineValue(elem) {
 	const depth = state.analysisEngine?.ready
 		? state.analysisEngine.depth
 		: DEFAULT_DEPTH;
-	setElemText(elem, depth);
+	setElemText(elem, String(depth));
 	elem.setAttribute(
 		"aria-label",
 		`Analysis depth ${depth}. Press to switch analysis off or on.`,
@@ -88,7 +97,11 @@ export function setEngineValue(elem) {
 	elem.removeAttribute("title");
 }
 
-/** The menu's keyboard-operable items, in tab order. */
+/**
+ * The menu's keyboard-operable items, in tab order.
+ *
+ * @param {HTMLElement} menu
+ */
 function menuControls(menu) {
 	return [...menu.querySelectorAll('[tabindex="0"]')];
 }
@@ -112,6 +125,13 @@ export function reloadMenu(focusFirst = false) {
 			parent.appendChild(div);
 		};
 
+		/**
+		 * @param {string} className
+		 * @param {string} text
+		 * @param {string | number | null} key The shortcut shown beside the item.
+		 * @param {boolean} enabled
+		 * @param {() => void} func
+		 */
 		const addMenuItem = (className, text, key, enabled, func) => {
 			const div = document.createElement("div");
 			div.className = `menuItem ${className}`;
@@ -123,12 +143,16 @@ export function reloadMenu(focusFirst = false) {
 			div.appendChild(span1);
 			const span2 = document.createElement("span");
 			span2.className = "key";
-			if (key != null) setElemText(span2, key);
+			if (key != null) setElemText(span2, String(key));
 			div.appendChild(span2);
 			if (enabled) div.onclick = func;
 			parent.appendChild(div);
 		};
 
+		/**
+		 * @param {string} className
+		 * @param {string} text
+		 */
 		const addMenuItemEngine = (className, text) => {
 			const div = document.createElement("div");
 			div.className = `menuItem ${className}`;
@@ -173,6 +197,10 @@ export function reloadMenu(focusFirst = false) {
 			parent.appendChild(div);
 		};
 
+		/**
+		 * @param {string} className
+		 * @param {string} text
+		 */
 		const addMenuItemUciElo = (className, text) => {
 			const div = document.createElement("div");
 			div.className = `menuItem ${className}`;
@@ -212,10 +240,15 @@ export function reloadMenu(focusFirst = false) {
 		};
 
 		// Helper function to update the Elo rating display
+		/** @param {HTMLElement} span */
 		function updateUciEloValue(span) {
 			setElemText(span, `${state.userUciEloRating}`);
 		}
 
+		/**
+		 * @param {string} className
+		 * @param {string} text
+		 */
 		const addMenuItemColor = (className, text) => {
 			const div = document.createElement("div");
 			div.className = `menuItem ${className}`;
@@ -384,7 +417,10 @@ export function reloadMenu(focusFirst = false) {
 		});
 		if (focusIndex >= 0) {
 			const controls = menuControls(parent);
-			controls[Math.min(focusIndex, controls.length - 1)]?.focus();
+			const control = /** @type {HTMLElement | undefined} */ (
+				controls[Math.min(focusIndex, controls.length - 1)]
+			);
+			control?.focus();
 		}
 	});
 }

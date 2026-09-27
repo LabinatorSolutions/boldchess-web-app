@@ -3,6 +3,10 @@
 import { isMobile } from "../env.js";
 import { state } from "../state.js";
 
+/**
+ * @param {Node} elem
+ * @param {string} value
+ */
 export function setElemText(elem, value) {
 	while (elem.firstChild) elem.removeChild(elem.firstChild);
 	elem.appendChild(document.createTextNode(value));
@@ -11,6 +15,8 @@ export function setElemText(elem, value) {
 /**
  * Let the keyboard press a `role="button"` element: Enter or Space runs its
  * click handler, as they would on a real <button>.
+ *
+ * @param {HTMLElement} elem
  */
 function addKeyActivation(elem) {
 	elem.addEventListener("keydown", (event) => {
@@ -23,6 +29,9 @@ function addKeyActivation(elem) {
 /**
  * Turn a clickable element built in script into a keyboard-operable button:
  * focusable, announced as a button with `label` as its name.
+ *
+ * @param {HTMLElement} elem
+ * @param {string} [label]
  */
 export function makeButton(elem, label) {
 	elem.setAttribute("role", "button");
@@ -31,16 +40,26 @@ export function makeButton(elem, label) {
 	addKeyActivation(elem);
 }
 
-/** Mirror an `on`/`off` toolbar state for assistive technology. */
+/**
+ * Mirror an `on`/`off` toolbar state for assistive technology.
+ *
+ * @param {Element} elem
+ * @param {boolean} enabled
+ */
 export function setButtonEnabled(elem, enabled) {
 	elem.className = enabled ? "on" : "off";
 	elem.setAttribute("aria-disabled", String(!enabled));
 }
 
+/** @param {Node} elem */
 export function getElemText(elem) {
 	return elem.textContent;
 }
 
+/**
+ * @param {number | null} e
+ * @param {boolean} [s] Short form, as in the move list.
+ */
 export function getEvalText(e, s) {
 	if (e == null) return s ? "" : "?";
 	const matein = Math.abs(Math.abs(e) - 1000000);
@@ -52,6 +71,7 @@ export function getEvalText(e, s) {
 	return (e / 100).toFixed(2);
 }
 
+/** @param {{clientY: number}} e */
 export function getClientY(e) {
 	if (!isMobile) return e.clientY;
 	const scrollOffset =
@@ -72,6 +92,7 @@ export function getCurScale() {
 	);
 }
 
+/** @param {string} winId */
 export function scrollReset(winId) {
 	requestAnimationFrame(() => {
 		const windowElem = document.getElementById(`w${winId}`);
@@ -83,6 +104,7 @@ export function scrollReset(winId) {
 	});
 }
 
+/** @param {number} i */
 export function getCircleClassName(i) {
 	let cl = "circle";
 	if (state.curmoves[i].eval != null && state.curmoves[0].eval != null) {

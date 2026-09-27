@@ -12,8 +12,10 @@ import { compileTerm, terms } from "./terms.js";
 import { STATIC_EVAL_TERMS } from "./terms-data.js";
 
 const CACHE_SIZE = 20;
+/** Recent results, as `[fen, grouplist]` pairs. @type {Array<[string, any[]]>} */
 const cache = [];
 
+/** @param {import("../chess/fen.js").Position} pos */
 export function getStaticEvalList(pos) {
 	const posfen = generateFEN(pos);
 	for (let si = 0; si < cache.length; si++)

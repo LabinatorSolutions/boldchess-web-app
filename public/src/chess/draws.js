@@ -7,6 +7,8 @@
  * A dead position by material: neither side can ever mate. That is a bare
  * king against a king and at most one knight, or any number of bishops (on
  * either side) that all stand on squares of one color.
+ *
+ * @param {import("./fen.js").Position} pos
  */
 export function isInsufficientMaterial(pos) {
 	let knights = 0;
@@ -24,7 +26,11 @@ export function isInsufficientMaterial(pos) {
 	return knights === 1 && bishopColors.size === 0;
 }
 
-/** Fifty moves by each side without a capture or pawn move. */
+/**
+ * Fifty moves by each side without a capture or pawn move.
+ *
+ * @param {import("./fen.js").Position} pos
+ */
 export function isFiftyMoveRule(pos) {
 	return pos.m[0] >= 100;
 }

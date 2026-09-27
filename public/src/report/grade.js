@@ -35,7 +35,11 @@ export const THRESHOLDS = {
 	mistake: 20,
 };
 
-/** How the three error categories are marked in History and colored. */
+/**
+ * How the three error categories are marked in History and colored.
+ *
+ * @type {Record<string, {mark: string, className: string, color: string}>}
+ */
 export const ERRORS = {
 	Inaccuracy: { mark: "?!", className: "inaccuracy", color: "#bb8800" },
 	Mistake: { mark: "?", className: "mistake", color: "#d06000" },
@@ -66,7 +70,12 @@ export function categoryFor(loss) {
 	return "Blunder";
 }
 
-/** Same squares and promotion; a missing promotion piece means a queen, as in `doMove`. */
+/**
+ * Same squares and promotion; a missing promotion piece means a queen, as in `doMove`.
+ *
+ * @param {import("../chess/rules.js").Move} a
+ * @param {import("../chess/rules.js").Move} b
+ */
 export function sameMove(a, b) {
 	return (
 		a.from.x === b.from.x &&
@@ -77,9 +86,14 @@ export function sameMove(a, b) {
 	);
 }
 
+/** @param {string} fen */
 const whiteToMove = (fen) => fen.split(" ")[1] === "w";
 
-/** Whether the side to move in `fen` is checkmated. */
+/**
+ * Whether the side to move in `fen` is checkmated.
+ *
+ * @param {string} fen
+ */
 function isMate(fen) {
 	const pos = parseFEN(fen);
 	const check = pos.w ? isWhiteCheck(pos) : isWhiteCheck(colorflip(pos));
@@ -106,7 +120,13 @@ function bookPrefix(history, book, limit = history.length - 1) {
 	return n;
 }
 
-/** @returns {Grade|null} */
+/**
+ * @returns {Grade|null}
+ *
+ * @param {Array<any>} history
+ * @param {number} i
+ * @param {boolean} inBook
+ */
 function grade(history, i, inBook) {
 	if (i === 0 || history[i].move == null) return null;
 	if (inBook) return { category: "Book", loss: 0 };

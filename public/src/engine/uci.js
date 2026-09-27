@@ -3,8 +3,27 @@
 import { generateFEN, parseFEN } from "../chess/fen.js";
 import { DEFAULT_DEPTH } from "../config.js";
 
+/**
+ * @typedef {object} Engine
+ * @property {boolean} ready
+ * @property {boolean} failed Set when the worker could not be started; the engine is inert.
+ * @property {boolean} kill
+ * @property {boolean} waiting
+ * @property {number} depth
+ * @property {number} lastnodes
+ * @property {string} [fen] The position the running search's output belongs to.
+ * @property {number | null} [score] The search's latest score, for the side to move.
+ * @property {(str: string) => void} [messagefunc]
+ * @property {(cmd: string, message?: (str: string) => void) => void} send
+ * @property {(fen: string, done: (str: string) => void, info?: (depth: number, score: number, pv: string[]) => void) => void} eval
+ */
+
+/**
+ * @param {(engine: Engine) => void} [onReady]
+ * @returns {Engine}
+ */
 export function loadEngine(onReady) {
-	const engine = {
+	const engine = /** @type {Engine} */ ({
 		ready: false,
 		/** Set when the worker could not be started; the engine is inert. */
 		failed: false,
@@ -12,10 +31,11 @@ export function loadEngine(onReady) {
 		waiting: true,
 		depth: DEFAULT_DEPTH,
 		lastnodes: 0,
-	};
+	});
 
 	// Without a usable worker the engine stays inert rather than half-built:
 	// callers would otherwise hit "engine.send is not a function".
+	/** @param {string} reason */
 	function disable(reason) {
 		console.error("Chess engine unavailable:", reason);
 		engine.failed = true;

@@ -170,6 +170,10 @@ export function repaintStatic() {
 						if (sqeval === 0) sqeval = terms.weak_bonus(pos, { x: x, y: y });
 						if (sqeval === 0)
 							sqeval = terms.weak_bonus(colorflip(pos), { x: x, y: 7 - y });
+						/**
+						 * @param {import("../chess/fen.js").Position} p
+						 * @param {boolean} flipy
+						 */
 						const showKDarrows = (p, flipy) => {
 							for (let x2 = 0; x2 < 8; x2++)
 								for (let y2 = 0; y2 < 8; y2++) {

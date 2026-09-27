@@ -8,6 +8,12 @@
  */
 
 export const STATIC_EVAL_TERMS = (() => {
+	/**
+	 * @type {Array<{name: string, group: string, text: string, code: string,
+	 *   links: string[][], eval: boolean, squares: number, highlight: number,
+	 *   forwhite: boolean, graph?: boolean,
+	 *   elo?: {value: string | number, error: string | number, link: string}}>}
+	 */
 	const data = [];
 	data.push({
 		name: "Main evaluation",

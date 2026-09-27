@@ -32,6 +32,7 @@ import { refreshReport } from "./report-view.js";
 import { repaintStatic } from "./static-view.js";
 import { updateTooltip } from "./tooltip.js";
 
+/** @param {import("../chess/fen.js").Square | null} [from] The selected square, or null to clear the selection. */
 export function showLegalMoves(from) {
 	setArrow(from == null);
 	const pos = parseFEN(getCurFEN());
@@ -157,6 +158,11 @@ export function updateLegalMoves() {
 	}
 }
 
+/**
+ * @param {boolean} [noeval] Keep the running analysis.
+ * @param {boolean} [refreshhistory] Rebuild the History panel.
+ * @param {boolean} [keepcontent] Keep the move list.
+ */
 export function showBoard(noeval, refreshhistory, keepcontent) {
 	requestAnimationFrame(() => {
 		const pos = parseFEN(getCurFEN());

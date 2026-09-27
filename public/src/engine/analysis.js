@@ -13,6 +13,14 @@ import { showEvals } from "../ui/moves.js";
 import { updateTooltip } from "../ui/tooltip.js";
 import { ensurePlayEngine } from "./engines.js";
 
+/** @typedef {import("../chess/rules.js").Move} Move */
+
+/**
+ * @param {number} index
+ * @param {number | null} score
+ * @param {number} depth
+ * @param {Move | null} [move]
+ */
 export function addHistoryEval(index, score, depth, move) {
 	const entry = state.history[index];
 	if (entry.evaluation == null || entry.evaluation.depth < depth) {
@@ -31,6 +39,7 @@ export function evalNext() {
 			if (!state.analysisEngine.waiting) return;
 			state.analysisEngine.waiting = false;
 			const initialdepth = state.analysisEngine.depth;
+			/** @type {string[]} */
 			let savedpv = [];
 			state.analysisEngine.eval(
 				curpos,
@@ -146,6 +155,11 @@ export function evalNext() {
 	}
 }
 
+/**
+ * @param {string} m The move, in UCI notation.
+ * @param {number | null} s
+ * @param {number} d
+ */
 export function applyEval(m, s, d) {
 	if (s == null || m.length < 4 || state.analysisEngine.depth === 0) return;
 	for (let i = 0; i < state.curmoves.length; i++) {
@@ -165,6 +179,10 @@ export function applyEval(m, s, d) {
 	}
 }
 
+/**
+ * @param {string | null} m A move in UCI notation.
+ * @returns {Move | null}
+ */
 export function parseBestMove(m) {
 	if (m == null || m.length < 4) return null;
 	const from = {

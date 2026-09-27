@@ -16,7 +16,11 @@
 import { board, colorflip, sum } from "../chess/fen.js";
 import { STATIC_EVAL_TERMS } from "./terms-data.js";
 
-/** `Middle game evaluation` -> `middle_game_evaluation`. */
+/**
+ * `Middle game evaluation` -> `middle_game_evaluation`.
+ *
+ * @param {string} name
+ */
 export function termName(name) {
 	return name.toLowerCase().replace(/ /g, "_");
 }

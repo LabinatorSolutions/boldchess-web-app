@@ -16,6 +16,12 @@ export function historyButtons() {
 	);
 }
 
+/**
+ * @param {string} fen
+ * @param {import("../state.js").HistoryEntry[] | null} oldhistory Entries to take evaluations from when replaying a game; null for a new move, which keeps the mainline to revert to.
+ * @param {import("../chess/rules.js").Move | null} move
+ * @param {string | null} san
+ */
 export function historyAdd(fen, oldhistory, move, san) {
 	if (state.historyindex >= 0 && state.history[state.historyindex].fen === fen)
 		return;
@@ -41,6 +47,11 @@ export function historyAdd(fen, oldhistory, move, san) {
 	historyButtons();
 }
 
+/**
+ * @param {number} v Entries to step, or 0 to redisplay.
+ * @param {Event} [e] With Ctrl held, a step of ±1 jumps to the end.
+ * @param {boolean} [ctrl]
+ */
 export function historyMove(v, e, ctrl) {
 	if (e == null) e = window.event;
 	const oldindex = state.historyindex;
@@ -55,7 +66,8 @@ export function historyMove(v, e, ctrl) {
 	if (state.historyindex < 0) state.historyindex = 0;
 	if (state.historyindex >= state.history.length)
 		state.historyindex = state.history.length - 1;
-	if ((e?.ctrlKey && Math.abs(v) === 1) || ctrl)
+	const ctrlKey = e != null && "ctrlKey" in e && e.ctrlKey;
+	if ((ctrlKey && Math.abs(v) === 1) || ctrl)
 		state.historyindex = v === 1 ? state.history.length - 1 : 0;
 	if (
 		v === 0 ||
@@ -68,6 +80,10 @@ export function historyMove(v, e, ctrl) {
 	}
 }
 
+/**
+ * @param {string} [wname]
+ * @param {string} [bname]
+ */
 export function historyKeep(wname, bname) {
 	state.wname = wname || "White";
 	state.bname = bname || "Black";

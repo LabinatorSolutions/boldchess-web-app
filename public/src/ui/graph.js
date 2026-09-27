@@ -9,6 +9,10 @@ import { repaintLastMoveArrow } from "./arrows.js";
 import { getEvalText } from "./dom.js";
 import { updateTooltip, updateTooltipPos } from "./tooltip.js";
 
+/**
+ * @param {number} i
+ * @returns {number | null}
+ */
 export function getGraphPointData(i) {
 	let e = null,
 		black = false;
@@ -33,6 +37,9 @@ export function getGraphPointData(i) {
  * The color of the move that reached entry `i`: its grade's, green for a
  * graded move that is not an error, or by pawn loss while it is ungraded.
  * Loops pass `grades` once rather than regrading the game per point.
+ *
+ * @param {number} i
+ * @param {Array<import("../report/grade.js").Grade | null>} [grades]
  */
 export function getGraphPointColor(
 	i,
@@ -52,6 +59,10 @@ export function getGraphPointColor(
 	return lost <= 1.0 ? "#008800" : lost <= 3.0 ? "#bb8800" : "#bb0000";
 }
 
+/**
+ * @param {number} i
+ * @param {MouseEvent} [event]
+ */
 export function showGraphTooltip(i, event) {
 	if (
 		i >= 0 &&
@@ -79,6 +90,7 @@ export function showGraphTooltip(i, event) {
 	} else updateTooltip("");
 }
 
+/** @param {MouseEvent} [event] The pointer over the graph, to update its tooltip. */
 export function repaintGraph(event) {
 	requestAnimationFrame(() => {
 		const data = [];
@@ -298,6 +310,7 @@ export function repaintGraph(event) {
 	});
 }
 
+/** @param {MouseEvent} event */
 export function graphMouseMove(event) {
 	repaintGraph(event);
 	if (state.tooltipState) updateTooltipPos(event);

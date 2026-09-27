@@ -2,18 +2,32 @@
 
 import { board, bounds, colorflip } from "./fen.js";
 
+/** @typedef {import("./fen.js").Position} Position */
+/** @typedef {import("./fen.js").Square} Square */
+
+/**
+ * A move as the generator produces it. `p` is the promotion piece, in
+ * White's case ("N", "B", "R", "Q"), and only set on promotions.
+ *
+ * @typedef {{from: Square, to: Square, p?: string}} Move
+ */
+
 /**
  * What a pawn promotes to when the caller does not say.
  *
  * The UI stores the player's choice, so the app installs a provider at start
  * up; the rules themselves stay free of any browser dependency.
+ *
+ * @type {() => string}
  */
 let defaultPromotionPiece = () => "Q";
 
+/** @param {() => string} provider */
 export function setDefaultPromotionPiece(provider) {
 	defaultPromotionPiece = provider;
 }
 
+/** @param {Position} pos */
 export function isWhiteCheck(pos) {
 	let kx = null,
 		ky = null;
@@ -60,6 +74,13 @@ export function isWhiteCheck(pos) {
 	return false;
 }
 
+/**
+ * @param {Position} pos
+ * @param {Square} from
+ * @param {Square} to
+ * @param {string | null} [promotion]
+ * @returns {Position}
+ */
 export function doMove(pos, from, to, promotion) {
 	if (
 		!pos.b ||
@@ -131,6 +152,12 @@ export function doMove(pos, from, to, promotion) {
 	return r;
 }
 
+/**
+ * @param {Position} pos
+ * @param {Square} from
+ * @param {Square} to
+ * @returns {boolean}
+ */
 export function isLegal(pos, from, to) {
 	if (!bounds(from.x, from.y)) return false;
 	if (!bounds(to.x, to.y)) return false;
@@ -225,6 +252,10 @@ export function isLegal(pos, from, to) {
 	return true;
 }
 
+/**
+ * @param {Position} pos
+ * @returns {Move[]}
+ */
 export function genMoves(pos) {
 	const moves = [];
 	for (let x1 = 0; x1 < 8; x1++)
@@ -312,13 +343,15 @@ export function genMoves(pos) {
 	return moves;
 }
 
+/** @param {Position} pos */
 export function fixCastling(pos) {
-	pos.c[0] &= Number(!(pos.b[7][7] !== "R" || pos.b[4][7] !== "K"));
-	pos.c[1] &= Number(!(pos.b[0][7] !== "R" || pos.b[4][7] !== "K"));
-	pos.c[2] &= Number(!(pos.b[7][0] !== "r" || pos.b[4][0] !== "k"));
-	pos.c[3] &= Number(!(pos.b[0][0] !== "r" || pos.b[4][0] !== "k"));
+	pos.c[0] &&= pos.b[7][7] === "R" && pos.b[4][7] === "K";
+	pos.c[1] &&= pos.b[0][7] === "R" && pos.b[4][7] === "K";
+	pos.c[2] &&= pos.b[7][0] === "r" && pos.b[4][0] === "k";
+	pos.c[3] &&= pos.b[0][0] === "r" && pos.b[4][0] === "k";
 }
 
+/** @param {Position} pos */
 export function checkPosition(pos) {
 	const errmsgs = [];
 	let wk = 0,

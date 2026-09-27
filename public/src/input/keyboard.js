@@ -15,6 +15,7 @@ import {
 } from "../ui/menu.js";
 import { showHideWindow } from "../ui/panels.js";
 
+/** @param {KeyboardEvent} e */
 export function onKeyDown(e) {
 	if (e.ctrlKey) return;
 

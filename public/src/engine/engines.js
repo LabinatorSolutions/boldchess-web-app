@@ -10,7 +10,11 @@
 import { state } from "../state.js";
 import { loadEngine } from "./uci.js";
 
-/** Apply the player's chosen Elo to the playing engine. */
+/**
+ * Apply the player's chosen Elo to the playing engine.
+ *
+ * @param {import("./uci.js").Engine} engine
+ */
 export function applyPlayStrength(engine) {
 	if (!engine?.ready) return;
 	engine.send("setoption name UCI_LimitStrength value true");

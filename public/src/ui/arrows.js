@@ -42,6 +42,7 @@ export function repaintReviewArrows() {
 	});
 }
 
+/** @param {boolean} on */
 export function setArrow(on) {
 	state.arrow = on;
 	if (
@@ -77,16 +78,27 @@ export function repaintLastMoveArrow() {
 	});
 }
 
-/** Point an arrow line from `move.from` to `move.to` on the board. */
+/**
+ * Point an arrow line from `move.from` to `move.to` on the board.
+ *
+ * @param {SVGElement} line
+ * @param {import("../chess/rules.js").Move} move
+ */
 function placeLine(line, move) {
 	/** Pixel center of a board square along one axis. */
-	const center = (c) => String(20 + (state.flip ? 7 - c : c) * 40);
+	const center = (/** @type {number} */ c) =>
+		String(20 + (state.flip ? 7 - c : c) * 40);
 	line.setAttribute("x1", center(move.from.x));
 	line.setAttribute("y1", center(move.from.y));
 	line.setAttribute("x2", center(move.to.x));
 	line.setAttribute("y2", center(move.to.y));
 }
 
+/**
+ * @param {import("../chess/rules.js").Move | null} move
+ * @param {string} wrapperId
+ * @param {number} [opacity]
+ */
 export function showArrowInternal(move, wrapperId, opacity = 1) {
 	const elem = document.getElementById(wrapperId);
 	if (move == null) {
@@ -100,6 +112,10 @@ export function showArrowInternal(move, wrapperId, opacity = 1) {
 	elem.style.display = "block";
 }
 
+/**
+ * @param {import("../chess/rules.js").Move | null} [move]
+ * @param {number} [opacity]
+ */
 export function showArrow1(move, opacity) {
 	const elem = document.getElementById("arrowWrapper1");
 	const elem0 = elem.children[0];
@@ -110,10 +126,12 @@ export function showArrow1(move, opacity) {
 	showArrowInternal(move, "arrowWrapper1", opacity);
 }
 
+/** @param {import("../chess/rules.js").Move | null} [move] */
 export function showArrow2(move) {
 	showArrowInternal(move, "arrowWrapper2");
 }
 
+/** @param {import("../chess/rules.js").Move | null} [move] */
 export function showArrow3(move) {
 	const elem0 = document.getElementById("arrowWrapper3").children[0];
 	if (elem0.children == null) return;

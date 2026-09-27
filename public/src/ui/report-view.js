@@ -41,10 +41,15 @@ function analysisBlocked() {
 	return null;
 }
 
+/** @param {Node} elem */
 function clear(elem) {
 	while (elem.firstChild) elem.removeChild(elem.firstChild);
 }
 
+/**
+ * @param {string} className
+ * @param {string[]} texts
+ */
 function row(className, texts) {
 	const elem = document.createElement("DIV");
 	elem.className = className;
@@ -56,7 +61,12 @@ function row(className, texts) {
 	return elem;
 }
 
-/** "12. Qxb7?? Blunder (−34.5%) · best Rb1", numbered from the position the move was played in. */
+/**
+ * "12. Qxb7?? Blunder (−34.5%) · best Rb1", numbered from the position the move was played in.
+ *
+ * @param {number} i
+ * @param {import("../report/grade.js").Grade} grade
+ */
 function errorText(i, grade) {
 	const pos = parseFEN(state.history[i - 1].fen);
 	const number = `${pos.m[1]}${pos.w ? "." : "…"}`;
@@ -69,6 +79,8 @@ function errorText(i, grade) {
 /**
  * Show the position the move to entry `i` was played in, with the played and
  * the engine's move drawn on it.
+ *
+ * @param {number} i
  */
 function review(i) {
 	state.reviewMove = { index: i, fen: state.history[i].fen };

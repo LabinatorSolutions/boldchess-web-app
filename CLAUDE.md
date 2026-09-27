@@ -45,8 +45,10 @@ The repo has no GitHub Actions workflows. "CI" means running `bun run ci` locall
   plus `commands.js` (the text box: FEN/PGN/SAN input, keyword commands, the shareable `~` game
   string).
 - **Types come from JSDoc, checked by `tsc` (`jsconfig.json`), with no build step.** The check
-  covers `public/main.js` and `public/src/` in non-strict mode. `getElementById` and `.children`
-  give generic element types, so narrow them with a cast such as
+  covers `public/main.js` and `public/src/` in non-strict mode plus `noImplicitAny`: every
+  parameter needs a JSDoc type, and shared shapes (`Position`, `Move`, `HistoryEntry`, `Engine`)
+  are `@typedef`s in the module that owns them, imported with `import("...").Name`.
+  `getElementById` and `.children` give generic element types, so narrow them with a cast such as
   `/** @type {HTMLInputElement} */ (document.getElementById("searchInput"))`. Values the app
   stores on DOM nodes (`tooltip`, `index`, ...) are declared in `types/globals.d.ts`; add new ones
   there. Event handlers use arrow functions over the element variable, not `this`.

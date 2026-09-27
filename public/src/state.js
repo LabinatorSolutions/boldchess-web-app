@@ -12,6 +12,46 @@
 
 import { START } from "./config.js";
 
+/** @typedef {import("./chess/fen.js").Square} Square */
+/** @typedef {import("./chess/rules.js").Move} Move */
+/** @typedef {import("./engine/uci.js").Engine} Engine */
+
+/**
+ * An engine result for a history entry. `score` is from the side to move's
+ * point of view (mates as ±(1,000,000 − n)) and null for a position the engine
+ * cannot search; `move` is the engine's best move there.
+ *
+ * @typedef {object} Evaluation
+ * @property {number | null} score
+ * @property {number} depth
+ * @property {boolean} black
+ * @property {Move | null} [move]
+ */
+
+/**
+ * @typedef {object} HistoryEntry
+ * @property {string} fen
+ * @property {Evaluation | null} evaluation
+ * @property {Move | null} move
+ * @property {string | null} san
+ */
+
+/**
+ * A legal move in the position shown, as the move list keeps it. `eval` is
+ * from White's point of view; the engine's reply fields arrive with it.
+ *
+ * @typedef {object} MoveItem
+ * @property {Move} move
+ * @property {string} san
+ * @property {string} fen The position after the move.
+ * @property {boolean} w White to move after the move.
+ * @property {number | null} eval
+ * @property {number | null} depth
+ * @property {string | null} [answer] The engine's reply, as a UCI move.
+ * @property {string[]} [answerpv]
+ * @property {string} [pvtext]
+ */
+
 /**
  * One ply of the game.
  *
@@ -19,6 +59,12 @@ import { START } from "./config.js";
  * `score`, `black` and `depth`, filled in by the analysis loop long after the
  * entry is created. `move` and `san` say how the position was reached and stay
  * null for the first entry, for positions set up by hand and for a FEN jump.
+ *
+ * @param {string} fen
+ * @param {Evaluation | null} [evaluation]
+ * @param {Move | null} [move]
+ * @param {string | null} [san]
+ * @returns {HistoryEntry}
  */
 export function historyEntry(fen, evaluation = null, move = null, san = null) {
 	return { fen, evaluation, move, san };
@@ -27,23 +73,38 @@ export function historyEntry(fen, evaluation = null, move = null, san = null) {
 export const state = {
 	// Engines
 	/** Stockfish instance used for background analysis. */
+	/** @type {Engine | undefined} */
 	analysisEngine: undefined,
-	/** Second Stockfish instance, strength-limited, used when playing. */
+	/**
+	 * Second Stockfish instance, strength-limited, used when playing.
+	 *
+	 * @type {Engine | undefined}
+	 */
 	playEngine: undefined,
 	/** Elo the playing engine is limited to. */
 	userUciEloRating: 2000,
 
 	// Game history
-	/** One `historyEntry` per ply. */
+	/**
+	 * One `historyEntry` per ply.
+	 *
+	 * @type {HistoryEntry[]}
+	 */
 	history: [historyEntry(START)],
 	/**
 	 * Snapshot of the mainline while browsing a variation, as
 	 * `{ index, entries }`, or null when there is nothing to revert to.
+	 *
+	 * @type {{index: number, entries: HistoryEntry[]} | null}
 	 */
 	history2: null,
 	/** Index of the position currently shown. */
 	historyindex: 0,
-	/** Moves available in the current position, with their evaluations. */
+	/**
+	 * Moves available in the current position, with their evaluations.
+	 *
+	 * @type {MoveItem[]}
+	 */
 	curmoves: [],
 
 	// Board presentation
@@ -62,20 +123,36 @@ export const state = {
 	 */
 	gameMode: 1,
 	isPlayerWhite: true,
-	/** Side the engine plays (0 = Black, 1 = White), or null when it does not play. */
+	/**
+	 * Side the engine plays (0 = Black, 1 = White), or null when it does not play.
+	 *
+	 * @type {number | null}
+	 */
 	play: null,
 	coachMode: false,
 	coachModeLabel: "Activate Coach Mode",
 
 	// Dragging and clicking
+	/** @type {HTMLElement | null} */
 	dragElement: null,
 	dragActive: false,
+	/** @type {number | undefined} */
 	startX: undefined,
+	/** @type {number | undefined} */
 	startY: undefined,
+	/** @type {boolean | undefined} */
 	dragCtrl: undefined,
+	/**
+	 * 0 = left button, 1 = right button, 2 = right-button drag done.
+	 *
+	 * @type {number | undefined}
+	 */
 	dragLMB: undefined,
+	/** @type {Square | undefined} */
 	clickFrom: undefined,
+	/** @type {HTMLElement | undefined} */
 	clickFromElem: undefined,
+	/** @type {number | null} */
 	lastMouseDataPos: null,
 
 	// Panels
@@ -89,6 +166,8 @@ export const state = {
 	 * The move opened from the report, as `{index, fen}` of the entry it
 	 * reached, or null. While the board shows entry `index - 1`, the played
 	 * and the engine's move are drawn there (see `reviewArrows`).
+	 *
+	 * @type {{index: number, fen: string} | null}
 	 */
 	reviewMove: null,
 };

@@ -19,12 +19,33 @@ import { showHideWindow } from "./ui/panels.js";
 const GAME_ALPHABET =
 	"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
 
-/** A command spelled out in full, matched without regard to case. */
+/**
+ * A command box entry: `match` recognizes the text (`lower` is it in lower
+ * case), `run` carries it out.
+ *
+ * @typedef {object} Command
+ * @property {(text: string, lower: string) => boolean} match
+ * @property {(text: string, lower: string) => void} run
+ */
+
+/**
+ * A command spelled out in full, matched without regard to case.
+ *
+ * @param {string} name
+ * @param {(text: string, lower: string) => void} run
+ * @returns {Command}
+ */
 function exact(name, run) {
 	return { match: (_text, lower) => lower === name, run };
 }
 
-/** A command that carries an argument after a fixed word, as in `depth 20`. */
+/**
+ * A command that carries an argument after a fixed word, as in `depth 20`.
+ *
+ * @param {string} word
+ * @param {(text: string, lower: string) => void} run
+ * @returns {Command}
+ */
 function prefix(word, run) {
 	return { match: (_text, lower) => lower.indexOf(word) === 0, run };
 }
@@ -34,6 +55,8 @@ function prefix(word, run) {
  * wins. The order is load-bearing: text is recognised by shape (a FEN, a move
  * list, a `~` game) before any keyword, and the SAN fallthrough has to stay
  * last because it matches anything.
+ *
+ * @type {Command[]}
  */
 const COMMANDS = [
 	{ match: isFen, run: loadFen },
@@ -53,6 +76,7 @@ const COMMANDS = [
 	{ match: () => true, run: playSanMove },
 ];
 
+/** @param {string} text */
 export function command(text) {
 	if (text == null || text.length === 0) return;
 	text = scrapeMovesPane(text);
@@ -69,6 +93,8 @@ export function command(text) {
  * Turn a moves pane copied out of a chess site into something `loadMoveList`
  * can replay: player names become PGN tags and the move markup becomes plain
  * `{1.} {e4}` groups. Text that carries no such pane is returned unchanged.
+ *
+ * @param {string} text
  */
 function scrapeMovesPane(text) {
 	const mvdivs = [
@@ -172,12 +198,20 @@ function scrapeMovesPane(text) {
 	return text;
 }
 
-/** A bare FEN: eight ranks and no move numbers. */
+/**
+ * A bare FEN: eight ranks and no move numbers.
+ *
+ * @param {string} text
+ */
 function isFen(text) {
 	return text.split("/").length === 8 && text.split(".").length === 1;
 }
 
-/** A FEN replaces the whole game with a single-entry history. */
+/**
+ * A FEN replaces the whole game with a single-entry history.
+ *
+ * @param {string} text
+ */
 function loadFen(text) {
 	const pos = parseFEN(text);
 	setCurFEN(generateFEN(pos));
@@ -186,7 +220,11 @@ function loadFen(text) {
 	historyMove(0);
 }
 
-/** Anything carrying move numbers: a PGN, or a scraped moves pane. */
+/**
+ * Anything carrying move numbers: a PGN, or a scraped moves pane.
+ *
+ * @param {string} text
+ */
 function isMoveList(text) {
 	return text.split(".").length > 1;
 }
@@ -195,6 +233,9 @@ function isMoveList(text) {
  * The value of one PGN tag pair, as in `[White "Carlsen, Magnus"]`. Standard
  * PGN quotes with `"`; `'` is still accepted because earlier versions of this
  * parser only understood that form.
+ *
+ * @param {string} text
+ * @param {string} name
  */
 function pgnTag(text, name) {
 	const match = text.match(
@@ -203,7 +244,11 @@ function pgnTag(text, name) {
 	return match ? match[2] : null;
 }
 
-/** Replay a PGN move list, keeping the player names from its tag pairs. */
+/**
+ * Replay a PGN move list, keeping the player names from its tag pairs.
+ *
+ * @param {string} text
+ */
 function loadMoveList(text) {
 	const whitename = pgnTag(text, "White");
 	const blackname = pgnTag(text, "Black");
@@ -213,7 +258,7 @@ function loadMoveList(text) {
 		" " +
 		text
 			.replace(/\./g, " ")
-			.replace(/(\[FEN [^\]]+\])+?/g, (_match, $1) =>
+			.replace(/(\[FEN [^\]]+\])+?/g, (_match, /** @type {string} */ $1) =>
 				$1.replace(/\[|\]|'|"/g, "").replace(/\s/g, "."),
 			);
 	text = text
@@ -311,7 +356,12 @@ function swapSideToMove() {
 	doComputerMove();
 }
 
-/** `depth <n>` - clamp the analysis engine to a search depth. */
+/**
+ * `depth <n>` - clamp the analysis engine to a search depth.
+ *
+ * @param {string} _text
+ * @param {string} lower
+ */
 function setAnalysisDepth(_text, lower) {
 	if (state.analysisEngine?.ready) {
 		state.analysisEngine.depth = Math.min(
@@ -425,6 +475,8 @@ function openShareUrl() {
 /**
  * `~<string>` - replay a game written as move indices into the legal-move list
  * of each position, the form `window` produces.
+ *
+ * @param {string} text
  */
 function loadEncodedGame(text) {
 	let pos = parseFEN(START);
@@ -473,11 +525,17 @@ function keepVariation() {
 	historyKeep(state.wname, state.bname);
 }
 
-/** `col<n>` - one of the six board colour schemes. */
+/**
+ * `col<n>` - one of the six board colour schemes.
+ *
+ * @param {string} text
+ * @param {string} lower
+ */
 function isBoardColor(text, lower) {
 	return text.length === 4 && lower.indexOf("col") === 0;
 }
 
+/** @param {string} text */
 function applyBoardColor(text) {
 	setBoardColor(Math.max(0, text.charCodeAt(3) - "0".charCodeAt(0)));
 }
@@ -486,6 +544,8 @@ function applyBoardColor(text) {
  * `layout <spec>` - show the windows the spec names and hide the rest. Each
  * word is a window initial optionally followed by `width,height` or
  * `width,height,left,top`.
+ *
+ * @param {string} text
  */
 function applyLayout(text) {
 	const a = text.toUpperCase().split(" ");
@@ -519,6 +579,8 @@ function applyLayout(text) {
 /**
  * The fallthrough: anything else is treated as a move typed in SAN, and plays
  * it if it is one of the legal moves in the current position.
+ *
+ * @param {string} text
  */
 function playSanMove(text) {
 	for (let i = 0; i < state.curmoves.length; i++)
@@ -543,6 +605,7 @@ export function dosearch() {
 	input.blur();
 }
 
+/** @param {boolean} visible */
 export function showHideButtonGo(visible) {
 	// `.focus` is the method, always truthy; the focus itself is activeElement.
 	if (document.activeElement !== searchInput()) visible = false;
@@ -611,6 +674,10 @@ export function setupInput() {
 	};
 }
 
+/**
+ * @param {string} name
+ * @param {string} [url]
+ */
 export function getParameterByName(name, url) {
 	if (!url) url = window.location.href;
 	name = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");

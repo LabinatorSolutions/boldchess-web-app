@@ -110,6 +110,10 @@ export function showEvals() {
 		state.movesPv ? "PV" : "Reply",
 	);
 	if (state.curmoves.length > 0) {
+		/**
+		 * @param {import("../state.js").MoveItem} a
+		 * @param {import("../state.js").MoveItem} b
+		 */
 		const sortfunc = (a, b) => {
 			const a0 =
 				a.eval == null ? -2000000 : a.eval * (state.curmoves[0].w ? -1 : 1);
@@ -195,6 +199,10 @@ export function showEvals() {
 	updateLegalMoves();
 }
 
+/**
+ * @param {number} index
+ * @param {boolean} on
+ */
 export function highlightMove(index, on) {
 	setArrow(!on);
 	if (state.dragElement != null) return;

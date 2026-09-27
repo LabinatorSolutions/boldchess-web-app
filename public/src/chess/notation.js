@@ -3,6 +3,13 @@
 import { colorflip } from "./fen.js";
 import { doMove, genMoves, isLegal, isWhiteCheck } from "./rules.js";
 
+/** @typedef {import("./fen.js").Position} Position */
+/** @typedef {import("./rules.js").Move} Move */
+
+/**
+ * @param {Position} pos
+ * @param {string} s
+ */
 export function parseMove(pos, s) {
 	let promotion = null;
 	s = s.replace(/[+|#|?|!|x]/g, "");
@@ -86,6 +93,11 @@ export function parseMove(pos, s) {
 	}
 }
 
+/**
+ * @param {Position} pos
+ * @param {Move} move
+ * @param {Move[]} moves
+ */
 export function sanMove(pos, move, moves) {
 	let s = "";
 	if (

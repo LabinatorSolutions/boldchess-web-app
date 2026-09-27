@@ -11,13 +11,22 @@ import { sanMove } from "../chess/notation.js";
 import { doMove, genMoves, isLegal } from "../chess/rules.js";
 import { START } from "../config.js";
 
+/** @typedef {import("../chess/rules.js").Move} Move */
+/** @typedef {import("../chess/fen.js").Square} Square */
+/** @typedef {import("../state.js").HistoryEntry} HistoryEntry */
+
 const FILES = "abcdefgh";
 
 /** The source lines of each built book, for naming edges and replaying lines. */
 const LINES = new WeakMap();
 
-/** `{from, to, p}` as `e2e4`, or `f2g1n` for a promotion. */
+/**
+ * `{from, to, p}` as `e2e4`, or `f2g1n` for a promotion.
+ *
+ * @param {Move} move
+ */
 export function moveToString(move) {
+	/** @param {Square} square */
 	const square = ({ x, y }) => FILES[x] + (8 - y);
 	return (
 		square(move.from) + square(move.to) + (move.p ? move.p.toLowerCase() : "")
@@ -27,8 +36,12 @@ export function moveToString(move) {
 /**
  * The inverse of `moveToString`. The promotion piece comes back upper-case,
  * the White-side letter that `doMove` expects for either color.
+ *
+ * @param {string} s
+ * @returns {Move}
  */
 export function moveFromString(s) {
+	/** @param {number} at */
 	const square = (at) => ({
 		x: FILES.indexOf(s[at]),
 		y: 8 - Number(s[at + 1]),
@@ -46,6 +59,8 @@ export function moveFromString(s) {
  * actually capture there, as in lichess's EPD keys: after 1.e4 the app's FEN
  * says `e3`, a pasted FEN of the same position says `-`, and both must match.
  * Null when the FEN does not parse.
+ *
+ * @param {string} fen
  */
 export function positionKey(fen) {
 	let pos;
@@ -57,7 +72,11 @@ export function positionKey(fen) {
 	return keyOf(pos);
 }
 
-/** `positionKey` for a parsed position. */
+/**
+ * `positionKey` for a parsed position.
+ *
+ * @param {import("../chess/fen.js").Position} pos
+ */
 function keyOf(pos) {
 	if (pos.e != null) {
 		const [ex, ey] = pos.e;
@@ -86,10 +105,12 @@ function keyOf(pos) {
  * shortest one, which names a continuation whose position has no name.
  *
  * @returns {Book}
+ * @param {string[][]} lines `[eco, name, moves]`, the moves as move strings.
  */
 export function buildBook(lines) {
 	/** @type {Book} */
 	const book = new Map();
+	/** @param {string} key */
 	const node = (key) => {
 		let n = book.get(key);
 		if (n == null) {
@@ -142,6 +163,10 @@ export function buildBook(lines) {
  * most recent named position at or before it, walking back only across
  * entries reached by a move. `lastBookIndex` is the latest
  * entry still in the book, so the move after it is where the game left book.
+ *
+ * @param {Book} book
+ * @param {HistoryEntry[]} entries
+ * @param {number} index
  */
 export function openingAt(book, entries, index) {
 	let lastBookIndex = -1;
@@ -169,6 +194,9 @@ export function openingAt(book, entries, index) {
 /**
  * Book moves from `fen`, most established first: by the number of named lines
  * through the move, then by SAN.
+ *
+ * @param {Book} book
+ * @param {string} fen
  */
 export function continuations(book, fen) {
 	const n = book.get(positionKey(fen));
@@ -194,7 +222,12 @@ export function continuations(book, fen) {
 	);
 }
 
-/** Whether `fen` is a position on any named line. The entry point for #21. */
+/**
+ * Whether `fen` is a position on any named line. The entry point for #21.
+ *
+ * @param {Book} book
+ * @param {string} fen
+ */
 export function isBookPosition(book, fen) {
 	return book.has(positionKey(fen));
 }
@@ -219,6 +252,7 @@ function whenIdle(timeout = 2000) {
  * moment rather than competing with the first render and the engine start.
  *
  * @returns {Promise<Book|null>}
+ * @param {string} url
  */
 export async function fetchBook(url) {
 	try {
@@ -249,6 +283,8 @@ export function loadBook() {
 /**
  * Install an already built book as the app's book. Tests use it so that the
  * view does not depend on which test file first called `loadBook`.
+ *
+ * @param {Book | null} book
  */
 export function useBook(book) {
 	loaded = book;
@@ -260,7 +296,11 @@ export function getBook() {
 	return loaded;
 }
 
-/** The moves of line `lineIndex` of the loaded book, as move strings. */
+/**
+ * The moves of line `lineIndex` of the loaded book, as move strings.
+ *
+ * @param {number} lineIndex
+ */
 export function lineMoves(lineIndex) {
 	return LINES.get(loaded)[lineIndex][2].split(" ");
 }

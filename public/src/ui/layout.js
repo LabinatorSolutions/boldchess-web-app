@@ -47,6 +47,7 @@ export function observeSizes() {
  * redrawn, so position info is refreshed on a timer rather than per message.
  */
 const INFO_REFRESH_MS = 250;
+/** @type {number | null} */
 let infoTimer = null;
 
 export function requestInfoUpdate() {
@@ -109,6 +110,7 @@ export function checkSizes() {
 	}
 }
 
+/** @param {boolean} [init] */
 export function setupMobileLayout(init) {
 	if (init) {
 		document.getElementById("colLeft").style.width = "300px";
@@ -186,7 +188,14 @@ export function setupMobileLayout(init) {
 	}
 }
 
+/**
+ * @param {HTMLElement} elem
+ * @param {(touch: Touch) => void} funcStart
+ * @param {(touch: Touch) => void} funcMove
+ * @param {(touch: Touch) => void} funcEnd
+ */
 export function setupTouchEvents(elem, funcStart, funcMove, funcEnd) {
+	/** @param {TouchEvent} e */
 	const onTouch = (e) => {
 		if (e.cancelable) e.preventDefault();
 		if (e.touches.length > 1 || (e.type === "touchend" && e.touches.length > 0))

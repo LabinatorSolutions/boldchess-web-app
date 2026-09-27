@@ -11,7 +11,11 @@ import { graphMouseMove } from "./graph.js";
 import { checkSizes, setupTouchEvents } from "./layout.js";
 import { repaintStatic } from "./static-view.js";
 
-/** Spoken names of the panels, keyed by the suffix of their `w<Name>` id. */
+/**
+ * Spoken names of the panels, keyed by the suffix of their `w<Name>` id.
+ *
+ * @type {Record<string, string>}
+ */
 const PANEL_NAMES = {
 	Chessboard: "Chessboard",
 	Moves: "Moves",
@@ -23,6 +27,7 @@ const PANEL_NAMES = {
 	Edit: "Chessboard editor",
 };
 
+/** @param {string} id */
 function panelName(id) {
 	return PANEL_NAMES[id] || id;
 }
@@ -61,6 +66,10 @@ export function repaintSidebars() {
 		const elem = document.getElementById("materialWrapper");
 		while (elem.firstChild) elem.removeChild(elem.firstChild);
 
+		/**
+		 * @param {number[]} mat
+		 * @param {boolean} flip
+		 */
 		const fmat = (mat, flip) => {
 			const fragment = document.createDocumentFragment();
 			for (let i = 0; i < mat.length; i++) {
@@ -102,6 +111,10 @@ export function repaintSidebars() {
 	});
 }
 
+/**
+ * @param {string} name
+ * @param {boolean} [targetState] Shown or hidden; toggles when omitted.
+ */
 export function showHideWindow(name, targetState) {
 	if (isMobile && name !== "Chessboard") {
 		const wb = document.getElementById("wb").children;
@@ -172,6 +185,7 @@ export function setupBoxes() {
 		}
 }
 
+/** @param {HTMLElement} elmnt */
 export function setupDragElement(elmnt) {
 	let pos1 = 0,
 		pos2 = 0,
@@ -184,8 +198,9 @@ export function setupDragElement(elmnt) {
 	elmnt.originalHeight =
 		elmnt.style.height = `${elmnt.getBoundingClientRect().height - 2}px`;
 	elmnt.style.display = oldDisplay;
-	elmnt.firstElementChild.onmousedown = startBoxDrag;
-	elmnt.firstElementChild.ondblclick = () => {
+	const titleBar = /** @type {HTMLElement} */ (elmnt.firstElementChild);
+	titleBar.onmousedown = startBoxDrag;
+	titleBar.ondblclick = () => {
 		elmnt.style.width = elmnt.originalWidth;
 		elmnt.style.height = elmnt.originalHeight;
 		elmnt.style.left = "";
@@ -193,12 +208,7 @@ export function setupDragElement(elmnt) {
 		elmnt.style.position = "";
 		elmnt.style.zIndex = "4";
 	};
-	setupTouchEvents(
-		elmnt.firstElementChild,
-		startBoxDrag,
-		moveBoxDrag,
-		endBoxDrag,
-	);
+	setupTouchEvents(titleBar, startBoxDrag, moveBoxDrag, endBoxDrag);
 
 	const resizeSquare = document.createElement("div");
 	resizeSquare.style.position = "absolute";
@@ -213,18 +223,20 @@ export function setupDragElement(elmnt) {
 	setupTouchEvents(resizeSquare, startBoxResize, moveBoxResize, endBoxDrag);
 	elmnt.appendChild(resizeSquare);
 
+	/** @param {MouseEvent | Touch} e */
 	function startBoxDrag(e) {
-		e = e || window.event;
-		if (e?.preventDefault) e.preventDefault();
+		e = e || /** @type {MouseEvent} */ (window.event);
+		if ("preventDefault" in e) e.preventDefault();
 		pos3 = e.clientX;
 		pos4 = e.clientY;
 		document.onmouseup = endBoxDrag;
 		document.onmousemove = moveBoxDrag;
 	}
 
+	/** @param {MouseEvent | Touch} e */
 	function moveBoxDrag(e) {
-		e = e || window.event;
-		if (e?.preventDefault) e.preventDefault();
+		e = e || /** @type {MouseEvent} */ (window.event);
+		if ("preventDefault" in e) e.preventDefault();
 		if (elmnt.style.position !== "absolute") {
 			elmnt.style.width = `${elmnt.getBoundingClientRect().width - 2}px`;
 			elmnt.style.height = `${elmnt.getBoundingClientRect().height - 2}px`;
@@ -259,9 +271,10 @@ export function setupDragElement(elmnt) {
 		elmnt.style.cursor = "";
 	}
 
+	/** @param {MouseEvent | Touch} e */
 	function startBoxResize(e) {
-		e = e || window.event;
-		if (e?.preventDefault) e.preventDefault();
+		e = e || /** @type {MouseEvent} */ (window.event);
+		if ("preventDefault" in e) e.preventDefault();
 		pos3 = e.clientX;
 		pos4 = e.clientY;
 		elmnt.style.width = `${elmnt.getBoundingClientRect().width - 2}px`;
@@ -270,9 +283,10 @@ export function setupDragElement(elmnt) {
 		document.onmousemove = moveBoxResize;
 	}
 
+	/** @param {MouseEvent | Touch} e */
 	function moveBoxResize(e) {
-		e = e || window.event;
-		if (e?.preventDefault) e.preventDefault();
+		e = e || /** @type {MouseEvent} */ (window.event);
+		if ("preventDefault" in e) e.preventDefault();
 		pos1 = pos3 - e.clientX;
 		pos2 = pos4 - e.clientY;
 		pos3 = e.clientX;

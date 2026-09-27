@@ -5,15 +5,39 @@
  * c: castling rights, e: en passant square, w: white to move, m: clocks }.
  */
 
+/**
+ * @typedef {object} Position
+ * @property {string[][]} b Pieces ("-" for empty), indexed [file][rank-from-the-top].
+ * @property {boolean[]} c Castling rights: K, Q, k, q.
+ * @property {number[] | null} e En passant square as [x, y], or null.
+ * @property {boolean} w White to move.
+ * @property {number[]} m Halfmove clock and fullmove number.
+ */
+
+/** @typedef {{x: number, y: number}} Square */
+
+/**
+ * @param {number} x
+ * @param {number} y
+ */
 export function bounds(x, y) {
 	return x >= 0 && x <= 7 && y >= 0 && y <= 7;
 }
 
+/**
+ * @param {Position} pos
+ * @param {number} x
+ * @param {number} y
+ */
 export function board(pos, x, y) {
 	if (x >= 0 && x <= 7 && y >= 0 && y <= 7) return pos.b[x][y];
 	return "x";
 }
 
+/**
+ * @param {Position} pos
+ * @returns {Position}
+ */
 export function colorflip(pos) {
 	const board = new Array(8);
 	for (let i = 0; i < 8; i++) board[i] = new Array(8);
@@ -34,6 +58,11 @@ export function colorflip(pos) {
 	};
 }
 
+/**
+ * @param {Position} pos
+ * @param {(pos: Position, square: Square, param?: any) => number} func
+ * @param {any} [param]
+ */
 export function sum(pos, func, param) {
 	let sum = 0;
 	for (let x = 0; x < 8; x++)
@@ -41,6 +70,7 @@ export function sum(pos, func, param) {
 	return sum;
 }
 
+/** @param {string} fen */
 export function parseMoveNumber(fen) {
 	const a = fen.replace(/^\s+/, "").split(" ");
 	return a.length > 5 && !Number.isNaN(Number(a[5])) && a[5] !== ""
@@ -48,6 +78,10 @@ export function parseMoveNumber(fen) {
 		: 1;
 }
 
+/**
+ * @param {string} fen
+ * @returns {Position}
+ */
 export function parseFEN(fen) {
 	const board = new Array(8);
 	for (let i = 0; i < 8; i++) board[i] = new Array(8);
@@ -123,6 +157,11 @@ export function parseFEN(fen) {
  * Stockfish 19 aborts its worker on an en passant square on the wrong rank,
  * and the move generator would otherwise offer captures of a pawn that is not
  * there.
+ *
+ * @param {string[][]} board
+ * @param {boolean} whitemove
+ * @param {number} x
+ * @param {number} y
  */
 function isEnPassantSquare(board, whitemove, x, y) {
 	const [rank, pawn, start] = whitemove ? [2, "p", 1] : [5, "P", 6];
@@ -134,6 +173,7 @@ function isEnPassantSquare(board, whitemove, x, y) {
 	);
 }
 
+/** @param {Position} pos */
 export function generateFEN(pos) {
 	let s = "",
 		f = 0,
@@ -179,6 +219,7 @@ export function generateFEN(pos) {
 	return s;
 }
 
+/** @param {string} fen */
 export function getFENPos(fen) {
 	if (!fen) return "";
 	return fen.split(" ").slice(0, 4).join(" ");
