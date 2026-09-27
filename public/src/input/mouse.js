@@ -228,6 +228,26 @@ export function onMouseMove(e) {
 	});
 }
 
+/**
+ * The square a click started on. A redraw while the button is held (the
+ * engine's reply, a history step) replaces every board square, which leaves
+ * the pressed one detached; the click then belongs to the new square at the
+ * same place. Null when there is none.
+ */
+function currentSquare(elem) {
+	if (elem.parentNode != null) return elem;
+	const board = document.getElementById("chessboard1");
+	for (let i = 0; i < board.children.length; i++) {
+		const square = /** @type {HTMLElement} */ (board.children[i]);
+		if (
+			square.style.left === elem.style.left &&
+			square.style.top === elem.style.top
+		)
+			return square;
+	}
+	return null;
+}
+
 export function onMouseUp(e) {
 	if (document.onmousemove === graphMouseMove) return;
 	onMouseMove(e);
@@ -254,6 +274,8 @@ export function onMouseUp(e) {
 		)
 			state.dragElement = oldDragElement;
 	}
+	if (state.dragElement != null && !state.dragActive)
+		state.dragElement = currentSquare(state.dragElement);
 	if (state.dragElement != null) {
 		let x1 = getDragX(state.startX),
 			y1 = getDragY(state.startY);

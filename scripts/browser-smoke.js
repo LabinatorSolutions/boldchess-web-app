@@ -456,6 +456,45 @@ async function main() {
 		),
 	};
 
+	// A click that spans a board redraw still selects its piece. In a game the
+	// engine's reply redraws every square; one landing while the button was
+	// held left the click on a detached square, which threw in onMouseUp.
+	await evaluate(`(() => {
+		document.getElementById("searchInput").value = "reset";
+		document.getElementById("simpleSearch").onsubmit();
+	})()`);
+	await sleep(500);
+	const pawn = JSON.parse(
+		await evaluate(`(() => {
+			const square = [...document.getElementById("chessboard1").children].find(
+				(d) => d.className.split(" ")[1] === "P",
+			);
+			const r = square.getBoundingClientRect();
+			return JSON.stringify({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
+		})()`),
+	);
+	await send("Input.dispatchMouseEvent", {
+		type: "mousePressed",
+		...pawn,
+		button: "left",
+		buttons: 1,
+		clickCount: 1,
+	});
+	await sleep(100);
+	await evaluate(`import("/src/ui/board.js").then((m) => m.showBoard(true))`);
+	await sleep(300);
+	await send("Input.dispatchMouseEvent", {
+		type: "mouseReleased",
+		...pawn,
+		button: "left",
+		buttons: 0,
+		clickCount: 1,
+	});
+	await sleep(300);
+	const selectedAcrossRedraw = await evaluate(
+		`[...document.getElementById("chessboard1").children].some((d) => d.className.includes(" h0"))`,
+	);
+
 	const afterInteraction = JSON.parse(
 		await evaluate(`JSON.stringify({
 			squares: document.getElementById("chessboard1").children.length,
@@ -527,6 +566,7 @@ async function main() {
 				reviewed.best === "none" &&
 				reviewed.last === "none",
 		],
+		["a click across a board redraw selects its piece", selectedAcrossRedraw],
 		[
 			"board intact after exercising the input handlers",
 			afterInteraction.squares === 64,

@@ -572,15 +572,7 @@ li {
 	outline: none;
 }
 
-#simpleSearch #searchInput.placeholder {
-	color: #999999;
-}
-
-#simpleSearch #searchInput:-ms-input-placeholder {
-	color: #999999;
-}
-
-#simpleSearch #searchInput:-moz-placeholder {
+#simpleSearch #searchInput::placeholder {
 	color: #999999;
 }
 
