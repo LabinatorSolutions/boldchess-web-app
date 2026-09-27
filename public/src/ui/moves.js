@@ -17,86 +17,90 @@ import { getCircleClassName, getEvalText, setElemText } from "./dom.js";
 import { showHideMenu } from "./menu.js";
 import { updateTooltip } from "./tooltip.js";
 
+/**
+ * Rebuild the move list for the position on the board. Synchronous: showBoard
+ * calls it from its own frame and starts the analysis right after, which must
+ * see this position's moves, not the previous one's (a search on the stale
+ * list used to stall the analysis loop).
+ */
 export function refreshMoves() {
-	requestAnimationFrame(() => {
-		const pos = parseFEN(getCurFEN());
-		state.curmoves = [];
-		setElemText(document.getElementById("moves"), "");
-		const errmsgs = checkPosition(pos);
-		if (errmsgs.length === 0) {
-			const moves = genMoves(pos);
-			for (let i = 0; i < moves.length; i++) {
-				state.curmoves.push({
-					move: moves[i],
-					san: sanMove(pos, moves[i], moves),
-					fen: generateFEN(doMove(pos, moves[i].from, moves[i].to, moves[i].p)),
-					w: !pos.w,
-					eval: null,
-					depth: 0,
-				});
-			}
+	const pos = parseFEN(getCurFEN());
+	state.curmoves = [];
+	setElemText(document.getElementById("moves"), "");
+	const errmsgs = checkPosition(pos);
+	if (errmsgs.length === 0) {
+		const moves = genMoves(pos);
+		for (let i = 0; i < moves.length; i++) {
+			state.curmoves.push({
+				move: moves[i],
+				san: sanMove(pos, moves[i], moves),
+				fen: generateFEN(doMove(pos, moves[i].from, moves[i].to, moves[i].p)),
+				w: !pos.w,
+				eval: null,
+				depth: 0,
+			});
+		}
 
-			// Checkmate and stalemate end the game on the board itself, so they
-			// take precedence over the draw rules: a mate delivered on the move
-			// that completes a repetition still stands.
-			const drawReason =
-				state.curmoves.length > 0 ? gameDrawReason(getCurFEN()) : null;
+		// Checkmate and stalemate end the game on the board itself, so they
+		// take precedence over the draw rules: a mate delivered on the move
+		// that completes a repetition still stands.
+		const drawReason =
+			state.curmoves.length > 0 ? gameDrawReason(getCurFEN()) : null;
 
-			if (drawReason != null) {
-				state.curmoves = []; // Clear legal moves to prevent further play
-				const fragment = document.createDocumentFragment();
-				const div0 = document.createElement("div");
-				div0.style.padding = "8px 16px";
-				const div = document.createElement("div");
-				div.style.backgroundColor = "#894e00"; // distinct color for draw
-				div.className = "positionStatus";
-				setElemText(div, `Draw - ${drawReason}`);
-				div0.appendChild(div);
-				const ul = document.createElement("ul"),
-					li = document.createElement("li");
-				setElemText(li, "Draw");
-				ul.appendChild(li);
-				div0.appendChild(ul);
-				fragment.appendChild(div0);
-				document.getElementById("moves").appendChild(fragment);
-			} else if (state.curmoves.length === 0) {
-				const matecheck =
-					(pos.w && isWhiteCheck(pos)) ||
-					(!pos.w && isWhiteCheck(colorflip(pos)));
-				const fragment = document.createDocumentFragment();
-				const div0 = document.createElement("div");
-				div0.style.padding = "8px 16px";
-				const div = document.createElement("div");
-				div.style.backgroundColor = "#800080";
-				div.className = "positionStatus";
-				setElemText(div, matecheck ? "Checkmate" : "Stalemate");
-				div0.appendChild(div);
-				const ul = document.createElement("ul"),
-					li = document.createElement("li");
-				setElemText(
-					li,
-					matecheck && pos.w ? "Black wins" : matecheck ? "White wins" : "Draw",
-				);
-				ul.appendChild(li);
-				div0.appendChild(ul);
-				fragment.appendChild(div0);
-				document.getElementById("moves").appendChild(fragment);
-			} else {
-				showEvals();
-			}
-		} else {
+		if (drawReason != null) {
+			state.curmoves = []; // Clear legal moves to prevent further play
 			const fragment = document.createDocumentFragment();
 			const div0 = document.createElement("div");
 			div0.style.padding = "8px 16px";
 			const div = document.createElement("div");
-			div.style.backgroundColor = "#bb0000";
+			div.style.backgroundColor = "#894e00"; // distinct color for draw
 			div.className = "positionStatus";
-			setElemText(div, "Illegal position");
+			setElemText(div, `Draw - ${drawReason}`);
 			div0.appendChild(div);
+			const ul = document.createElement("ul"),
+				li = document.createElement("li");
+			setElemText(li, "Draw");
+			ul.appendChild(li);
+			div0.appendChild(ul);
 			fragment.appendChild(div0);
 			document.getElementById("moves").appendChild(fragment);
+		} else if (state.curmoves.length === 0) {
+			const matecheck =
+				(pos.w && isWhiteCheck(pos)) ||
+				(!pos.w && isWhiteCheck(colorflip(pos)));
+			const fragment = document.createDocumentFragment();
+			const div0 = document.createElement("div");
+			div0.style.padding = "8px 16px";
+			const div = document.createElement("div");
+			div.style.backgroundColor = "#800080";
+			div.className = "positionStatus";
+			setElemText(div, matecheck ? "Checkmate" : "Stalemate");
+			div0.appendChild(div);
+			const ul = document.createElement("ul"),
+				li = document.createElement("li");
+			setElemText(
+				li,
+				matecheck && pos.w ? "Black wins" : matecheck ? "White wins" : "Draw",
+			);
+			ul.appendChild(li);
+			div0.appendChild(ul);
+			fragment.appendChild(div0);
+			document.getElementById("moves").appendChild(fragment);
+		} else {
+			showEvals();
 		}
-	});
+	} else {
+		const fragment = document.createDocumentFragment();
+		const div0 = document.createElement("div");
+		div0.style.padding = "8px 16px";
+		const div = document.createElement("div");
+		div.style.backgroundColor = "#bb0000";
+		div.className = "positionStatus";
+		setElemText(div, "Illegal position");
+		div0.appendChild(div);
+		fragment.appendChild(div0);
+		document.getElementById("moves").appendChild(fragment);
+	}
 }
 
 export function showEvals() {

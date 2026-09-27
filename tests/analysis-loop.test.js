@@ -80,3 +80,14 @@ test("a stale history search is dropped and the loop goes on", () => {
 	expect(searches.map((s) => s.fen)).toEqual([AFTER_E4, AFTER_C4]);
 	expect(state.history[1].evaluation).toBeNull();
 });
+
+test("the move list is rebuilt before the analysis starts", async () => {
+	const { refreshMoves } = await import("../public/src/ui/moves.js");
+	state.curmoves = [move(AFTER_D4)];
+	setCurFEN(START);
+	refreshMoves();
+	// Synchronous, so evalAll right after it in showBoard sees this position's
+	// moves, not the previous position's.
+	expect(state.curmoves.length).toBe(20);
+	expect(state.curmoves.every((m) => m.depth === 0)).toBe(true);
+});
