@@ -4,9 +4,10 @@
 	"description": "The official chess web app of BoldChess.com",
 	"main": "server.js",
 	"scripts": {
-		"ci": "node scripts/generate-headers.js --check && biome ci . && tsc -p jsconfig.json && bun test",
+		"ci": "node scripts/generate-headers.js --check && node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/build-openings.mjs --check && biome ci . && tsc -p jsconfig.json && bun test",
 		"start": "node server.js",
 		"build": "node scripts/generate-headers.js",
+		"build:openings": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/build-openings.mjs",
 		"test": "bun test",
 		"smoke": "node scripts/browser-smoke.js",
 		"test:deep": "PERFT_DEEP=1 bun test",
