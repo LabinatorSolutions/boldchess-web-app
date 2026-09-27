@@ -6,6 +6,13 @@ BoldChess Web App: a browser GUI for Stockfish 19 (WASM, in a Web Worker). The c
 modules served directly from `public/` (no bundler, no transpiler). A small Express 5 server
 (`server.js`) serves those files and adds the security headers.
 
+## Git
+
+The owner permanently allows committing and pushing to this repo (`origin/master`), overriding
+the global never-commit rule. Keep messages brief (a short subject; a body only when it adds
+something), and never add yourself or any agent name as author, co-author or contributor: no
+`Co-Authored-By` lines and no session trailers.
+
 ## Commands
 
 Bun is both the package manager and the test runner. `server.js` and `scripts/*.js` are CommonJS
@@ -90,8 +97,10 @@ so update it by hand when the policy changes.
 - `bun run smoke` also asserts the engine evaluates (at start and after stepping back through a
   loaded game) and that the controls work from the keyboard. Its "no console errors" check is
   what catches a crashed Stockfish worker; keep it last.
-- Draw rules follow FIDE: fivefold, 75 moves and dead positions end the game (`ui/moves.js`);
-  threefold and 50 moves only add a "Draw Can Be Claimed" note to the header (`ui/board.js`).
+- Draws apply only to games (menu modes 2-4), and end them at once with no claim, as online play
+  does: threefold repetition, 50 moves or insufficient material (`gameDrawReason` in
+  `game/position.js`). In analysis (mode 1) a draw is meaningless, so the engine keeps
+  evaluating; only checkmate and stalemate end a position there.
 - `server.test.js` imports the Express app (`server.js` only listens when run directly). The
   per-IP rate limit (`RATE_LIMIT_MAX`, default 1000 per 15 min) must stay far above the ~40
   requests one page load makes; a test fires 150 requests to guard that.
