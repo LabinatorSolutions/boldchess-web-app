@@ -236,6 +236,41 @@ async function main() {
 	await evaluate(`document.getElementById("wbOpening").click()`);
 	await sleep(300);
 
+	// Game report: 3...Nf6?? allows 4.Qxf7#, so once the background analysis
+	// has evaluated the history, History marks it and the report counts it as
+	// Black's blunder. Both checks need the grades to exist, so a report or a
+	// History mark that never renders fails them.
+	await evaluate(`(() => {
+		document.getElementById("searchInput").value =
+			"1. e4 e5 2. Qh5 Nc6 3. Bc4 Nf6";
+		document.getElementById("simpleSearch").onsubmit();
+	})()`);
+	await evaluate(`document.getElementById("wbReport").click()`);
+	// Done when this game's report is rendered and every move graded. The
+	// previous game's report also reads as complete, so the position must be
+	// this game's, and the table must exist so a report that never renders
+	// waits out the timeout instead of stopping early.
+	for (let waited = 0; waited < 30000; waited += 500) {
+		await sleep(500);
+		const graded = await evaluate(`
+			document.getElementById("positionText").textContent
+				.startsWith("Position: 7 of 7") &&
+			document.getElementById("reportStatus").textContent === "" &&
+			document.querySelectorAll("#reportTable .reportRow").length > 0`);
+		if (graded) break;
+	}
+	const report = JSON.parse(
+		await evaluate(`JSON.stringify({
+			history: document.getElementById("history").textContent,
+			blackBlunders: Number(
+				document.querySelector("#reportTable .reportRow.blunder")?.children[2]
+					?.textContent,
+			),
+		})`),
+	);
+	await evaluate(`document.getElementById("wbReport").click()`);
+	await sleep(300);
+
 	// The edit palette and the arrow markers are built without style attributes
 	// in the markup, because CSP's style-src does not allow them. Check that the
 	// palette is there and still carries the inline offsets the edit handlers
@@ -427,7 +462,13 @@ async function main() {
 	socket.close();
 	child.kill();
 	server.close();
-	fs.rmSync(profile, { recursive: true, force: true });
+	// Chromium may still be writing its profile as it exits; retry the ENOTEMPTY.
+	fs.rmSync(profile, {
+		recursive: true,
+		force: true,
+		maxRetries: 10,
+		retryDelay: 200,
+	});
 
 	const checks = [
 		["board rendered 64 squares", dom.squares === 64],
@@ -458,6 +499,8 @@ async function main() {
 			afterContinuation.startsWith("Position: 7 of 7") &&
 				afterRevert.startsWith("Position: 6 of 6"),
 		],
+		["a blunder is marked in the history", report.history.includes("??")],
+		["the game report counts Black's blunder", report.blackBlunders >= 1],
 		[
 			"board intact after exercising the input handlers",
 			afterInteraction.squares === 64,

@@ -50,7 +50,7 @@ The repo has no GitHub Actions workflows. "CI" means running `bun run ci` locall
   `/** @type {HTMLInputElement} */ (document.getElementById("searchInput"))`. Values the app
   stores on DOM nodes (`tooltip`, `index`, ...) are declared in `types/globals.d.ts`; add new ones
   there. Event handlers use arrow functions over the element variable, not `this`.
-- **`chess/`, `eval/`, `openings/` and `engine/uci.js` must not touch the DOM.** That keeps them importable under
+- **`chess/`, `eval/`, `openings/`, `report/` and `engine/uci.js` must not touch the DOM.** That keeps them importable under
   `bun test`. For the same reason, `doMove` gets its default promotion piece from a provider that
   the app installs at startup instead of reading the toolbar.
 - **Shared mutable state lives on the `state` object in `src/state.js`**, not in module-level
@@ -79,6 +79,12 @@ The repo has no GitHub Actions workflows. "CI" means running `bun run ci` locall
   install a book with `useBook()` because `bun test` shares one module registry across files.
   `ui/opening-view.js` renders the Opening window and the `#openingInfo` segment of the board
   header from `updateInfo()`; clicks play lines as a revertable variation in analysis only.
+- **Game report** (`report/grade.js`, no DOM): grades each move by the drop in the mover's
+  winning chance (lichess's logistic curve) from the background evaluations already on
+  `state.history`, with no engine pass of its own. Grades are derived on every render and never
+  stored; the thresholds are the exported `THRESHOLDS`. History marks, the graph points and the
+  last-move arrow all color by the grade (one measure). `ui/report-view.js` renders the Game
+  Report window from `updateInfo()` and, like the Opening window, skips unchanged renders.
 - **Classical static eval**: `eval/terms-data.js` holds ~1600 lines of term sources as strings
   that call each other by name (`$pawns(pos)`). `eval/terms.js` compiles them into one generated
   scope, so no globals are created. The evaluation is pinned by the snapshot test, so any
