@@ -4,6 +4,7 @@ import { command } from "../commands.js";
 import { DEFAULT_DEPTH, MAX_DEPTH, MIN_DEPTH } from "../config.js";
 import { historyMove } from "../game/history.js";
 import { togglePromotionPiece } from "../game/position.js";
+import { clearPremove } from "../game/premove.js";
 import { state } from "../state.js";
 import { showBoard } from "../ui/board.js";
 import {
@@ -72,6 +73,10 @@ export function onKeyDown(e) {
 			if (state.menu) {
 				document.getElementById("buttonMenu").focus();
 				showHideMenu(false);
+			} else if (state.premove != null) {
+				// Then a queued pre-move is cancelled.
+				clearPremove();
+				showBoard(true);
 			} else command("revert");
 			break;
 		case "F":

@@ -161,6 +161,14 @@ export const state = {
 	staticSortByChange: false,
 	movesPv: false,
 
+	/**
+	 * The player's queued pre-move and the position it was entered in, or
+	 * null (see `game/premove.js`).
+	 *
+	 * @type {{move: Move, fen: string} | null}
+	 */
+	premove: null,
+
 	// Game report
 	/**
 	 * The move opened from the report, as `{index, fen}` of the entry it

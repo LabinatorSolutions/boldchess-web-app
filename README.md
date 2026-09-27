@@ -33,6 +33,7 @@ A live version is only available for the BoldChess.com paid members. As this is 
 - Display an evaluation graph with visual indicators for blunders.
 - Open a position or game in a new window via a URL.
 - Play against the Stockfish engine, with the ability to set its rating according to your preference.
+- Pre-move while the engine thinks: move one of your pieces on its turn and the move plays as soon as it replies, if it is still legal. Right-click the board or press Escape to cancel it.
 - Activate/Deactivate a special "Coach Mode" to view the best move and evaluation while playing.
 - Customize the appearance of the chessboard.
 - Draw arrows or highlight squares on the chessboard.
@@ -124,7 +125,7 @@ public/
     chess/             fen.js, rules.js, notation.js, draws.js - no DOM access
     engine/            uci.js (worker wrapper), engines.js (lifecycle), analysis.js
     eval/              terms-data.js, terms.js, static-eval-list.js
-    game/              position.js, history.js
+    game/              position.js, history.js, premove.js (no DOM access)
     openings/          book.js - opening book index, no DOM access
     report/            grade.js - move grades for the game report, no DOM access
     ui/                board, moves, graph, menu, panels, arrows, tooltip, layout,

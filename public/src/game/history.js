@@ -4,6 +4,7 @@ import { historyEntry, state } from "../state.js";
 import { refreshButtonRevert, showBoard } from "../ui/board.js";
 import { setButtonEnabled } from "../ui/dom.js";
 import { getCurFEN, setCurFEN } from "./position.js";
+import { clearPremove } from "./premove.js";
 
 export function historyButtons() {
 	setButtonEnabled(
@@ -54,6 +55,8 @@ export function historyAdd(fen, oldhistory, move, san) {
  */
 export function historyMove(v, e, ctrl) {
 	if (e == null) e = window.event;
+	// A pre-move belongs to the position it was entered in.
+	clearPremove();
 	const oldindex = state.historyindex;
 	// Adjust this block to include move and san as null
 	if (

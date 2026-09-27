@@ -5,6 +5,7 @@ import { sanMove } from "../chess/notation.js";
 import { checkPosition, doMove, genMoves } from "../chess/rules.js";
 import { historyAdd } from "../game/history.js";
 import { gameDrawReason, getCurFEN, setCurFEN } from "../game/position.js";
+import { playPremove } from "../input/mouse.js";
 import { state } from "../state.js";
 import { showBoard } from "../ui/board.js";
 import { repaintGraph } from "../ui/graph.js";
@@ -332,6 +333,9 @@ export function doComputerMove() {
 				// console.log('History:', state.history);
 				updateTooltip("");
 				showBoard(false);
+				// After showBoard's frame, which rebuilds the move list the
+				// pre-move is looked up in.
+				requestAnimationFrame(() => playPremove(fenBeforeMove));
 			}
 		});
 	}

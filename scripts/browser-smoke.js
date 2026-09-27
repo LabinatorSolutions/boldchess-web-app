@@ -225,6 +225,78 @@ async function main() {
 	}
 	await typeKey("1");
 
+	// Pre-moves. The player's second move is queued in the same task as the
+	// first, before the engine can reply, so the check does not race it; the
+	// highlight is read two frames later, before any reply can be drawn.
+	const waitForPosition = async (text) => {
+		let shown = "";
+		for (let waited = 0; waited < 20000; waited += 500) {
+			await sleep(500);
+			shown = await evaluate(
+				`document.getElementById("positionText").textContent`,
+			);
+			if (shown.startsWith(text)) break;
+		}
+		return shown;
+	};
+	await evaluate(`(() => {
+		document.getElementById("searchInput").value = "reset";
+		document.getElementById("simpleSearch").onsubmit();
+	})()`);
+	await typeKey("2"); // the player has White, the engine Black
+	await sleep(500);
+	await evaluate(`import("/src/input/mouse.js").then((mouse) => {
+		mouse.doMoveHandler({ from: { x: 4, y: 6 }, to: { x: 4, y: 4 } });
+		window.__premoveQueued = mouse.doMoveHandler({
+			from: { x: 6, y: 7 },
+			to: { x: 5, y: 5 },
+		});
+		requestAnimationFrame(() =>
+			requestAnimationFrame(() => {
+				window.__premoveSquares =
+					document.querySelectorAll("#chessboard1 .h4").length;
+			}),
+		);
+	})`);
+	await waitForPosition("Position: 5 of 5");
+	const premovePlayed = JSON.parse(
+		await evaluate(`JSON.stringify({
+			queued: window.__premoveQueued,
+			squares: window.__premoveSquares,
+			history: document.getElementById("history").textContent,
+		})`),
+	);
+	// Black's only move takes the knight the player pre-moved: it is dropped.
+	await typeKey("1");
+	await evaluate(`(() => {
+		document.getElementById("searchInput").value = "6Nk/R7/8/8/8/8/8/2K5 b - - 0 1";
+		document.getElementById("simpleSearch").onsubmit();
+	})()`);
+	await sleep(500);
+	await evaluate(`Promise.all([
+		import("/src/ui/menu.js"),
+		import("/src/input/mouse.js"),
+		import("/src/state.js"),
+	]).then(([menu, mouse, app]) => {
+		window.__app = app;
+		menu.menuPlayEngineWhite();
+		window.__dropQueued = mouse.doMoveHandler({
+			from: { x: 6, y: 0 },
+			to: { x: 5, y: 2 },
+		});
+	})`);
+	const afterDrop = await waitForPosition("Position: 2 of 2");
+	await sleep(500);
+	const premoveDropped = JSON.parse(
+		await evaluate(`JSON.stringify({
+			queued: window.__dropQueued,
+			position: document.getElementById("positionText").textContent,
+			premove: window.__app.state.premove,
+			squares: document.querySelectorAll("#chessboard1 .h4").length,
+		})`),
+	);
+	await typeKey("1");
+
 	// Opening explorer: the header names the opening, the window lists book
 	// moves, a continuation plays as a variation and Revert leaves it. Clicks
 	// go through element.click(), so keyboard focus stays where the focus
@@ -576,6 +648,20 @@ async function main() {
 		[
 			"the engine plays after the side-to-move button",
 			afterSwap.startsWith("Position: 3 of 3"),
+		],
+		[
+			"a pre-move is highlighted and played after the engine's reply",
+			premovePlayed.queued === true &&
+				premovePlayed.squares === 2 &&
+				/2\.\s*Nf3/.test(premovePlayed.history),
+		],
+		[
+			"a pre-move the reply made illegal is dropped",
+			premoveDropped.queued === true &&
+				afterDrop.startsWith("Position: 2 of 2") &&
+				premoveDropped.position.startsWith("Position: 2 of 2") &&
+				premoveDropped.premove === null &&
+				premoveDropped.squares === 0,
 		],
 		["opening named in the header", openingHeader.includes("Ruy Lopez")],
 		["opening window lists continuations", openingRows > 0],

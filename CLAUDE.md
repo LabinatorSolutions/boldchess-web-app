@@ -71,6 +71,12 @@ The repo has no GitHub Actions workflows. "CI" means running `bun run ci` locall
   `pos.w` is a boolean. Never compare them with `===` directly. A blanket `==`→`===` pass in
   `53651da` broke the turn guard this way, so check the operand types before "fixing" any
   remaining loose-looking comparison.
+- **Pre-moves** (`game/premove.js`, no DOM): on the engine's turn in modes 2-3, `doMoveHandler`
+  queues the player's move as `state.premove = {move, fen}` instead of refusing it. Targets are the
+  piece's pattern with nothing in the way (a recapture lands on the player's own square).
+  `doComputerMove` calls `playPremove` one frame after its `showBoard`, because `doMoveHandler`
+  needs the rebuilt `state.curmoves`; it plays only if legal and only from the `fen` it was
+  entered in. `historyMove`, the mode switches, right-click and Escape clear it.
 - **Controls**: controls in `index.html` are `<button type="button">`, with a CSS reset that makes
   them lay out like the divs they replaced. Controls built in script go through `makeButton()` in
   `ui/dom.js`, which adds the role, the name and Enter/Space activation.

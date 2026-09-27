@@ -11,6 +11,7 @@ import {
 	toggleCoachMode,
 	togglePromotionPiece,
 } from "../game/position.js";
+import { clearPremove } from "../game/premove.js";
 import { state } from "../state.js";
 import { showBoard } from "./board.js";
 import { makeButton, setElemText } from "./dom.js";
@@ -426,6 +427,7 @@ export function reloadMenu(focusFirst = false) {
 }
 
 export function menuAnalysisMode() {
+	clearPremove();
 	state.gameMode = 1;
 	state.play = null;
 	state.analysisEngine.kill = false;
@@ -435,6 +437,7 @@ export function menuAnalysisMode() {
 }
 
 export function menuPlayEngineWhite() {
+	clearPremove();
 	state.gameMode = 2;
 	state.isPlayerWhite = true;
 	state.play = 0;
@@ -445,6 +448,7 @@ export function menuPlayEngineWhite() {
 }
 
 export function menuPlayEngineBlack() {
+	clearPremove();
 	state.gameMode = 3;
 	state.isPlayerWhite = false;
 	state.play = 1;
@@ -455,6 +459,7 @@ export function menuPlayEngineBlack() {
 }
 
 export function menuTwoPlayerMode() {
+	clearPremove();
 	state.gameMode = 4;
 	state.analysisEngine.kill = true;
 	state.play = null;

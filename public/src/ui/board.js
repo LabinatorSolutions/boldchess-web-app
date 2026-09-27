@@ -6,6 +6,12 @@ import { command } from "../commands.js";
 import { evalAll } from "../engine/analysis.js";
 import { historyMove } from "../game/history.js";
 import { getCurFEN } from "../game/position.js";
+import {
+	canPremove,
+	isPlayerPiece,
+	premoveTargets,
+	shownPremove,
+} from "../game/premove.js";
 import { getBook } from "../openings/book.js";
 import { bestMoveSan, ERRORS, gradeGame } from "../report/grade.js";
 import { state } from "../state.js";
@@ -36,6 +42,9 @@ import { updateTooltip } from "./tooltip.js";
 export function showLegalMoves(from) {
 	setArrow(from == null);
 	const pos = parseFEN(getCurFEN());
+	// On the engine's turn, the player's piece shows where it can pre-move.
+	const premoving = from != null && canPremove(pos) && isPlayerPiece(pos, from);
+	const targets = premoving ? premoveTargets(pos, from) : [];
 	/** @type {Element} */
 	let elem = document.getElementById("chessboard1");
 	for (let i = 0; i < elem.children.length; i++) {
@@ -50,6 +59,7 @@ export function showLegalMoves(from) {
 		}
 		let c = `${div.className.split(" ")[0]} ${div.className.split(" ")[1]}`;
 		if (div.className.indexOf(" h2") >= 0) c += " h2";
+		if (div.className.indexOf(" h4") >= 0) c += " h4";
 		div.className = c;
 		div.onmouseover = null;
 		setElemText(div, "");
@@ -57,6 +67,8 @@ export function showLegalMoves(from) {
 		if (from.x === x && from.y === y) {
 			div.className += " h0";
 			state.clickFromElem = div;
+		} else if (premoving) {
+			if (targets.some((t) => t.x === x && t.y === y)) div.className += " h1";
 		} else if (
 			isLegal(pos, from, {
 				x: x,
@@ -173,6 +185,13 @@ export function showBoard(noeval, refreshhistory, keepcontent) {
 		if (keepcontent && elem.children.length !== 64) keepcontent = false;
 		if (!keepcontent) while (elem.firstChild) elem.removeChild(elem.firstChild);
 
+		const premove = shownPremove(getCurFEN());
+		/** @param {number} x @param {number} y */
+		const onPremove = (x, y) =>
+			premove != null &&
+			((premove.from.x === x && premove.from.y === y) ||
+				(premove.to.x === x && premove.to.y === y));
+
 		const fragment = document.createDocumentFragment();
 		let index = 0;
 		for (let x = 0; x < 8; x++) {
@@ -190,6 +209,7 @@ export function showBoard(noeval, refreshhistory, keepcontent) {
 				) {
 					div.className += " h2";
 				}
+				if (onPremove(x, y)) div.className += " h4";
 				if (!keepcontent) fragment.appendChild(div);
 			}
 		}

@@ -11,6 +11,12 @@ import {
 	getPromotionPiece,
 	setCurFEN,
 } from "../game/position.js";
+import {
+	clearPremove,
+	isPremove,
+	setPremove,
+	takePremove,
+} from "../game/premove.js";
 import { state } from "../state.js";
 import { finalArrow3, showArrow3 } from "../ui/arrows.js";
 import { showBoard, showLegalMoves } from "../ui/board.js";
@@ -87,6 +93,17 @@ export function onMouseDown(e) {
 	if (elem.id === "editWrapper" || elem.className.length < 3) return;
 	if (target.id !== "editWrapper" && target.id !== "chessboard1") return true;
 
+	// A right click on the board cancels a queued pre-move, and does nothing else.
+	if (
+		target.id === "chessboard1" &&
+		state.premove != null &&
+		(e.which === 3 || e.button === 2)
+	) {
+		clearPremove();
+		showBoard(true);
+		return false;
+	}
+
 	const edit = isEdit();
 	if (
 		edit &&
@@ -158,6 +175,12 @@ export function doMoveHandler(move, copy) {
 	updateTooltip("");
 	const oldfen = getCurFEN(); // Position before the move
 	let pos = parseFEN(oldfen);
+	// The player's own piece on the engine's turn: queue it as a pre-move.
+	if (copy == null && !isEdit() && isPremove(pos, move)) {
+		setPremove(move, oldfen);
+		showBoard(true);
+		return true;
+	}
 	const legal =
 		copy == null &&
 		isLegal(pos, move.from, move.to) &&
@@ -203,6 +226,18 @@ export function doMoveHandler(move, copy) {
 		});
 	} else return false;
 	return true;
+}
+
+/**
+ * Play the queued pre-move now that the engine's reply to `fenBefore` is on
+ * the board. `doMoveHandler` plays it only if it is legal here; either way it
+ * is gone. Runs after `showBoard` has rebuilt `state.curmoves`.
+ *
+ * @param {string} fenBefore
+ */
+export function playPremove(fenBefore) {
+	const move = takePremove(fenBefore);
+	if (move != null) doMoveHandler(move);
 }
 
 /**
