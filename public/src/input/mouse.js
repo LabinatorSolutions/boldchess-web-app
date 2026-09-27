@@ -144,9 +144,8 @@ export function doMoveHandler(move, copy) {
 		// `state.play` is the side the engine plays (0 = Black, 1 = White), or
 		// null when nobody is playing it. The player may only move their own side.
 		const enginesTurn = state.play != null && pos.w === (state.play === 1);
-		if (!enginesTurn) {
-			pos = doMove(pos, move.from, move.to, move.p); // Apply the move to the position
-		}
+		if (enginesTurn) return false;
+		pos = doMove(pos, move.from, move.to, move.p); // Apply the move to the position
 		setCurFEN(generateFEN(pos)); // Update the current FEN to the new position
 		// Store the new position along with the move and SAN notation in history
 		historyAdd(getCurFEN(), null, move, san);

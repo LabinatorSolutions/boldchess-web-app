@@ -4,6 +4,7 @@ import { colorflip, generateFEN, parseFEN } from "./chess/fen.js";
 import { parseMove, sanMove } from "./chess/notation.js";
 import { doMove, genMoves } from "./chess/rules.js";
 import { DEFAULT_DEPTH, MAX_DEPTH, START } from "./config.js";
+import { doComputerMove } from "./engine/analysis.js";
 import { isMobile } from "./env.js";
 import { historyAdd, historyKeep, historyMove } from "./game/history.js";
 import { getCurFEN, setCurFEN } from "./game/position.js";
@@ -295,13 +296,19 @@ function colorflipPosition() {
 /**
  * `sidetomove` - hand the move to the other side, pieces untouched. Any en
  * passant square belonged to the side that just lost the move, so it goes.
+ * History records it as a null move, as a `--` in a PGN does, so the entry
+ * matches the board. In a game, a swap that hands the move to the engine
+ * makes it play.
  */
 function swapSideToMove() {
 	const pos = parseFEN(getCurFEN());
 	pos.w = !pos.w;
 	pos.e = null;
-	setCurFEN(generateFEN(pos));
+	const fen = generateFEN(pos);
+	historyAdd(fen, null, null, null);
+	setCurFEN(fen);
 	showBoard();
+	doComputerMove();
 }
 
 /** `depth <n>` - clamp the analysis engine to a search depth. */

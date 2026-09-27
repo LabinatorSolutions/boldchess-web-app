@@ -24,6 +24,7 @@ let getPromotionPiece;
 let doMoveHandler;
 let evalAll;
 let getParameterByName;
+let command;
 let parseFEN;
 let genMoves;
 let sanMove;
@@ -41,7 +42,7 @@ beforeAll(async () => {
 	} = await import("../public/src/game/position.js"));
 	({ doMoveHandler } = await import("../public/src/input/mouse.js"));
 	({ evalAll } = await import("../public/src/engine/analysis.js"));
-	({ getParameterByName } = await import("../public/src/commands.js"));
+	({ getParameterByName, command } = await import("../public/src/commands.js"));
 	({ parseFEN } = await import("../public/src/chess/fen.js"));
 	({ genMoves } = await import("../public/src/chess/rules.js"));
 	({ sanMove } = await import("../public/src/chess/notation.js"));
@@ -87,6 +88,59 @@ test("in play mode the player's own move is played", () => {
 	doMoveHandler({ from: { x: 4, y: 6 }, to: { x: 4, y: 4 } }); // e4
 	expect(getCurFEN()).toContain("4P3");
 	expect(state.history.length).toBe(2);
+});
+
+/** A ready play engine that records the positions it is asked to play. */
+function fakePlayEngine() {
+	const asked = [];
+	state.playEngine = {
+		ready: true,
+		waiting: true,
+		failed: false,
+		send() {},
+		eval(fen) {
+			asked.push(fen);
+		},
+	};
+	return asked;
+}
+
+test("the side swap is recorded as a null move", () => {
+	command("sidetomove");
+	expect(state.history.length).toBe(2);
+	expect(state.history[1]).toMatchObject({ move: null, san: null });
+	expect(state.history[1].fen).toBe(getCurFEN());
+	expect(getCurFEN()).toContain(" b ");
+});
+
+test("in a game, handing the move to the engine makes it play", () => {
+	state.play = 0; // the player has White, the engine Black
+	const asked = fakePlayEngine();
+	try {
+		command("sidetomove");
+		expect(asked).toEqual([getCurFEN()]);
+		expect(getCurFEN()).toContain(" b ");
+	} finally {
+		state.playEngine = undefined;
+	}
+});
+
+test("a move tried on the engine's turn leaves no trace after a swap", () => {
+	state.play = 0;
+	const asked = fakePlayEngine();
+	try {
+		command("sidetomove");
+		listMoves();
+		const fen = getCurFEN();
+		const played = doMoveHandler({ from: { x: 4, y: 1 }, to: { x: 4, y: 3 } });
+		expect(played).toBe(false);
+		expect(getCurFEN()).toBe(fen);
+		expect(state.history.length).toBe(2);
+		expect(state.history[1].move).toBeNull();
+		expect(asked.length).toBe(1);
+	} finally {
+		state.playEngine = undefined;
+	}
 });
 
 test("playing Black, the player cannot move White's pieces", () => {

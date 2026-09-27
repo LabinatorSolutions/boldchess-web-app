@@ -206,6 +206,25 @@ async function main() {
 	const repeatedInGame = JSON.parse(await repetitionStatus());
 	await typeKey("1");
 
+	// In a game, the side-to-move button hands the move to the engine, which
+	// plays at once; History records the swap as a null move before its reply.
+	await evaluate(`(() => {
+		document.getElementById("searchInput").value = "reset";
+		document.getElementById("simpleSearch").onsubmit();
+	})()`);
+	await typeKey("2"); // the player has White, the engine Black
+	await sleep(500);
+	await evaluate(`document.getElementById("buttonStm").click()`);
+	let afterSwap = "";
+	for (let waited = 0; waited < 20000; waited += 500) {
+		await sleep(500);
+		afterSwap = await evaluate(
+			`document.getElementById("positionText").textContent`,
+		);
+		if (afterSwap.startsWith("Position: 3 of 3")) break;
+	}
+	await typeKey("1");
+
 	// Opening explorer: the header names the opening, the window lists book
 	// moves, a continuation plays as a variation and Revert leaves it. Clicks
 	// go through element.click(), so keyboard focus stays where the focus
@@ -541,6 +560,10 @@ async function main() {
 		[
 			"a game ends on threefold repetition",
 			repeatedInGame.status === "Draw - Threefold Repetition",
+		],
+		[
+			"the engine plays after the side-to-move button",
+			afterSwap.startsWith("Position: 3 of 3"),
 		],
 		["opening named in the header", openingHeader.includes("Ruy Lopez")],
 		["opening window lists continuations", openingRows > 0],
