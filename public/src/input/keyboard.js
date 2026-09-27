@@ -11,6 +11,7 @@ import {
 	menuPlayEngineBlack,
 	menuPlayEngineWhite,
 	menuTwoPlayerMode,
+	showHideMenu,
 } from "../ui/menu.js";
 import { showHideWindow } from "../ui/panels.js";
 
@@ -66,7 +67,11 @@ export function onKeyDown(e) {
 			command("keep");
 			break;
 		case "Escape":
-			command("revert");
+			// An open menu closes first, handing focus back to its button.
+			if (state.menu) {
+				document.getElementById("buttonMenu").focus();
+				showHideMenu(false);
+			} else command("revert");
 			break;
 		case "F":
 			command("flip");

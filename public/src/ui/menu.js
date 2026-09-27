@@ -28,6 +28,8 @@ export function showHideMenu(open, e) {
 		if (target == null) return;
 		if (!open && (target.id === "buttonMenu" || target.id === "menu")) return;
 	}
+	// A <button> pressed with Enter or Space fires a click with detail 0.
+	const fromKeyboard = open && e?.type === "click" && e.detail === 0;
 	if (open) state.menu = !state.menu;
 	else state.menu = false;
 
@@ -55,8 +57,11 @@ export function showHideMenu(open, e) {
 				state.bodyScale +
 			"px";
 	}
+	// Closing the menu hides whatever inside it had focus; give focus back to
+	// the button that opened it rather than losing it to the page.
+	if (!state.menu && mElem.contains(document.activeElement)) bElem.focus();
 	mElem.style.display = state.menu ? "" : "none";
-	if (state.menu) reloadMenu();
+	if (state.menu) reloadMenu(fromKeyboard);
 }
 
 export function setBoardColor(c) {
@@ -83,9 +88,22 @@ export function setEngineValue(elem) {
 	elem.removeAttribute("title");
 }
 
-export function reloadMenu() {
+/** The menu's keyboard-operable items, in tab order. */
+function menuControls(menu) {
+	return [...menu.querySelectorAll('[tabindex="0"]')];
+}
+
+/**
+ * Rebuild the menu. The rebuild replaces every item, so the one that had
+ * focus (say, "Increase analysis depth") is found again by position and
+ * refocused. `focusFirst` moves focus into a menu opened from the keyboard.
+ */
+export function reloadMenu(focusFirst = false) {
 	requestAnimationFrame(() => {
 		const parent = document.getElementById("menu");
+		const focusIndex = focusFirst
+			? 0
+			: menuControls(parent).indexOf(document.activeElement);
 		while (parent.firstChild) parent.removeChild(parent.firstChild);
 
 		const addMenuLine = () => {
@@ -364,6 +382,10 @@ export function reloadMenu() {
 			command("window");
 			showHideMenu(false);
 		});
+		if (focusIndex >= 0) {
+			const controls = menuControls(parent);
+			controls[Math.min(focusIndex, controls.length - 1)]?.focus();
+		}
 	});
 }
 

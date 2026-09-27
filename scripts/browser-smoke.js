@@ -346,6 +346,36 @@ async function main() {
 		),
 	};
 
+	// The menu, opened from the keyboard, takes focus; keeps it on the same
+	// control when a press rebuilds the menu; and gives it back on Escape.
+	const focusedId = () =>
+		evaluate(`(() => {
+			const a = document.activeElement;
+			return a.closest("#menu") ? "menu:" + (a.id || a.className) : a.id;
+		})()`);
+	await evaluate(`document.getElementById("buttonMenu").focus()`);
+	await pressKey("Enter", "Enter");
+	await sleep(300);
+	const menuOpenFocus = await focusedId();
+	await evaluate(`document.getElementById("buttonEnginePlus").focus()`);
+	await pressKey("Enter", "Enter");
+	await sleep(300);
+	const menuRebuiltFocus = await focusedId();
+	for (const type of ["keyDown", "keyUp"])
+		await send("Input.dispatchKeyEvent", {
+			type,
+			key: "Escape",
+			code: "Escape",
+			windowsVirtualKeyCode: 27,
+		});
+	await sleep(300);
+	const menuClosed = {
+		focus: await focusedId(),
+		hidden: await evaluate(
+			`document.getElementById("menu").style.display === "none"`,
+		),
+	};
+
 	const afterInteraction = JSON.parse(
 		await evaluate(`JSON.stringify({
 			squares: document.getElementById("chessboard1").children.length,
@@ -415,6 +445,18 @@ async function main() {
 		["window bar buttons work from the keyboard", keyboard.panelToggles],
 		["toolbar buttons work from the keyboard", keyboard.flipButton],
 		["keyboard focus is visible", keyboard.focusRing === "solid"],
+		[
+			"a menu opened from the keyboard takes focus",
+			menuOpenFocus.startsWith("menu:"),
+		],
+		[
+			"menu focus survives a rebuild",
+			menuRebuiltFocus === "menu:buttonEnginePlus",
+		],
+		[
+			"Escape closes the menu and returns focus",
+			menuClosed.hidden && menuClosed.focus === "buttonMenu",
+		],
 		["no console errors", errors.length === 0],
 	];
 
