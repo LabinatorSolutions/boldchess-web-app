@@ -19,6 +19,8 @@ let command;
 let state;
 let updateInfo;
 let getGraphPointColor;
+let refreshReport;
+let historyMove;
 let book;
 
 beforeAll(async () => {
@@ -27,6 +29,8 @@ beforeAll(async () => {
 	({ state } = await import("../public/src/state.js"));
 	({ updateInfo } = await import("../public/src/ui/board.js"));
 	({ getGraphPointColor } = await import("../public/src/ui/graph.js"));
+	({ refreshReport } = await import("../public/src/ui/report-view.js"));
+	({ historyMove } = await import("../public/src/game/history.js"));
 	book = await import("../public/src/openings/book.js");
 	book.useBook(book.buildBook(DATA));
 });
@@ -92,4 +96,76 @@ test("an ungraded graph point falls back to the pawn-loss color", () => {
 	loadGame();
 	state.history[6].evaluation = null;
 	expect(getGraphPointColor(6)).toBe("#008800");
+});
+
+const text = (id) => dom.getElementById(id).textContent;
+/** The report table's row for `category`, as [label, white, black] texts. */
+function tableRow(category) {
+	const row = dom
+		.getElementById("reportTable")
+		.children.find((r) => r.children[0]?.textContent === category);
+	return row?.children.map((cell) => cell.textContent);
+}
+
+test("the status counts graded moves until all are", () => {
+	loadGame();
+	refreshReport();
+	expect(text("reportStatus")).toBe("");
+	state.history[6].evaluation = null;
+	refreshReport();
+	expect(text("reportStatus")).toBe("Analyzing\u2026 5 of 6 moves graded");
+	command("reset");
+	refreshReport();
+	expect(text("reportStatus")).toBe("No moves to grade");
+});
+
+test("the status says so when the engine does not analyze", () => {
+	loadGame();
+	state.history[6].evaluation = null;
+	state.play = 0;
+	state.coachMode = false;
+	try {
+		refreshReport();
+		expect(text("reportStatus")).toBe(
+			"Engine analysis is off: 5 of 6 moves graded",
+		);
+	} finally {
+		state.play = null;
+	}
+});
+
+test("the table counts each category per side", () => {
+	loadGame();
+	refreshReport();
+	expect(tableRow("Blunder")).toEqual(["Blunder", "0", "1"]);
+	expect(tableRow("Book")).toEqual(["Book", "3", "2"]);
+	const blunderRow = dom
+		.getElementById("reportTable")
+		.children.find((r) => r.children[0]?.textContent === "Blunder");
+	expect(blunderRow.className).toContain("blunder");
+});
+
+test("an error row names the move and jumps to it", () => {
+	loadGame();
+	historyMove(-4);
+	expect(state.historyindex).toBe(2);
+	refreshReport();
+	const rows = dom.getElementById("reportErrors").children;
+	expect(rows.length).toBe(1);
+	expect(rows[0].textContent.startsWith("3\u2026 Nf6?? Blunder (\u2212")).toBe(
+		true,
+	);
+	rows[0].onclick();
+	expect(state.historyindex).toBe(6);
+});
+
+test("an unchanged report is not rebuilt, a deeper evaluation is", () => {
+	loadGame();
+	refreshReport();
+	const first = dom.getElementById("reportErrors").children[0];
+	refreshReport();
+	expect(dom.getElementById("reportErrors").children[0]).toBe(first);
+	state.history[6].evaluation.depth = 12;
+	refreshReport();
+	expect(dom.getElementById("reportErrors").children[0]).not.toBe(first);
 });

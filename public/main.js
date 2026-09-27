@@ -54,7 +54,7 @@ setDefaultPromotionPiece(getPromotionPiece);
 // since showHideWindow and setupBoxes both read `style.display` to decide which
 // way to toggle a panel. The palette squares are positioned by inline left/top
 // for the same reason - the edit handlers read those values back.
-for (const id of ["wStatic", "wOpening", "wEdit"]) {
+for (const id of ["wStatic", "wOpening", "wReport", "wEdit"]) {
 	const box = document.getElementById(id);
 	box.removeAttribute("hidden");
 	box.style.display = "none";

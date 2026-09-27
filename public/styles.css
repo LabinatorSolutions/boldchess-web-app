@@ -170,6 +170,11 @@ li {
 	min-height: 79px;
 }
 
+#wReport {
+	height: 155px;
+	min-height: 79px;
+}
+
 #wEdit {
 	height: 122px;
 	min-height: 122px;
@@ -1043,6 +1048,71 @@ button.off svg {
 	opacity: 0.5;
 }
 
+/* Game Report */
+
+#report.boxMid {
+	line-height: 17px;
+	font-size: 11px;
+	font-weight: 700;
+}
+
+#reportStatus {
+	padding: 4px 8px 0 8px;
+	opacity: 0.5;
+}
+
+#reportStatus:empty {
+	display: none;
+}
+
+#reportTable {
+	margin-top: 4px;
+}
+
+.reportRow {
+	display: flex;
+	height: 18px;
+	padding: 0 8px;
+	white-space: nowrap;
+}
+
+.reportRow:nth-child(odd) {
+	background-color: rgba(0, 0, 0, 0.2);
+}
+
+.reportRow > span:first-child {
+	flex: 1 1 auto;
+}
+
+.reportRow > span + span {
+	flex: 0 0 36px;
+	text-align: right;
+}
+
+.reportHead {
+	opacity: 0.5;
+}
+
+#reportErrors {
+	margin-top: 4px;
+}
+
+.reportError {
+	height: 18px;
+	padding: 0 8px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.reportError[role="button"] {
+	cursor: pointer;
+}
+
+.reportError[role="button"]:hover {
+	background-color: #333a42ff;
+}
+
 /* Edit */
 
 #editWrapperOuter {
@@ -1816,6 +1886,10 @@ button.off svg {
 
 .iconOpening {
 	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='feather feather-book-open'%3E%3Cpath d='M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z'%3E%3C/path%3E%3Cpath d='M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z'%3E%3C/path%3E%3C/svg%3E");
+}
+
+.iconReport {
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='feather feather-clipboard'%3E%3Cpath d='M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2'%3E%3C/path%3E%3Crect x='8' y='2' width='8' height='4' rx='1' ry='1'%3E%3C/rect%3E%3Cpolyline points='9 14 11 16 15 12'%3E%3C/polyline%3E%3C/svg%3E");
 }
 
 .iconChessboard {

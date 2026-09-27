@@ -118,6 +118,9 @@ wins:
 - `#reportStatus`:
   - `Analyzing… <graded> of <total> moves graded` while `graded < total`;
   - `No moves to grade` when `total === 0`;
+  - `Engine analysis is off: <graded> of <total> moves graded` instead of `Analyzing…` when no
+    evaluations are coming: `state.play != null` without coach mode (`evalAll()` returns early
+    there), or an analysis depth of 0 (amended while planning);
   - empty otherwise (`:empty` hides it).
 - `#reportTable`: a header row (blank, `White`, `Black`), then one row per category in this
   order: Best Move, Excellent, Good, Book, Inaccuracy, Mistake, Blunder. Each row holds the

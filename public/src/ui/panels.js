@@ -19,6 +19,7 @@ const PANEL_NAMES = {
 	Graph: "Evaluation graph",
 	Static: "Static evaluation",
 	Opening: "Opening explorer",
+	Report: "Game report",
 	Edit: "Chessboard editor",
 };
 

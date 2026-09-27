@@ -23,6 +23,7 @@ import { reloadMenu } from "./menu.js";
 import { refreshMoves } from "./moves.js";
 import { refreshOpening } from "./opening-view.js";
 import { repaintSidebars } from "./panels.js";
+import { refreshReport } from "./report-view.js";
 import { repaintStatic } from "./static-view.js";
 import { updateTooltip } from "./tooltip.js";
 
@@ -255,6 +256,7 @@ export function updateInfo() {
 	positionInfoElem.innerText = positionInfoText;
 	movesInfoElem.innerText = movesInfoText;
 	refreshOpening();
+	refreshReport();
 
 	// History window
 	const historyElem = document.getElementById("history");

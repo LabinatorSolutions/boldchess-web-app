@@ -1,0 +1,122 @@
+/**
+ * The Game Report window: each category's count per side and the list of
+ * errors, graded from the history's background evaluations (see
+ * `report/grade.js`). It fills in while the analysis loop evaluates the
+ * history, and every error row jumps to its move, in any mode.
+ */
+
+import { parseFEN } from "../chess/fen.js";
+import { historyMove } from "../game/history.js";
+import { getBook, loadBook, moveToString } from "../openings/book.js";
+import { CATEGORIES, ERRORS, gradeGame, summarize } from "../report/grade.js";
+import { state } from "../state.js";
+import { makeButton, setElemText } from "./dom.js";
+
+let waiting = false;
+
+/**
+ * What the last render showed. `updateInfo()` runs several times while the
+ * engine deepens; rebuilding identical rows would drop a click in progress
+ * and the keyboard focus on a row.
+ */
+let rendered = "";
+
+/** No evaluations are coming: the engine plays without coach mode, or is off. */
+function analysisOff() {
+	return (
+		(state.play != null && !state.coachMode) ||
+		state.analysisEngine?.depth === 0
+	);
+}
+
+function clear(elem) {
+	while (elem.firstChild) elem.removeChild(elem.firstChild);
+}
+
+function row(className, texts) {
+	const elem = document.createElement("DIV");
+	elem.className = className;
+	for (const text of texts) {
+		const cell = document.createElement("SPAN");
+		cell.appendChild(document.createTextNode(text));
+		elem.appendChild(cell);
+	}
+	return elem;
+}
+
+/** "12. Qxb7?? Blunder (−34.5%)", numbered from the position the move was played in. */
+function errorText(i, grade) {
+	const pos = parseFEN(state.history[i - 1].fen);
+	const number = `${pos.m[1]}${pos.w ? "." : "…"}`;
+	const mark = ERRORS[grade.category].mark;
+	return `${number} ${state.history[i].san}${mark} ${grade.category} (−${grade.loss.toFixed(1)}%)`;
+}
+
+/** Render the window for the history as it stands. */
+export function refreshReport() {
+	const book = getBook();
+	const off = analysisOff();
+	const signature = [
+		book === undefined ? "loading" : book === null ? "none" : "book",
+		state.historyindex,
+		off,
+		...state.history.map(
+			(entry) =>
+				`${entry.fen}/${entry.evaluation?.score}/${entry.evaluation?.depth}/${
+					entry.move && moveToString(entry.move)
+				}`,
+		),
+	].join("|");
+	if (signature === rendered) return;
+	rendered = signature;
+
+	if (book === undefined && !waiting) {
+		waiting = true;
+		loadBook().then(() => refreshReport());
+	}
+
+	const grades = gradeGame(state.history, book);
+	const summary = summarize(grades, state.history);
+
+	const statusElem = document.getElementById("reportStatus");
+	const tableElem = document.getElementById("reportTable");
+	const errorsElem = document.getElementById("reportErrors");
+	clear(tableElem);
+	clear(errorsElem);
+
+	const progress = `${summary.graded} of ${summary.total} moves graded`;
+	setElemText(
+		statusElem,
+		summary.total === 0
+			? "No moves to grade"
+			: summary.graded === summary.total
+				? ""
+				: off
+					? `Engine analysis is off: ${progress}`
+					: `Analyzing… ${progress}`,
+	);
+
+	tableElem.appendChild(row("reportRow reportHead", ["", "White", "Black"]));
+	for (const category of CATEGORIES) {
+		const className = ERRORS[category]?.className;
+		tableElem.appendChild(
+			row(className ? `reportRow ${className}` : "reportRow", [
+				category,
+				String(summary.white[category]),
+				String(summary.black[category]),
+			]),
+		);
+	}
+
+	grades.forEach((grade, i) => {
+		const error = grade && ERRORS[grade.category];
+		if (!error) return;
+		const text = errorText(i, grade);
+		const elem = document.createElement("DIV");
+		elem.className = `reportError ${error.className}`;
+		elem.appendChild(document.createTextNode(text));
+		makeButton(elem, `Go to ${text}`);
+		elem.onclick = () => historyMove(i - state.historyindex);
+		errorsElem.appendChild(elem);
+	});
+}
