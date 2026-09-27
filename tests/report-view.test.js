@@ -232,3 +232,17 @@ test("an error row shows the position before the move, with both arrows", () => 
 	command("reset");
 	expect(reviewArrows()).toBeNull();
 });
+
+test("the status says so when the engine could not start", () => {
+	loadGame();
+	state.history[6].evaluation = null;
+	state.analysisEngine = { failed: true };
+	try {
+		refreshReport();
+		expect(text("reportStatus")).toBe(
+			"Engine unavailable: 5 of 6 moves graded",
+		);
+	} finally {
+		state.analysisEngine = undefined;
+	}
+});

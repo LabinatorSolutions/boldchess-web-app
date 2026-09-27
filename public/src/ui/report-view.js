@@ -27,12 +27,18 @@ let waiting = false;
  */
 let rendered = "";
 
-/** No evaluations are coming: the engine plays without coach mode, or is off. */
-function analysisOff() {
-	return (
+/**
+ * Why no evaluations are coming, or null while they are: the engine could not
+ * start ("failed"), or it plays without coach mode or has depth 0 ("off").
+ */
+function analysisBlocked() {
+	if (state.analysisEngine?.failed) return "failed";
+	if (
 		(state.play != null && !state.coachMode) ||
 		state.analysisEngine?.depth === 0
-	);
+	)
+		return "off";
+	return null;
 }
 
 function clear(elem) {
@@ -72,10 +78,10 @@ function review(i) {
 /** Render the window for the history as it stands. */
 export function refreshReport() {
 	const book = getBook();
-	const off = analysisOff();
+	const blocked = analysisBlocked();
 	const signature = [
 		book === undefined ? "loading" : book === null ? "none" : "book",
-		off,
+		blocked,
 		...state.history.map(
 			(entry) =>
 				`${entry.fen}/${entry.evaluation?.score}/${entry.evaluation?.depth}/${
@@ -107,9 +113,11 @@ export function refreshReport() {
 			? "No moves to grade"
 			: summary.graded === summary.total
 				? ""
-				: off
-					? `Engine analysis is off: ${progress}`
-					: `Analyzing… ${progress}`,
+				: blocked === "failed"
+					? `Engine unavailable: ${progress}`
+					: blocked === "off"
+						? `Engine analysis is off: ${progress}`
+						: `Analyzing… ${progress}`,
 	);
 
 	tableElem.appendChild(row("reportRow reportHead", ["", "White", "Black"]));
