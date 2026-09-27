@@ -58,7 +58,6 @@ export function refreshReport() {
 	const off = analysisOff();
 	const signature = [
 		book === undefined ? "loading" : book === null ? "none" : "book",
-		state.historyindex,
 		off,
 		...state.history.map(
 			(entry) =>

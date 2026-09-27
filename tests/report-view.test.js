@@ -169,3 +169,35 @@ test("an unchanged report is not rebuilt, a deeper evaluation is", () => {
 	refreshReport();
 	expect(dom.getElementById("reportErrors").children[0]).not.toBe(first);
 });
+
+test("stepping through the game keeps the report rows, and their focus", () => {
+	loadGame();
+	refreshReport();
+	const first = dom.getElementById("reportErrors").children[0];
+	historyMove(-2);
+	refreshReport();
+	expect(dom.getElementById("reportErrors").children[0]).toBe(first);
+});
+
+test("grade text is readable on the panel background (WCAG AA)", () => {
+	const css = readFileSync(
+		join(import.meta.dir, "../public/styles.css"),
+		"utf8",
+	);
+	const luminance = (hex) => {
+		const [r, g, b] = [1, 3, 5].map((at) => {
+			const c = Number.parseInt(hex.slice(at, at + 2), 16) / 255;
+			return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+		});
+		return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+	};
+	const panel = luminance("#1d1e22");
+	for (const name of ["inaccuracy", "mistake", "blunder"]) {
+		const color = css.match(
+			new RegExp(`\\n\\.${name} \\{\\n\\tcolor: (#[0-9a-f]{6});`),
+		)?.[1];
+		expect(color).toBeDefined();
+		const ratio = (luminance(color) + 0.05) / (panel + 0.05);
+		expect({ name, ratio: ratio >= 4.5 }).toEqual({ name, ratio: true });
+	}
+});

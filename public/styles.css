@@ -940,7 +940,11 @@ button.off svg {
 	cursor: default;
 }
 
-/* Move grades: the History mark and the report's error rows share these. */
+/*
+ * Move grades: the History mark and the report's error rows share these. The
+ * text colors are lighter than the underline and graph colors in
+ * report/grade.js, so that 11px text keeps 4.5:1 contrast on the panel.
+ */
 
 .grade {
 	margin-left: 1px;
@@ -951,11 +955,11 @@ button.off svg {
 }
 
 .mistake {
-	color: #d06000;
+	color: #e07020;
 }
 
 .blunder {
-	color: #bb0000;
+	color: #ff5555;
 }
 
 /* Opening */

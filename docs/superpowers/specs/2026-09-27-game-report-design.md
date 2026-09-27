@@ -136,8 +136,10 @@ wins:
 
 - `refreshReport()` is called from `updateInfo()` next to `refreshOpening()`.
 - Like the Opening window, it skips the rebuild when nothing it shows has changed. Its
-  signature is: the book state, `state.historyindex`, and each entry's `fen`,
-  `evaluation.score`, `evaluation.depth` and move.
+  signature is: the book state, whether analysis is off, and each entry's `fen`,
+  `evaluation.score`, `evaluation.depth` and move. It leaves out `state.historyindex`: the window
+  shows nothing that depends on it, and rebuilding on every step would drop the keyboard focus
+  from an error row as soon as it is used (amended in the final review).
 - The History marks are part of the existing History rebuild and need no extra guard.
 
 ## Error handling
