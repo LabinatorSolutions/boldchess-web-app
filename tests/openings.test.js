@@ -190,4 +190,30 @@ describe("book index", () => {
 		expect(error).not.toHaveBeenCalled();
 		expect(warn).not.toHaveBeenCalled();
 	});
+
+	test("the book is built when the browser is idle, not on arrival", async () => {
+		const fetchSpy = spyOn(globalThis, "fetch").mockResolvedValue(
+			new Response(JSON.stringify(DATA)),
+		);
+		const idle = [];
+		globalThis.requestIdleCallback = (callback) => {
+			idle.push(callback);
+			return idle.length;
+		};
+		try {
+			let book;
+			const pending = fetchBook("data/openings.json").then((b) => {
+				book = b;
+			});
+			await Bun.sleep(20);
+			expect(book).toBeUndefined();
+			expect(idle.length).toBe(1);
+			idle[0]({ didTimeout: false, timeRemaining: () => 50 });
+			await pending;
+			expect(isBookPosition(book, START)).toBe(true);
+		} finally {
+			delete globalThis.requestIdleCallback;
+			fetchSpy.mockRestore();
+		}
+	});
 });

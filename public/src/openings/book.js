@@ -196,9 +196,23 @@ export function isBookPosition(book, fen) {
 }
 
 /**
+ * Resolve when the browser is idle, or after `timeout` ms at the latest.
+ * Browsers without requestIdleCallback get the next macrotask instead.
+ */
+function whenIdle(timeout = 2000) {
+	return new Promise((resolve) => {
+		if (typeof requestIdleCallback === "function")
+			requestIdleCallback(() => resolve(undefined), { timeout });
+		else setTimeout(resolve, 0);
+	});
+}
+
+/**
  * Fetch and index a book. Resolves to null when the file cannot be fetched,
  * parsed or built; it never throws and never logs, because the smoke test
  * treats any console error as a failure and the app works without a book.
+ * Indexing takes about 90 ms on the main thread, so it waits for an idle
+ * moment rather than competing with the first render and the engine start.
  *
  * @returns {Promise<Book|null>}
  */
@@ -206,7 +220,9 @@ export async function fetchBook(url) {
 	try {
 		const response = await fetch(url);
 		if (!response.ok) return null;
-		return buildBook(await response.json());
+		const lines = await response.json();
+		await whenIdle();
+		return buildBook(lines);
 	} catch {
 		return null;
 	}
