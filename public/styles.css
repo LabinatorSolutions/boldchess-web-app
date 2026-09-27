@@ -935,6 +935,24 @@ button.off svg {
 	cursor: default;
 }
 
+/* Move grades: the History mark and the report's error rows share these. */
+
+.grade {
+	margin-left: 1px;
+}
+
+.inaccuracy {
+	color: #bb8800;
+}
+
+.mistake {
+	color: #d06000;
+}
+
+.blunder {
+	color: #bb0000;
+}
+
 /* Opening */
 
 #openingInfo {

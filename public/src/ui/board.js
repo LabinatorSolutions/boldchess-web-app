@@ -6,6 +6,8 @@ import { command } from "../commands.js";
 import { evalAll } from "../engine/analysis.js";
 import { historyMove } from "../game/history.js";
 import { getCurFEN } from "../game/position.js";
+import { getBook } from "../openings/book.js";
+import { ERRORS, gradeGame } from "../report/grade.js";
 import { state } from "../state.js";
 import { repaintLastMoveArrow, setArrow, showArrow3 } from "./arrows.js";
 import {
@@ -16,7 +18,7 @@ import {
 	setButtonEnabled,
 	setElemText,
 } from "./dom.js";
-import { getGraphPointColor, repaintGraph } from "./graph.js";
+import { repaintGraph } from "./graph.js";
 import { reloadMenu } from "./menu.js";
 import { refreshMoves } from "./moves.js";
 import { refreshOpening } from "./opening-view.js";
@@ -262,6 +264,7 @@ export function updateInfo() {
 	const historyFragment = document.createDocumentFragment();
 	let lastmn = null,
 		mn = null;
+	const grades = gradeGame(state.history, getBook());
 
 	for (let i = 0; i < state.history.length; i++) {
 		mn = parseMoveNumber(state.history[i].fen);
@@ -277,8 +280,21 @@ export function updateInfo() {
 		setElemText(span2, san);
 		span2.className = `movelink${i === state.historyindex ? " selected" : ""}`;
 		span2.targetindex = i;
-		const c = getGraphPointColor(i);
-		if (c !== "#008800") span2.style.borderBottomColor = c;
+		const grade = grades[i];
+		if (grade != null) {
+			const error = ERRORS[grade.category];
+			span2.title =
+				grade.category === "Book" || grade.category === "Best Move"
+					? grade.category
+					: `${grade.category} (\u2212${grade.loss.toFixed(1)}%)`;
+			if (error != null) {
+				const mark = document.createElement("span");
+				setElemText(mark, error.mark);
+				mark.className = `grade ${error.className}`;
+				span2.appendChild(mark);
+				span2.style.borderBottomColor = error.color;
+			}
+		}
 		span2.onclick = () => {
 			const targetIndex = span2.targetindex;
 			if (

@@ -2,6 +2,8 @@
 
 import { parseFEN } from "../chess/fen.js";
 import { historyMove } from "../game/history.js";
+import { getBook } from "../openings/book.js";
+import { ERRORS, gradeGame } from "../report/grade.js";
 import { state } from "../state.js";
 import { repaintLastMoveArrow } from "./arrows.js";
 import { getEvalText } from "./dom.js";
@@ -27,7 +29,17 @@ export function getGraphPointData(i) {
 	return e;
 }
 
-export function getGraphPointColor(i) {
+/**
+ * The color of the move that reached entry `i`: its grade's, green for a
+ * graded move that is not an error, or by pawn loss while it is ungraded.
+ * Loops pass `grades` once rather than regrading the game per point.
+ */
+export function getGraphPointColor(
+	i,
+	grades = gradeGame(state.history, getBook()),
+) {
+	const grade = grades[i];
+	if (grade != null) return ERRORS[grade.category]?.color ?? "#008800";
 	const e = getGraphPointData(i),
 		laste = getGraphPointData(i - 1);
 	const black =
@@ -71,9 +83,10 @@ export function repaintGraph(event) {
 	requestAnimationFrame(() => {
 		const data = [];
 		const color = [];
+		const grades = gradeGame(state.history, getBook());
 		for (let i = 0; i < state.history.length; i++) {
 			data.push(getGraphPointData(i));
-			color.push(getGraphPointColor(i));
+			color.push(getGraphPointColor(i, grades));
 		}
 
 		const border1 = 4.5,
