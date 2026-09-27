@@ -20,9 +20,17 @@
 // inline script and no style attributes in the markup. style-src does not
 // restrict styles set from JavaScript, which is how the board, the arrows and
 // the edit palette are positioned.
+// static.cloudflareinsights.com serves the Cloudflare Web Analytics beacon,
+// which Cloudflare's proxy injects into the page; with that automatic setup it
+// reports to this domain's /cdn-cgi/rum, so connect-src needs nothing more.
 const cspDirectives = {
 	"default-src": ["'self'"],
-	"script-src": ["'self'", "'unsafe-eval'", "blob:"],
+	"script-src": [
+		"'self'",
+		"'unsafe-eval'",
+		"blob:",
+		"https://static.cloudflareinsights.com",
+	],
 	"style-src": ["'self'"],
 	"img-src": ["'self'", "data:"],
 	"connect-src": ["'self'", "blob:"],
