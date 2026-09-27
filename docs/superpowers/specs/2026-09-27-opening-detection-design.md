@@ -128,15 +128,18 @@ It must stay importable under `bun test`, like `chess/` and `eval/`.
 
 ### Board header line
 
-- A new `<div id="openingInfo">` directly under `#positionInfo` in the chessboard box. It
-  holds a single line, `C65 Ruy Lopez: Berlin Defense`, with CSS ellipsis on overflow and the
-  full text in `title`.
-- It is empty (collapsed) at the start position, when there is no match, and while the book
-  is loading or unavailable.
-- It follows `#positionInfo`'s visibility rule in `ui/layout.js` (hidden where that is
-  hidden).
-- The header shows the most recent name even out of book, dimmed, like the window. It is not
-  clickable.
+Amended while planning. The header bar (`.boxTop`) is absolutely positioned, and the search box
+sits at a fixed `top: 24px`, so a separate line would move the board. The name is therefore a
+segment inside the existing bar:
+
+- Markup: `#positionInfo` holds `<span id="positionText">` (written by `updateInfo()`) and
+  `<span id="openingInfo">`.
+- It reads `Position: 6 of 6 - Last Move: 3. Bb5 · C60 Ruy Lopez`, cut by the bar's
+  existing ellipsis, with the full name in `title`.
+- It is empty at the start position, when there is no match, and while the book is loading
+  or unavailable.
+- It is hidden on mobile together with `#positionInfo` (`ui/layout.js`).
+- Out of book, it keeps the most recent name, dimmed (`.outOfBook`). It is not clickable.
 
 ## Error handling
 

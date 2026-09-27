@@ -1,0 +1,161 @@
+/**
+ * The Opening window and the opening segment of the board header.
+ *
+ * The name is the most recent named position at or before the one shown (see
+ * `openingAt`), so it follows the history as the user steps through it. In
+ * analysis the name and the continuations are buttons that play their moves
+ * as a variation; in a game they are only text.
+ */
+
+import { generateFEN, parseFEN } from "../chess/fen.js";
+import { sanMove } from "../chess/notation.js";
+import { doMove, genMoves } from "../chess/rules.js";
+import { START } from "../config.js";
+import { historyAdd, historyMove } from "../game/history.js";
+import { getCurFEN, setCurFEN } from "../game/position.js";
+import { doMoveHandler } from "../input/mouse.js";
+import {
+	continuations,
+	getBook,
+	lineMoves,
+	loadBook,
+	moveFromString,
+	openingAt,
+} from "../openings/book.js";
+import { historyEntry, state } from "../state.js";
+import { refreshButtonRevert } from "./board.js";
+import { makeButton, setElemText } from "./dom.js";
+
+let waiting = false;
+
+/** History up to the shown position, ending in the position on the board. */
+function shownEntries() {
+	const entries = state.history.slice(0, state.historyindex + 1);
+	const fen = getCurFEN();
+	if (entries.length === 0 || entries[entries.length - 1].fen !== fen)
+		entries.push(historyEntry(fen));
+	return entries;
+}
+
+/** "Out of book after 7… Nd4": the move that followed the last book position. */
+function outOfBookText(entries, lastBookIndex) {
+	const next = entries[lastBookIndex + 1];
+	if (next?.san == null) return "Out of book";
+	const pos = parseFEN(entries[lastBookIndex].fen);
+	return `Out of book after ${pos.m[1]}${pos.w ? "." : "…"} ${next.san}`;
+}
+
+function clear(elem) {
+	while (elem.firstChild) elem.removeChild(elem.firstChild);
+}
+
+function span(className, text) {
+	const elem = document.createElement("SPAN");
+	elem.className = className;
+	elem.appendChild(document.createTextNode(text));
+	return elem;
+}
+
+/** Render the window and the header segment for the position shown. */
+export function refreshOpening() {
+	const nameElem = document.getElementById("openingName");
+	const statusElem = document.getElementById("openingStatus");
+	const movesElem = document.getElementById("openingMoves");
+	const infoElem = document.getElementById("openingInfo");
+	clear(nameElem);
+	nameElem.className = "";
+	clear(movesElem);
+	setElemText(infoElem, "");
+	infoElem.className = "";
+	infoElem.title = "";
+
+	const book = getBook();
+	if (book === undefined) {
+		setElemText(statusElem, "Loading opening book…");
+		if (!waiting) {
+			waiting = true;
+			loadBook().then(() => refreshOpening());
+		}
+		return;
+	}
+	if (book === null) {
+		setElemText(statusElem, "Opening book unavailable");
+		return;
+	}
+
+	const entries = shownEntries();
+	const found = openingAt(book, entries, entries.length - 1);
+	if (found == null) {
+		setElemText(statusElem, "No opening");
+		return;
+	}
+
+	const analysis = state.gameMode === 1;
+	const fullName = `${found.eco} ${found.name}`;
+	nameElem.appendChild(span("openingEco", found.eco));
+	const title = span("openingTitle", found.name);
+	if (analysis) {
+		makeButton(title, `Play ${found.name}`);
+		title.onclick = () => playLine(lineMoves(found.lineIndex));
+	}
+	nameElem.appendChild(title);
+	nameElem.title = fullName;
+
+	setElemText(infoElem, ` · ${fullName}`);
+	infoElem.title = fullName;
+	if (!found.inBook) {
+		infoElem.className = "outOfBook";
+		nameElem.className = "outOfBook";
+	}
+
+	setElemText(
+		statusElem,
+		found.inBook ? "" : outOfBookText(entries, found.lastBookIndex),
+	);
+	if (!found.inBook) return;
+
+	const fen = entries[entries.length - 1].fen;
+	const pos = parseFEN(fen);
+	const legal = genMoves(pos);
+	for (const row of continuations(book, fen)) {
+		const move = moveFromString(row.move);
+		const san = sanMove(pos, move, legal);
+		const elem = document.createElement("DIV");
+		elem.className = "openingMove";
+		elem.title = `${row.eco} ${row.name}`;
+		elem.appendChild(span("san", san));
+		elem.appendChild(span("name", row.name));
+		elem.appendChild(span("count", String(row.lineCount)));
+		if (analysis) {
+			makeButton(elem, `Play ${san}, ${row.name}`);
+			elem.onclick = () => doMoveHandler(move);
+		}
+		movesElem.appendChild(elem);
+	}
+}
+
+/**
+ * Play a line from the starting position as a variation. The game is
+ * snapshotted first (unless a variation already holds the snapshot), so
+ * Revert brings it back.
+ */
+export function playLine(moves) {
+	if (state.history2 == null) {
+		state.history2 = {
+			index: state.historyindex,
+			entries: JSON.parse(JSON.stringify(state.history)),
+		};
+		refreshButtonRevert();
+	}
+	state.history = [historyEntry(START)];
+	state.historyindex = 0;
+	let pos = parseFEN(START);
+	for (const m of moves) {
+		const move = moveFromString(m);
+		const san = sanMove(pos, move, genMoves(pos));
+		pos = doMove(pos, move.from, move.to, move.p);
+		historyAdd(generateFEN(pos), null, move, san);
+	}
+	setCurFEN(generateFEN(pos));
+	historyMove(0);
+}

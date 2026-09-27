@@ -81,7 +81,7 @@
                 </div>
             </div>
             <div class="box" id="wChessboard">
-                <div id="positionInfo" class="boxTop"></div>
+                <div id="positionInfo" class="boxTop"><span id="positionText"></span><span id="openingInfo"></span></div>
                 <div id="searchWrapper" class="boxMid">
                     <form id="simpleSearch">
                         <input name="search" placeholder="Enter FEN, PGN or command" id="searchInput" type="search">
@@ -248,6 +248,14 @@
                     <button type="button" class="rel" id="buttonStaticSortByChange" aria-label="Sort by change">Change</button>
                 </div>
                 <div id="static" class="boxMid"></div>
+            </div>
+            <div class="box" id="wOpening" hidden>
+                <div class="boxTop">Opening</div>
+                <div id="opening" class="boxMid">
+                    <div id="openingName"></div>
+                    <div id="openingStatus"></div>
+                    <div id="openingMoves"></div>
+                </div>
             </div>
             <div class="box" id="wEdit" hidden>
                 <div class="boxTop">Edit tools</div>

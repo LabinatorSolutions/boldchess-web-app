@@ -187,30 +187,44 @@ export function isBookPosition(book, fen) {
 	return book.has(positionKey(fen));
 }
 
+/**
+ * Fetch and index a book. Resolves to null when the file cannot be fetched,
+ * parsed or built; it never throws and never logs, because the smoke test
+ * treats any console error as a failure and the app works without a book.
+ *
+ * @returns {Promise<Book|null>}
+ */
+export async function fetchBook(url) {
+	try {
+		const response = await fetch(url);
+		if (!response.ok) return null;
+		return buildBook(await response.json());
+	} catch {
+		return null;
+	}
+}
+
 /** @type {Promise<Book|null>|undefined} */
 let loading;
 /** @type {Book|null|undefined} */
 let loaded;
 
-/**
- * Fetch and index the book once. Resolves to null when the file cannot be
- * fetched, parsed or built; it never throws and never logs, because the smoke
- * test treats any console error as a failure and the app works without it.
- *
- * @returns {Promise<Book|null>}
- */
-export function loadBook(url = "data/openings.json") {
-	loading ??= (async () => {
-		try {
-			const response = await fetch(url);
-			if (!response.ok) throw new Error(String(response.status));
-			loaded = buildBook(await response.json());
-		} catch {
-			loaded = null;
-		}
-		return loaded;
-	})();
+/** The app's book, fetched once per session; later calls share the result. */
+export function loadBook() {
+	loading ??= fetchBook("data/openings.json").then((book) => {
+		loaded = book;
+		return book;
+	});
 	return loading;
+}
+
+/**
+ * Install an already built book as the app's book. Tests use it so that the
+ * view does not depend on which test file first called `loadBook`.
+ */
+export function useBook(book) {
+	loaded = book;
+	loading = Promise.resolve(book);
 }
 
 /** The loaded book: undefined while loading, null when unavailable. */

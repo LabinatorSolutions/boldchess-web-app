@@ -19,6 +19,7 @@ import {
 	onMouseUp,
 	onWheel,
 } from "./src/input/mouse.js";
+import { loadBook } from "./src/openings/book.js";
 import { state } from "./src/state.js";
 import { doFlip, showBoard } from "./src/ui/board.js";
 import { buildEditPalette } from "./src/ui/edit-palette.js";
@@ -53,7 +54,7 @@ setDefaultPromotionPiece(getPromotionPiece);
 // since showHideWindow and setupBoxes both read `style.display` to decide which
 // way to toggle a panel. The palette squares are positioned by inline left/top
 // for the same reason - the edit handlers read those values back.
-for (const id of ["wStatic", "wEdit"]) {
+for (const id of ["wStatic", "wOpening", "wEdit"]) {
 	const box = document.getElementById(id);
 	box.removeAttribute("hidden");
 	box.style.display = "none";
@@ -83,6 +84,7 @@ window.onload = () => {
 	// Load The Analysis & Playing Engines
 	// The playing engine starts on demand (see engine/engines.js).
 	startAnalysisEngine();
+	loadBook();
 
 	document.onmousedown = onMouseDown;
 	document.onmouseup = onMouseUp;

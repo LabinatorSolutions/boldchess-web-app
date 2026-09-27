@@ -19,6 +19,7 @@ import {
 import { getGraphPointColor, repaintGraph } from "./graph.js";
 import { reloadMenu } from "./menu.js";
 import { refreshMoves } from "./moves.js";
+import { refreshOpening } from "./opening-view.js";
 import { repaintSidebars } from "./panels.js";
 import { repaintStatic } from "./static-view.js";
 import { updateTooltip } from "./tooltip.js";
@@ -247,10 +248,11 @@ export function updateInfo() {
 		")";
 
 	// Batch DOM updates
-	const positionInfoElem = document.getElementById("positionInfo");
+	const positionInfoElem = document.getElementById("positionText");
 	const movesInfoElem = document.getElementById("movesInfo");
 	positionInfoElem.innerText = positionInfoText;
 	movesInfoElem.innerText = movesInfoText;
+	refreshOpening();
 
 	// History window
 	const historyElem = document.getElementById("history");

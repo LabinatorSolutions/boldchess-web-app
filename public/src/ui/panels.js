@@ -18,6 +18,7 @@ const PANEL_NAMES = {
 	History: "History of moves",
 	Graph: "Evaluation graph",
 	Static: "Static evaluation",
+	Opening: "Opening explorer",
 	Edit: "Chessboard editor",
 };
 

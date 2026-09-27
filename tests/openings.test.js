@@ -13,8 +13,8 @@ import { START } from "../public/src/config.js";
 import {
 	buildBook,
 	continuations,
+	fetchBook,
 	isBookPosition,
-	loadBook,
 	moveFromString,
 	moveToString,
 	openingAt,
@@ -177,7 +177,7 @@ describe("book index", () => {
 	test("a failed load resolves to null without logging", async () => {
 		const error = spyOn(console, "error");
 		const warn = spyOn(console, "warn");
-		expect(await loadBook("file:///nonexistent/openings.json")).toBeNull();
+		expect(await fetchBook("file:///nonexistent/openings.json")).toBeNull();
 		expect(error).not.toHaveBeenCalled();
 		expect(warn).not.toHaveBeenCalled();
 	});
