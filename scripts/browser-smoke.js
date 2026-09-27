@@ -206,6 +206,36 @@ async function main() {
 	const repeatedInGame = JSON.parse(await repetitionStatus());
 	await typeKey("1");
 
+	// Opening explorer: the header names the opening, the window lists book
+	// moves, a continuation plays as a variation and Revert leaves it. Clicks
+	// go through element.click(), so keyboard focus stays where the focus
+	// checks below expect it.
+	const positionInfo = () =>
+		evaluate(`document.getElementById("positionInfo").textContent`);
+	await evaluate(`(() => {
+		document.getElementById("searchInput").value = "1. e4 e5 2. Nf3 Nc6 3. Bb5";
+		document.getElementById("simpleSearch").onsubmit();
+	})()`);
+	await sleep(SETTLE_MS);
+	const openingHeader = await evaluate(
+		`document.getElementById("openingInfo").textContent`,
+	);
+	await evaluate(`document.getElementById("wbOpening").click()`);
+	await sleep(300);
+	const openingRows = await evaluate(
+		`document.querySelectorAll("#openingMoves .openingMove").length`,
+	);
+	await evaluate(
+		`document.querySelector("#openingMoves .openingMove")?.click()`,
+	);
+	await sleep(300);
+	const afterContinuation = await positionInfo();
+	await evaluate(`document.getElementById("buttonRevert").click()`);
+	await sleep(300);
+	const afterRevert = await positionInfo();
+	await evaluate(`document.getElementById("wbOpening").click()`);
+	await sleep(300);
+
 	// The edit palette and the arrow markers are built without style attributes
 	// in the markup, because CSP's style-src does not allow them. Check that the
 	// palette is there and still carries the inline offsets the edit handlers
@@ -416,6 +446,17 @@ async function main() {
 		[
 			"a game ends on threefold repetition",
 			repeatedInGame.status === "Draw - Threefold Repetition",
+		],
+		["opening named in the header", openingHeader.includes("Ruy Lopez")],
+		["opening window lists continuations", openingRows > 0],
+		[
+			"a continuation plays as a variation",
+			afterContinuation.startsWith("Position: 7 of 7"),
+		],
+		[
+			"revert leaves the opening variation",
+			afterContinuation.startsWith("Position: 7 of 7") &&
+				afterRevert.startsWith("Position: 6 of 6"),
 		],
 		[
 			"board intact after exercising the input handlers",
