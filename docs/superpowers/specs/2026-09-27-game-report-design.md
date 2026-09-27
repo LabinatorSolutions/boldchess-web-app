@@ -28,6 +28,11 @@ Success criteria:
 - **Source of evaluations:** the existing background loop. `analysis.js` already evaluates every
   history position to (analysis depth − 1) and stores `{score, depth, black, move}` on
   `state.history[i].evaluation`. No new engine pass and no new path to the engine.
+- **One measure:** History underlines and graph point colors switch from raw pawn loss to the
+  grade (approved in the spec review).
+- **Thresholds:** 2 / 5 / 10 / 20 win-% points (approved in the spec review).
+- **Book:** only while the whole prefix is in book; no re-entry after leaving it (approved in the
+  spec review).
 
 ## Grading (`public/src/report/grade.js`, no DOM)
 
@@ -67,8 +72,8 @@ wins:
 9. **Blunder:** otherwise.
 
 - The thresholds are named, exported constants (`THRESHOLDS = {excellent: 2, good: 5,
-  inaccuracy: 10, mistake: 20}`), in points of win percentage. These values are the design's
-  proposal; tuning them later is a one-line change covered by the boundary tests.
+  inaccuracy: 10, mistake: 20}`), in points of win percentage. Tuning them later is a one-line
+  change covered by the boundary tests.
 - `gradeGame(history, book) -> Array<{category, loss}|null>` has one slot per history entry.
   Slot 0 is always null.
 - `summarize(grades, history) -> {white: Record<category, number>, black: …, graded, total}`.
