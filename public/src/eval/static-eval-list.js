@@ -31,7 +31,7 @@ export function getStaticEvalList(pos) {
 		if (data[i].name === "End game evaluation") endindex = i;
 		if (data[i].name === "Main evaluation") maincode = data[i].code;
 	}
-	if (midindex == null || endindex == null || maincode == null) return;
+	if (midindex == null || endindex == null || maincode == null) return [];
 	for (let i = 0; i < data.length; i++) {
 		const n = data[i].name.toLowerCase().replace(/ /g, "_");
 		while (

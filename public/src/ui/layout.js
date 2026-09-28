@@ -3,7 +3,7 @@
 import { isMobile } from "../env.js";
 import { state } from "../state.js";
 import { updateInfo } from "./board.js";
-import { getCurScale } from "./dom.js";
+import { byId, getCurScale } from "./dom.js";
 import { repaintGraph } from "./graph.js";
 
 /**
@@ -35,7 +35,7 @@ export function observeSizes() {
 		"wChessboard",
 		"boxBoard",
 	]) {
-		const element = document.getElementById(id);
+		const element = byId(id);
 		if (element) observer.observe(element);
 	}
 	window.addEventListener("resize", scheduleSizeCheck);
@@ -70,8 +70,8 @@ export function checkSizes() {
 		setupMobileLayout(false);
 
 	// Graph
-	const cw = document.getElementById("graphWrapper").clientWidth;
-	const ch = document.getElementById("graphWrapper").clientHeight;
+	const cw = byId("graphWrapper").clientWidth;
+	const ch = byId("graphWrapper").clientHeight;
 	const canvas = /** @type {HTMLCanvasElement} */ (
 		document.getElementById("graph")
 	);
@@ -80,28 +80,24 @@ export function checkSizes() {
 	// Chessboard
 	const targetScale = Math.round(getCurScale() * 1000) / 1000;
 	const targetMargin =
-		(document.getElementById("wChessboard").clientWidth -
-			(document.getElementById("boxBoard").clientWidth + 4) * targetScale) /
+		(byId("wChessboard").clientWidth -
+			(byId("boxBoard").clientWidth + 4) * targetScale) /
 			2 -
 		0.5;
 	const oldScale = parseFloat(
-		document
-			.getElementById("boxBoard")
-			.style.transform.replace("scale(", "")
-			.replace(")", ""),
+		byId("boxBoard").style.transform.replace("scale(", "").replace(")", ""),
 	);
 	const oldMargin = parseFloat(
-		document.getElementById("boxBoardOuter").style.marginLeft.replace("px", ""),
+		byId("boxBoardOuter").style.marginLeft.replace("px", ""),
 	);
 	if (
 		Math.round(oldScale * 1000) !== Math.round(targetScale * 1000) ||
 		Math.round(oldMargin) !== Math.round(targetMargin)
 	) {
-		document.getElementById("boxBoard").style.transform =
-			`scale(${targetScale})`;
-		document.getElementById("boxBoardOuter").style.marginLeft =
-			document.getElementById("boxBoardOuter").style.marginRight =
-				`${targetMargin}px`;
+		byId("boxBoard").style.transform = `scale(${targetScale})`;
+		byId("boxBoardOuter").style.marginLeft = byId(
+			"boxBoardOuter",
+		).style.marginRight = `${targetMargin}px`;
 	}
 
 	if (state.wantUpdateInfo) {
@@ -113,34 +109,34 @@ export function checkSizes() {
 /** @param {boolean} [init] */
 export function setupMobileLayout(init) {
 	if (init) {
-		document.getElementById("colLeft").style.width = "300px";
-		document.getElementById("colRight").style.width = "300px";
-		document.getElementById("wChessboard").style.margin = "8px 0 0 0";
-		document.getElementById("wChessboard").style.resize = "none";
-		document.getElementById("wGraph").style.display = "none";
-		document.getElementById("wHistory").style.display = "none";
-		document.getElementById("wMoves").style.height = "121px";
-		document.getElementById("logo").style.height = "30px";
-		document.getElementById("logo").style.padding = "0";
-		document.getElementById("logo").style.transform = "scale(0.5)";
-		document.getElementById("logo").style.transformOrigin = "top left";
-		document.getElementById("logotextmain").style.top = "15px";
-		document.getElementById("logotextmain").style.left = "75px";
-		document.getElementById("logotextsub").style.top = "46px";
-		document.getElementById("logotextsub").style.left = "75px";
-		document.getElementById("toolbar").style.transform = "scale(2.3)";
-		document.getElementById("toolbar").style.transformOrigin = "top left";
-		document.getElementById("toolbar").style.top = "-2px";
-		document.getElementById("toolbar").style.left = "345px";
-		document.getElementById("toolbar").style.width = "112px";
-		document.getElementById("wb").style.transform = "scale(2)";
-		document.getElementById("positionInfo").style.display = "none";
-		document.getElementById("searchWrapper").style.top = "0";
-		document.getElementById("searchWrapper").style.height = "24px";
-		document.getElementById("searchInput").style.padding = "4px 4px 3px 4px";
-		document.getElementById("boxBoardOuter").style.marginTop = "31px";
-		document.getElementById("buttonGo").style.padding = "3px 4px 5px 4px";
-		document.getElementById("buttonGo").style.top = "0";
+		byId("colLeft").style.width = "300px";
+		byId("colRight").style.width = "300px";
+		byId("wChessboard").style.margin = "8px 0 0 0";
+		byId("wChessboard").style.resize = "none";
+		byId("wGraph").style.display = "none";
+		byId("wHistory").style.display = "none";
+		byId("wMoves").style.height = "121px";
+		byId("logo").style.height = "30px";
+		byId("logo").style.padding = "0";
+		byId("logo").style.transform = "scale(0.5)";
+		byId("logo").style.transformOrigin = "top left";
+		byId("logotextmain").style.top = "15px";
+		byId("logotextmain").style.left = "75px";
+		byId("logotextsub").style.top = "46px";
+		byId("logotextsub").style.left = "75px";
+		byId("toolbar").style.transform = "scale(2.3)";
+		byId("toolbar").style.transformOrigin = "top left";
+		byId("toolbar").style.top = "-2px";
+		byId("toolbar").style.left = "345px";
+		byId("toolbar").style.width = "112px";
+		byId("wb").style.transform = "scale(2)";
+		byId("positionInfo").style.display = "none";
+		byId("searchWrapper").style.top = "0";
+		byId("searchWrapper").style.height = "24px";
+		byId("searchInput").style.padding = "4px 4px 3px 4px";
+		byId("boxBoardOuter").style.marginTop = "31px";
+		byId("buttonGo").style.padding = "3px 4px 5px 4px";
+		byId("buttonGo").style.top = "0";
 	}
 	const winWidth = Math.min(window.innerWidth, window.outerWidth);
 	const winHeight = Math.min(window.innerHeight, window.outerHeight);
@@ -157,28 +153,25 @@ export function setupMobileLayout(init) {
 	document.body.style.width = `${width}px`;
 	document.body.style.height = `${height}px`;
 	document.body.style.overflowX = "hidden";
-	document.getElementById("container").style.width = `${width}px`;
-	document.getElementById("container").style.height = `${height}px`;
-	document.getElementById("logo").style.position = horiz ? "absolute" : "";
-	document.getElementById("logo").style.top = horiz ? "0" : "";
-	document.getElementById("logo").style.left = horiz ? "355px" : "";
-	document.getElementById("wChessboard").style.width = horiz ? "310px" : "";
-	document.getElementById("wChessboard").style.height =
-		`${horiz ? height - 16 : 300}px`;
-	document.getElementById("wb").style.top = horiz ? "0" : "329px";
-	document.getElementById("wb").style.right = horiz ? "324px" : "162px";
-	document.getElementById("wb").style.width = horiz ? "21px" : "";
-	document.getElementById("wb").style.height = horiz ? "120px" : "";
-	document.getElementById("colLeft").style.minWidth = horiz ? "300px" : "";
-	document.getElementById("colLeft").style.minHeight = horiz ? "1px" : "338px";
-	document.getElementById("colLeft").style.paddingTop = horiz ? "" : "7px";
-	document.getElementById("colLeft").style.marginLeft = horiz ? "5px" : "10px";
-	document.getElementById("colRight").style.marginLeft = horiz
-		? "45px"
-		: "10px";
-	document.getElementById("colRight").style.marginTop = horiz ? "29px" : "";
+	byId("container").style.width = `${width}px`;
+	byId("container").style.height = `${height}px`;
+	byId("logo").style.position = horiz ? "absolute" : "";
+	byId("logo").style.top = horiz ? "0" : "";
+	byId("logo").style.left = horiz ? "355px" : "";
+	byId("wChessboard").style.width = horiz ? "310px" : "";
+	byId("wChessboard").style.height = `${horiz ? height - 16 : 300}px`;
+	byId("wb").style.top = horiz ? "0" : "329px";
+	byId("wb").style.right = horiz ? "324px" : "162px";
+	byId("wb").style.width = horiz ? "21px" : "";
+	byId("wb").style.height = horiz ? "120px" : "";
+	byId("colLeft").style.minWidth = horiz ? "300px" : "";
+	byId("colLeft").style.minHeight = horiz ? "1px" : "338px";
+	byId("colLeft").style.paddingTop = horiz ? "" : "7px";
+	byId("colLeft").style.marginLeft = horiz ? "5px" : "10px";
+	byId("colRight").style.marginLeft = horiz ? "45px" : "10px";
+	byId("colRight").style.marginTop = horiz ? "29px" : "";
 
-	const elems = document.getElementById("colRight");
+	const elems = byId("colRight");
 	for (let i = 0; i < elems.children.length; i++) {
 		const div = /** @type {HTMLElement} */ (elems.children[i]);
 		if (div.tagName !== "DIV" || div.className !== "box") continue;

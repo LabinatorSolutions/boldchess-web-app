@@ -7,10 +7,10 @@ import { STATIC_EVAL_TERMS } from "../eval/terms-data.js";
 import { getCurFEN } from "../game/position.js";
 import { state } from "../state.js";
 import { finalArrow3, showArrow3 } from "./arrows.js";
-import { setElemText } from "./dom.js";
+import { byId, setElemText } from "./dom.js";
 
 export function repaintStatic() {
-	if (document.getElementById("wStatic").style.display === "none") return;
+	if (byId("wStatic").style.display === "none") return;
 
 	const curfen = getCurFEN();
 	const pos = parseFEN(curfen);
@@ -19,7 +19,7 @@ export function repaintStatic() {
 	requestAnimationFrame(() => {
 		if (getCurFEN() !== curfen) return;
 
-		const elem = document.getElementById("static");
+		const elem = byId("static");
 		const evalUnit = 213;
 		while (elem.firstChild) elem.removeChild(elem.firstChild);
 		const staticEvalListLast =
@@ -150,9 +150,9 @@ export function repaintStatic() {
 					if (n === node1.name) sei = data[j];
 				}
 				if (sei == null) return;
-				const n2 = node1.name.toLowerCase().replace(/ /g, "_");
+				const n2 = (node1.name ?? "").toLowerCase().replace(/ /g, "_");
 				const func = terms[n2] != null ? terms[n2] : null;
-				const elem = document.getElementById("chessboard1");
+				const elem = byId("chessboard1");
 				for (let i = 0; i < elem.children.length; i++) {
 					const div = /** @type {HTMLElement} */ (elem.children[i]);
 					if (div.tagName !== "DIV" || Number(div.style.zIndex) > 0) continue;
@@ -257,7 +257,7 @@ export function repaintStatic() {
 
 		elem.appendChild(fragment);
 		setElemText(
-			document.getElementById("staticInfo"),
+			byId("staticInfo"),
 			`Static evaluation (${(total / evalUnit).toFixed(2)})`,
 		);
 	});

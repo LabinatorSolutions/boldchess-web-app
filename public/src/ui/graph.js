@@ -6,7 +6,7 @@ import { getBook } from "../openings/book.js";
 import { ERRORS, gradeGame } from "../report/grade.js";
 import { state } from "../state.js";
 import { repaintLastMoveArrow } from "./arrows.js";
-import { getEvalText } from "./dom.js";
+import { byId, getEvalText } from "./dom.js";
 import { updateTooltip, updateTooltipPos } from "./tooltip.js";
 
 /**
@@ -109,17 +109,17 @@ export function repaintGraph(event) {
 			yStep = 1;
 
 		for (let i = 0; i < data.length; i++) {
-			if (Math.ceil(Math.abs(data[i])) > yMax)
-				yMax = Math.ceil(Math.abs(data[i]));
+			if (Math.ceil(Math.abs(Number(data[i]))) > yMax)
+				yMax = Math.ceil(Math.abs(Number(data[i])));
 		}
 		if (data.length > xMax) xMax = data.length;
 
-		const cw = document.getElementById("graphWrapper").clientWidth;
-		const ch = document.getElementById("graphWrapper").clientHeight;
+		const cw = byId("graphWrapper").clientWidth;
+		const ch = byId("graphWrapper").clientHeight;
 		let mouseDataPos = null;
 
 		if (event != null) {
-			const rect = document.getElementById("graph").getBoundingClientRect();
+			const rect = byId("graph").getBoundingClientRect();
 			const mx = event.clientX - rect.left;
 			const my = event.clientY - rect.top;
 			const b1 = border1 / state.bodyScale,
@@ -143,6 +143,7 @@ export function repaintGraph(event) {
 			document.getElementById("graph")
 		);
 		const ctx = canvas.getContext("2d");
+		if (ctx == null) return;
 		canvas.width = cw;
 		canvas.height = ch;
 		const yTotal = canvas.height - border1 - border2,
@@ -220,7 +221,9 @@ export function repaintGraph(event) {
 		ctx.stroke();
 
 		for (let i = 1; i < data.length; i++) {
-			if (data[i] != null && data[i - 1] != null) {
+			const from = data[i - 1],
+				to = data[i];
+			if (to != null && from != null) {
 				ctx.beginPath();
 				ctx.strokeStyle =
 					color[i] === "#bb0000"
@@ -231,11 +234,11 @@ export function repaintGraph(event) {
 				ctx.lineWidth = 1;
 				ctx.moveTo(
 					border2 + i * (xUnit / xStep),
-					border1 + yTotal / 2 - data[i - 1] * (yUnit / yStep),
+					border1 + yTotal / 2 - from * (yUnit / yStep),
 				);
 				ctx.lineTo(
 					border2 + (i + 1) * (xUnit / xStep),
-					border1 + yTotal / 2 - data[i] * (yUnit / yStep),
+					border1 + yTotal / 2 - to * (yUnit / yStep),
 				);
 				ctx.stroke();
 			}
@@ -246,7 +249,7 @@ export function repaintGraph(event) {
 				ctx.beginPath();
 				ctx.arc(
 					border2 + (i + 1) * (xUnit / xStep),
-					border1 + yTotal / 2 - data[i] * (yUnit / yStep),
+					border1 + yTotal / 2 - Number(data[i]) * (yUnit / yStep),
 					2,
 					0,
 					2 * Math.PI,
@@ -261,7 +264,7 @@ export function repaintGraph(event) {
 		ctx.beginPath();
 		ctx.arc(
 			border2 + (i + 1) * (xUnit / xStep),
-			border1 + yTotal / 2 - data[i] * (yUnit / yStep),
+			border1 + yTotal / 2 - Number(data[i]) * (yUnit / yStep),
 			4,
 			0,
 			2 * Math.PI,
@@ -272,7 +275,7 @@ export function repaintGraph(event) {
 		ctx.beginPath();
 		ctx.arc(
 			border2 + (i + 1) * (xUnit / xStep),
-			border1 + yTotal / 2 - data[i] * (yUnit / yStep),
+			border1 + yTotal / 2 - Number(data[i]) * (yUnit / yStep),
 			2,
 			0,
 			2 * Math.PI,
@@ -281,31 +284,35 @@ export function repaintGraph(event) {
 		ctx.fillStyle = "#e1e2e6";
 		ctx.fill();
 
-		i = mouseDataPos;
-		ctx.beginPath();
-		ctx.arc(
-			border2 + (i + 1) * (xUnit / xStep),
-			border1 + yTotal / 2 - data[i] * (yUnit / yStep),
-			4,
-			0,
-			2 * Math.PI,
-			false,
-		);
-		ctx.fillStyle = "black";
-		ctx.fill();
-		ctx.beginPath();
-		ctx.arc(
-			border2 + (i + 1) * (xUnit / xStep),
-			border1 + yTotal / 2 - data[i] * (yUnit / yStep),
-			2,
-			0,
-			2 * Math.PI,
-			false,
-		);
-		ctx.fillStyle = "#64c4db";
-		ctx.fill();
+		// No point is under the pointer: nothing to mark.
+		if (mouseDataPos != null) {
+			i = mouseDataPos;
+			ctx.beginPath();
+			ctx.arc(
+				border2 + (i + 1) * (xUnit / xStep),
+				border1 + yTotal / 2 - Number(data[i]) * (yUnit / yStep),
+				4,
+				0,
+				2 * Math.PI,
+				false,
+			);
+			ctx.fillStyle = "black";
+			ctx.fill();
+			ctx.beginPath();
+			ctx.arc(
+				border2 + (i + 1) * (xUnit / xStep),
+				border1 + yTotal / 2 - Number(data[i]) * (yUnit / yStep),
+				2,
+				0,
+				2 * Math.PI,
+				false,
+			);
+			ctx.fillStyle = "#64c4db";
+			ctx.fill();
+		}
 
-		if (event) showGraphTooltip(mouseDataPos, event);
+		// -1 clears the tooltip, as the null position did.
+		if (event) showGraphTooltip(mouseDataPos ?? -1, event);
 		repaintLastMoveArrow();
 	});
 }

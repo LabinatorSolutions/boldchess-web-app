@@ -136,22 +136,21 @@ export const state = {
 	/** @type {HTMLElement | null} */
 	dragElement: null,
 	dragActive: false,
-	/** @type {number | undefined} */
-	startX: undefined,
-	/** @type {number | undefined} */
-	startY: undefined,
+	/** Where the drag started; NaN before the first press. */
+	startX: Number.NaN,
+	startY: Number.NaN,
 	/** @type {boolean | undefined} */
-	dragCtrl: undefined,
+	dragCtrl: false,
 	/**
 	 * 0 = left button, 1 = right button, 2 = right-button drag done.
 	 *
 	 * @type {number | undefined}
 	 */
 	dragLMB: undefined,
-	/** @type {Square | undefined} */
+	/** @type {Square | null | undefined} */
 	clickFrom: undefined,
-	/** @type {HTMLElement | undefined} */
-	clickFromElem: undefined,
+	/** @type {HTMLElement | null} */
+	clickFromElem: null,
 	/** @type {number | null} */
 	lastMouseDataPos: null,
 

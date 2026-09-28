@@ -3,6 +3,7 @@
 import { bounds } from "../chess/fen.js";
 import { getCurFEN } from "../game/position.js";
 import { state } from "../state.js";
+import { byId } from "./dom.js";
 import { getGraphPointColor } from "./graph.js";
 
 /**
@@ -30,7 +31,7 @@ export function reviewArrows() {
 export function repaintReviewArrows() {
 	requestAnimationFrame(() => {
 		const arrows = reviewArrows();
-		const elem = document.getElementById("arrowWrapper4");
+		const elem = byId("arrowWrapper4");
 		if (arrows == null) {
 			elem.style.display = "none";
 			return;
@@ -62,7 +63,7 @@ export function repaintLastMoveArrow() {
 				? state.history[state.historyindex].move
 				: null;
 		if (lastmove != null) {
-			const elem = document.getElementById("arrowWrapper2");
+			const elem = byId("arrowWrapper2");
 			if (elem.children[0].children != null) {
 				const arrowFillColor = getGraphPointColor(state.historyindex);
 				requestAnimationFrame(() => {
@@ -95,12 +96,12 @@ function placeLine(line, move) {
 }
 
 /**
- * @param {import("../chess/rules.js").Move | null} move
+ * @param {import("../chess/rules.js").Move | null | undefined} move
  * @param {string} wrapperId
  * @param {number} [opacity]
  */
 export function showArrowInternal(move, wrapperId, opacity = 1) {
-	const elem = document.getElementById(wrapperId);
+	const elem = byId(wrapperId);
 	if (move == null) {
 		elem.style.display = "none";
 		return;
@@ -117,7 +118,7 @@ export function showArrowInternal(move, wrapperId, opacity = 1) {
  * @param {number} [opacity]
  */
 export function showArrow1(move, opacity) {
-	const elem = document.getElementById("arrowWrapper1");
+	const elem = byId("arrowWrapper1");
 	const elem0 = elem.children[0];
 	if (opacity == null || opacity === 1)
 		for (let i = elem0.children.length - 1; i >= 2; i--)
@@ -133,7 +134,7 @@ export function showArrow2(move) {
 
 /** @param {import("../chess/rules.js").Move | null} [move] */
 export function showArrow3(move) {
-	const elem0 = document.getElementById("arrowWrapper3").children[0];
+	const elem0 = byId("arrowWrapper3").children[0];
 	if (elem0.children == null) return;
 	if (move == null) {
 		for (let i = elem0.children.length - 1; i >= 2; i--)
@@ -151,7 +152,7 @@ export function showArrow3(move) {
 }
 
 export function finalArrow3() {
-	const elem = document.getElementById("arrowWrapper3");
+	const elem = byId("arrowWrapper3");
 	let list = elem.children[0].children,
 		remElem = null;
 	if (list == null) return;

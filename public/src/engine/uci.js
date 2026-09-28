@@ -12,7 +12,7 @@ import { DEFAULT_DEPTH } from "../config.js";
  * @property {number} depth
  * @property {number} lastnodes
  * @property {string} [fen] The position the running search's output belongs to.
- * @property {number | null} [score] The search's latest score, for the side to move.
+ * @property {number | null} score The search's latest score, for the side to move.
  * @property {(str: string) => void} [messagefunc]
  * @property {(cmd: string, message?: (str: string) => void) => void} send
  * @property {(fen: string, done: (str: string) => void, info?: (depth: number, score: number, pv: string[]) => void) => void} eval
@@ -31,6 +31,7 @@ export function loadEngine(onReady) {
 		waiting: true,
 		depth: DEFAULT_DEPTH,
 		lastnodes: 0,
+		score: null,
 	});
 
 	// Without a usable worker the engine stays inert rather than half-built:

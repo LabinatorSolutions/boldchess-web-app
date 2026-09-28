@@ -14,6 +14,7 @@ import { START } from "../config.js";
 /** @typedef {import("../chess/rules.js").Move} Move */
 /** @typedef {import("../chess/fen.js").Square} Square */
 /** @typedef {import("../state.js").HistoryEntry} HistoryEntry */
+/** @typedef {import("../chess/fen.js").Position} Position */
 
 const FILES = "abcdefgh";
 
@@ -73,6 +74,17 @@ export function positionKey(fen) {
 }
 
 /**
+ * The book's node for `fen`, or undefined.
+ *
+ * @param {Book} book
+ * @param {string} fen
+ */
+function nodeAt(book, fen) {
+	const key = positionKey(fen);
+	return key == null ? undefined : book.get(key);
+}
+
+/**
  * `positionKey` for a parsed position.
  *
  * @param {import("../chess/fen.js").Position} pos
@@ -126,7 +138,9 @@ export function buildBook(lines) {
 	const replayed = new Map([["", { pos: start, key: keyOf(start) }]]);
 	for (let i = 0; i < lines.length; i++) {
 		let prefix = "";
-		let { pos, key } = replayed.get(prefix);
+		let { pos, key } = /** @type {{pos: Position, key: string}} */ (
+			replayed.get(prefix)
+		);
 		for (const m of plies[i]) {
 			prefix = prefix === "" ? m : `${prefix} ${m}`;
 			let step = replayed.get(prefix);
@@ -172,7 +186,7 @@ export function openingAt(book, entries, index) {
 	let lastBookIndex = -1;
 	let found = null;
 	for (let i = index; i >= 0; i--) {
-		const n = book.get(positionKey(entries[i].fen));
+		const n = nodeAt(book, entries[i].fen);
 		// An entry without a move (a board edit, a FEN jump, a color flip) was
 		// not reached from the one before it, so the walk stops there.
 		const reachedByMove = entries[i].san != null;
@@ -199,14 +213,14 @@ export function openingAt(book, entries, index) {
  * @param {string} fen
  */
 export function continuations(book, fen) {
-	const n = book.get(positionKey(fen));
+	const n = nodeAt(book, fen);
 	if (n == null) return [];
 	const lines = LINES.get(book);
 	const pos = parseFEN(fen);
 	const legal = genMoves(pos);
 	const rows = [];
 	for (const [move, edge] of n.next) {
-		const child = book.get(edge.key);
+		const child = /** @type {BookNode} */ (book.get(edge.key));
 		const named = child.name != null ? child : null;
 		rows.push({
 			move,
@@ -229,7 +243,7 @@ export function continuations(book, fen) {
  * @param {string} fen
  */
 export function isBookPosition(book, fen) {
-	return book.has(positionKey(fen));
+	return nodeAt(book, fen) != null;
 }
 
 /**
@@ -302,5 +316,5 @@ export function getBook() {
  * @param {number} lineIndex
  */
 export function lineMoves(lineIndex) {
-	return LINES.get(loaded)[lineIndex][2].split(" ");
+	return LINES.get(/** @type {Book} */ (loaded))[lineIndex][2].split(" ");
 }

@@ -14,7 +14,7 @@ import {
 import { clearPremove } from "../game/premove.js";
 import { state } from "../state.js";
 import { showBoard } from "./board.js";
-import { makeButton, setElemText } from "./dom.js";
+import { byId, makeButton, setElemText } from "./dom.js";
 
 /**
  * @param {boolean} open Toggle the menu; false closes it.
@@ -41,18 +41,18 @@ export function showHideMenu(open, e) {
 	if (open) state.menu = !state.menu;
 	else state.menu = false;
 
-	const bElem = document.getElementById("buttonMenu");
-	const mElem = document.getElementById("menu");
+	const bElem = byId("buttonMenu");
+	const mElem = byId("menu");
 	bElem.className = state.menu ? "on down" : "on";
 	bElem.setAttribute("aria-expanded", String(state.menu));
 	mElem.style.top =
 		(bElem.getBoundingClientRect().bottom -
-			document.getElementById("container").getBoundingClientRect().top) *
+			byId("container").getBoundingClientRect().top) *
 			state.bodyScale +
 		"px";
 	mElem.style.left =
 		(bElem.getBoundingClientRect().left -
-			document.getElementById("container").getBoundingClientRect().left) *
+			byId("container").getBoundingClientRect().left) *
 			state.bodyScale +
 		"px";
 	mElem.style.right = "auto";
@@ -60,7 +60,7 @@ export function showHideMenu(open, e) {
 		mElem.style.left = "auto";
 		mElem.style.right =
 			(-bElem.getBoundingClientRect().right +
-				document.getElementById("container").getBoundingClientRect().right -
+				byId("container").getBoundingClientRect().right -
 				1) *
 				state.bodyScale +
 			"px";
@@ -77,10 +77,10 @@ export function setBoardColor(c) {
 	const count = 6;
 	if (c < 0) c = count - 1;
 	if (c >= count) c = 0;
-	document.getElementById("cbTable").className = `c${c}`;
-	document.getElementById("boxBoard").className = `c${c}`;
-	document.getElementById("chessboard1").className = `cb c${c}`;
-	const elem = document.getElementById("icolor");
+	byId("cbTable").className = `c${c}`;
+	byId("boxBoard").className = `c${c}`;
+	byId("chessboard1").className = `cb c${c}`;
+	const elem = byId("icolor");
 	if (elem != null) elem.className = `c${c}`;
 	state.boardColor = c;
 }
@@ -114,10 +114,13 @@ function menuControls(menu) {
  */
 export function reloadMenu(focusFirst = false) {
 	requestAnimationFrame(() => {
-		const parent = document.getElementById("menu");
+		const parent = byId("menu");
+		const active = document.activeElement;
 		const focusIndex = focusFirst
 			? 0
-			: menuControls(parent).indexOf(document.activeElement);
+			: active == null
+				? -1
+				: menuControls(parent).indexOf(active);
 		while (parent.firstChild) parent.removeChild(parent.firstChild);
 
 		const addMenuLine = () => {
@@ -169,7 +172,7 @@ export function reloadMenu(focusFirst = false) {
 						`depth ${Math.min(MAX_DEPTH, state.analysisEngine.depth + 1)}`,
 					);
 				showBoard(false, true);
-				setEngineValue(document.getElementById("buttonEngineValue"));
+				setEngineValue(byId("buttonEngineValue"));
 			};
 			div.appendChild(span2);
 			const span3 = document.createElement("span");
@@ -181,7 +184,7 @@ export function reloadMenu(focusFirst = false) {
 						`depth ${state.analysisEngine.depth !== 0 ? "0" : DEFAULT_DEPTH}`,
 					);
 				showBoard(false, true);
-				setEngineValue(document.getElementById("buttonEngineValue"));
+				setEngineValue(byId("buttonEngineValue"));
 			};
 			setEngineValue(span3);
 			div.appendChild(span3);
@@ -192,7 +195,7 @@ export function reloadMenu(focusFirst = false) {
 				if (state.analysisEngine?.ready)
 					command(`depth ${Math.max(0, state.analysisEngine.depth - 1)}`);
 				showBoard(false, true);
-				setEngineValue(document.getElementById("buttonEngineValue"));
+				setEngineValue(byId("buttonEngineValue"));
 			};
 			div.appendChild(span4);
 			parent.appendChild(div);
@@ -360,7 +363,7 @@ export function reloadMenu(focusFirst = false) {
 			"menuKeep",
 			"Keep Changes",
 			"K",
-			document.getElementById("buttonRevert").className === "on",
+			byId("buttonRevert").className === "on",
 			() => {
 				command("keep");
 				showHideMenu(false);
@@ -370,7 +373,7 @@ export function reloadMenu(focusFirst = false) {
 			"menuRevert",
 			"Revert Changes",
 			"ESC",
-			document.getElementById("buttonRevert").className === "on",
+			byId("buttonRevert").className === "on",
 			() => {
 				command("revert");
 				showHideMenu(false);
@@ -390,7 +393,7 @@ export function reloadMenu(focusFirst = false) {
 			"menuStart",
 			"Go To First Move",
 			"Home",
-			document.getElementById("buttonBack").className === "on",
+			byId("buttonBack").className === "on",
 			() => {
 				historyMove(-1, null, true);
 				showHideMenu(false);
@@ -400,7 +403,7 @@ export function reloadMenu(focusFirst = false) {
 			"menuEnd",
 			"Go To Last Move",
 			"End",
-			document.getElementById("buttonForward").className === "on",
+			byId("buttonForward").className === "on",
 			() => {
 				historyMove(+1, null, true);
 				showHideMenu(false);
@@ -430,8 +433,10 @@ export function menuAnalysisMode() {
 	clearPremove();
 	state.gameMode = 1;
 	state.play = null;
-	state.analysisEngine.kill = false;
-	state.analysisEngine.send("setoption name Skill Level value 20");
+	if (state.analysisEngine) {
+		state.analysisEngine.kill = false;
+		state.analysisEngine.send("setoption name Skill Level value 20");
+	}
 	showBoard(false);
 	showHideMenu(false);
 }
@@ -461,7 +466,7 @@ export function menuPlayEngineBlack() {
 export function menuTwoPlayerMode() {
 	clearPremove();
 	state.gameMode = 4;
-	state.analysisEngine.kill = true;
+	if (state.analysisEngine) state.analysisEngine.kill = true;
 	state.play = null;
 	showBoard(false);
 	showHideMenu(false);

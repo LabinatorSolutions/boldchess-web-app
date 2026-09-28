@@ -2,17 +2,14 @@
 
 import { historyEntry, state } from "../state.js";
 import { refreshButtonRevert, showBoard } from "../ui/board.js";
-import { setButtonEnabled } from "../ui/dom.js";
+import { byId, setButtonEnabled } from "../ui/dom.js";
 import { getCurFEN, setCurFEN } from "./position.js";
 import { clearPremove } from "./premove.js";
 
 export function historyButtons() {
+	setButtonEnabled(byId("buttonBack"), state.historyindex > 0);
 	setButtonEnabled(
-		document.getElementById("buttonBack"),
-		state.historyindex > 0,
-	);
-	setButtonEnabled(
-		document.getElementById("buttonForward"),
+		byId("buttonForward"),
 		state.historyindex < state.history.length - 1,
 	);
 }
@@ -50,7 +47,7 @@ export function historyAdd(fen, oldhistory, move, san) {
 
 /**
  * @param {number} v Entries to step, or 0 to redisplay.
- * @param {Event} [e] With Ctrl held, a step of ±1 jumps to the end.
+ * @param {Event | null} [e] With Ctrl held, a step of ±1 jumps to the end.
  * @param {boolean} [ctrl]
  */
 export function historyMove(v, e, ctrl) {
@@ -84,8 +81,8 @@ export function historyMove(v, e, ctrl) {
 }
 
 /**
- * @param {string} [wname]
- * @param {string} [bname]
+ * @param {string | null} [wname]
+ * @param {string | null} [bname]
  */
 export function historyKeep(wname, bname) {
 	state.wname = wname || "White";

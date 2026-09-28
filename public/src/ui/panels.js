@@ -6,7 +6,7 @@ import { getCurFEN } from "../game/position.js";
 import { defaultMouseMove, isEdit, onMouseUp } from "../input/mouse.js";
 import { state } from "../state.js";
 import { showLegalMoves } from "./board.js";
-import { makeButton } from "./dom.js";
+import { byId, makeButton } from "./dom.js";
 import { graphMouseMove } from "./graph.js";
 import { checkSizes, setupTouchEvents } from "./layout.js";
 import { repaintStatic } from "./static-view.js";
@@ -63,7 +63,7 @@ export function repaintSidebars() {
 			else if (whitemat[i] > blackmat[j]) j++;
 		}
 
-		const elem = document.getElementById("materialWrapper");
+		const elem = byId("materialWrapper");
 		while (elem.firstChild) elem.removeChild(elem.firstChild);
 
 		/**
@@ -97,13 +97,13 @@ export function repaintSidebars() {
 			elem.appendChild(node1);
 		}
 
-		const topElem = document.getElementById("namesWrapperTop");
+		const topElem = byId("namesWrapperTop");
 		while (topElem.firstChild) topElem.removeChild(topElem.firstChild);
 		topElem.appendChild(
 			document.createTextNode(state.flip ? state.wname : state.bname),
 		);
 
-		const bottomElem = document.getElementById("namesWrapperBottom");
+		const bottomElem = byId("namesWrapperBottom");
 		while (bottomElem.firstChild) bottomElem.removeChild(bottomElem.firstChild);
 		bottomElem.appendChild(
 			document.createTextNode(state.flip ? state.bname : state.wname),
@@ -117,39 +117,34 @@ export function repaintSidebars() {
  */
 export function showHideWindow(name, targetState) {
 	if (isMobile && name !== "Chessboard") {
-		const wb = document.getElementById("wb").children;
+		const wb = byId("wb").children;
 		for (let i = 0; i < wb.length; i++) {
 			if (wb[i].tagName !== "DIV") continue;
 			const wbId = wb[i].id.substring(2);
 			if (wbId === "Chessboard") continue;
-			document.getElementById(`w${wbId}`).style.display = "none";
-			const wbElem = document.getElementById(`wb${wbId}`);
+			byId(`w${wbId}`).style.display = "none";
+			const wbElem = byId(`wb${wbId}`);
 			wbElem.className = wbElem.className.replace(" selected", "");
 			wbElem.setAttribute("aria-pressed", "false");
 		}
 	}
-	const boxElem = document.getElementById(`w${name}`);
+	const boxElem = byId(`w${name}`);
 	const newState =
 		targetState == null ? boxElem.style.display === "none" : targetState;
 	boxElem.style.display = newState ? "" : "none";
-	const wbElem = document.getElementById(`wb${name}`);
+	const wbElem = byId(`wb${name}`);
 	wbElem.className =
 		wbElem.className.replace(" selected", "") + (newState ? " selected" : "");
 	wbElem.setAttribute("aria-pressed", String(newState));
 	checkSizes();
 	if ((name === "Edit" || isMobile) && isEdit()) showLegalMoves(null);
 	if (name === "Graph" && document.onmousemove === graphMouseMove)
-		document
-			.getElementById("graphWrapper")
-			.dispatchEvent(new MouseEvent("mouseout"));
+		byId("graphWrapper").dispatchEvent(new MouseEvent("mouseout"));
 	if (name === "Static" && newState) repaintStatic();
 }
 
 export function setupBoxes() {
-	const elems = [
-		document.getElementById("colLeft"),
-		document.getElementById("colRight"),
-	];
+	const elems = [byId("colLeft"), byId("colRight")];
 	for (let j = 0; j < elems.length; j++)
 		for (let i = 0; i < elems[j].children.length; i++) {
 			const div = /** @type {HTMLElement} */ (elems[j].children[i]);
@@ -181,7 +176,7 @@ export function setupBoxes() {
 			wbIcon.onclick = () => {
 				showHideWindow(wbIcon.id.substring(2));
 			};
-			document.getElementById("wb").appendChild(wbIcon);
+			byId("wb").appendChild(wbIcon);
 		}
 }
 
@@ -201,8 +196,8 @@ export function setupDragElement(elmnt) {
 	const titleBar = /** @type {HTMLElement} */ (elmnt.firstElementChild);
 	titleBar.onmousedown = startBoxDrag;
 	titleBar.ondblclick = () => {
-		elmnt.style.width = elmnt.originalWidth;
-		elmnt.style.height = elmnt.originalHeight;
+		elmnt.style.width = String(elmnt.originalWidth);
+		elmnt.style.height = String(elmnt.originalHeight);
 		elmnt.style.left = "";
 		elmnt.style.top = "";
 		elmnt.style.position = "";
@@ -217,8 +212,8 @@ export function setupDragElement(elmnt) {
 	resizeSquare.style.cursor = "nw-resize";
 	resizeSquare.onmousedown = startBoxResize;
 	resizeSquare.ondblclick = () => {
-		elmnt.style.width = elmnt.originalWidth;
-		elmnt.style.height = elmnt.originalHeight;
+		elmnt.style.width = String(elmnt.originalWidth);
+		elmnt.style.height = String(elmnt.originalHeight);
 	};
 	setupTouchEvents(resizeSquare, startBoxResize, moveBoxResize, endBoxDrag);
 	elmnt.appendChild(resizeSquare);
@@ -242,11 +237,11 @@ export function setupDragElement(elmnt) {
 			elmnt.style.height = `${elmnt.getBoundingClientRect().height - 2}px`;
 			elmnt.style.left =
 				elmnt.getBoundingClientRect().left -
-				document.getElementById("container").getBoundingClientRect().left +
+				byId("container").getBoundingClientRect().left +
 				"px";
 			elmnt.style.top =
 				elmnt.getBoundingClientRect().top -
-				document.getElementById("container").getBoundingClientRect().top -
+				byId("container").getBoundingClientRect().top -
 				8 +
 				"px";
 			elmnt.style.position = "absolute";

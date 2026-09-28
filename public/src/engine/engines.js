@@ -13,7 +13,7 @@ import { loadEngine } from "./uci.js";
 /**
  * Apply the player's chosen Elo to the playing engine.
  *
- * @param {import("./uci.js").Engine} engine
+ * @param {import("./uci.js").Engine | undefined} engine
  */
 export function applyPlayStrength(engine) {
 	if (!engine?.ready) return;

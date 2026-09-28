@@ -12,7 +12,7 @@ export const STATIC_EVAL_TERMS = (() => {
 	 * @type {Array<{name: string, group: string, text: string, code: string,
 	 *   links: string[][], eval: boolean, squares: number, highlight: number,
 	 *   forwhite: boolean, graph?: boolean,
-	 *   elo?: {value: string | number, error: string | number, link: string}}>}
+	 *   elo?: {value: string | number, error: string | number, link: string} | null}>}
 	 */
 	const data = [];
 	data.push({

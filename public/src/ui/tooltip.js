@@ -2,25 +2,25 @@
 
 import { state } from "../state.js";
 import { setArrow, showArrow1 } from "./arrows.js";
-import { getClientY, setElemText } from "./dom.js";
+import { byId, getClientY, setElemText } from "./dom.js";
 
 /** @param {{clientX: number, clientY: number}} e */
 export function updateTooltipPos(e) {
-	const tooltip = document.getElementById("tooltip");
+	const tooltip = byId("tooltip");
 	tooltip.style.left = `${e.clientX * state.bodyScale}px`;
 	tooltip.style.top = `${getClientY(e) + 20}px`;
 }
 
 /**
  * @param {string} text
- * @param {string[]} [answerpv] The engine's reply line, in UCI moves.
+ * @param {string[] | null} [answerpv] The engine's reply line, in UCI moves.
  * @param {string | null} [movenumber]
- * @param {string} [cl] The move circle's class.
+ * @param {string | null} [cl] The move circle's class.
  * @param {{clientX: number, clientY: number} | null} [e]
  */
 export function updateTooltip(text, answerpv, movenumber, cl, e) {
 	const hasText = text.length > 0;
-	const tooltip = document.getElementById("tooltip");
+	const tooltip = byId("tooltip");
 
 	requestAnimationFrame(() => {
 		while (tooltip.firstChild) tooltip.removeChild(tooltip.firstChild);

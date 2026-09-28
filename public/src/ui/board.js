@@ -22,6 +22,7 @@ import {
 	showArrow3,
 } from "./arrows.js";
 import {
+	byId,
 	getCircleClassName,
 	getElemText,
 	getEvalText,
@@ -46,7 +47,7 @@ export function showLegalMoves(from) {
 	const premoving = from != null && canPremove(pos) && isPlayerPiece(pos, from);
 	const targets = premoving ? premoveTargets(pos, from) : [];
 	/** @type {Element} */
-	let elem = document.getElementById("chessboard1");
+	let elem = byId("chessboard1");
 	for (let i = 0; i < elem.children.length; i++) {
 		const div = /** @type {HTMLElement} */ (elem.children[i]);
 		if (div.tagName !== "DIV") continue;
@@ -101,7 +102,7 @@ export function showLegalMoves(from) {
 			div.answerpv = answerpv == null ? [] : answerpv;
 			div.cl = cl == null ? "circle" : cl;
 			div.onmouseover = (e) => {
-				updateTooltip(div.tooltip, div.answerpv, null, div.cl, e);
+				updateTooltip(div.tooltip ?? "", div.answerpv, null, div.cl, e);
 			};
 			div.onmouseout = () => {
 				updateTooltip("");
@@ -110,7 +111,7 @@ export function showLegalMoves(from) {
 		updateTooltip("");
 	}
 
-	elem = document.getElementById("editWrapper").children[0];
+	elem = byId("editWrapper").children[0];
 	for (let i = 0; i < elem.children.length; i++) {
 		const div = /** @type {HTMLElement} */ (elem.children[i]);
 		if (div.tagName !== "DIV") continue;
@@ -132,7 +133,7 @@ export function showLegalMoves(from) {
 }
 
 export function updateLegalMoves() {
-	const elem = document.getElementById("chessboard1");
+	const elem = byId("chessboard1");
 	for (let i = 0; i < elem.children.length; i++) {
 		const div = /** @type {HTMLElement} */ (elem.children[i]);
 		if (
@@ -153,14 +154,14 @@ export function updateLegalMoves() {
 				div.answerpv = answerpv == null ? [] : answerpv;
 				div.cl = cl == null ? "circle" : cl;
 				div.onmouseover = (e) => {
-					updateTooltip(div.tooltip, div.answerpv, null, div.cl, e);
+					updateTooltip(div.tooltip ?? "", div.answerpv, null, div.cl, e);
 				};
 				div.onmouseout = () => {
 					updateTooltip("");
 				};
 				if (
 					state.tooltipState &&
-					getElemText(document.getElementById("tooltip").firstChild) ===
+					getElemText(/** @type {Node} */ (byId("tooltip").firstChild)) ===
 						state.curmoves[j].san
 				)
 					updateTooltip(div.tooltip, div.answerpv, null, div.cl, null);
@@ -178,10 +179,10 @@ export function updateLegalMoves() {
 export function showBoard(noeval, refreshhistory, keepcontent) {
 	requestAnimationFrame(() => {
 		const pos = parseFEN(getCurFEN());
-		const dragElem = document.getElementById("dragPiece");
+		const dragElem = byId("dragPiece");
 		while (dragElem.firstChild) dragElem.removeChild(dragElem.firstChild);
 
-		const elem = document.getElementById("chessboard1");
+		const elem = byId("chessboard1");
 		if (keepcontent && elem.children.length !== 64) keepcontent = false;
 		if (!keepcontent) while (elem.firstChild) elem.removeChild(elem.firstChild);
 
@@ -231,8 +232,8 @@ export function showBoard(noeval, refreshhistory, keepcontent) {
 			refreshMoves();
 			if (refreshhistory) {
 				for (let i = 0; i < state.history.length; i++) {
-					if (state.history[i].evaluation != null)
-						state.history[i].evaluation.depth = -1;
+					const evaluation = state.history[i].evaluation;
+					if (evaluation != null) evaluation.depth = -1;
 				}
 			}
 			scrollReset("Moves");
@@ -240,7 +241,7 @@ export function showBoard(noeval, refreshhistory, keepcontent) {
 			if (state.analysisEngine && !state.analysisEngine.kill) evalAll();
 		}
 
-		document.getElementById("buttonStm").className = pos.w ? "white" : "black";
+		byId("buttonStm").className = pos.w ? "white" : "black";
 
 		// Batch updates
 		setArrow(true);
@@ -283,15 +284,15 @@ export function updateInfo() {
 		")";
 
 	// Batch DOM updates
-	const positionInfoElem = document.getElementById("positionText");
-	const movesInfoElem = document.getElementById("movesInfo");
+	const positionInfoElem = byId("positionText");
+	const movesInfoElem = byId("movesInfo");
 	positionInfoElem.innerText = positionInfoText;
 	movesInfoElem.innerText = movesInfoText;
 	refreshOpening();
 	refreshReport();
 
 	// History window
-	const historyElem = document.getElementById("history");
+	const historyElem = byId("history");
 	while (historyElem.firstChild)
 		historyElem.removeChild(historyElem.firstChild);
 
@@ -313,7 +314,7 @@ export function updateInfo() {
 				historyFragment.appendChild(span1);
 			}
 		}
-		const san = state.history[i].san != null ? state.history[i].san : "\u2605";
+		const san = state.history[i].san ?? "\u2605";
 		const span2 = document.createElement("span");
 		setElemText(span2, san);
 		span2.className = `movelink${i === state.historyindex ? " selected" : ""}`;
@@ -337,7 +338,7 @@ export function updateInfo() {
 			}
 		}
 		span2.onclick = () => {
-			const targetIndex = span2.targetindex;
+			const targetIndex = span2.targetindex ?? -1;
 			if (
 				targetIndex < state.history.length &&
 				targetIndex >= 0 &&
@@ -353,7 +354,7 @@ export function updateInfo() {
 }
 
 export function refreshFlip() {
-	const elem = document.getElementById("cbTable");
+	const elem = byId("cbTable");
 	for (let i = 0; i < 8; i++) {
 		elem.children[0].children[0].children[1 + i].textContent =
 			elem.children[0].children[9].children[1 + i].textContent = "abcdefgh"[
@@ -372,7 +373,7 @@ export function doFlip() {
 }
 
 export function refreshButtonRevert() {
-	const button = document.getElementById("buttonRevert");
+	const button = byId("buttonRevert");
 	setButtonEnabled(button, state.history2 != null);
 	if (state.history2 == null) {
 		button.onclick = null;

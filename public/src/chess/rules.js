@@ -7,9 +7,9 @@ import { board, bounds, colorflip } from "./fen.js";
 
 /**
  * A move as the generator produces it. `p` is the promotion piece, in
- * White's case ("N", "B", "R", "Q"), and only set on promotions.
+ * White's case ("N", "B", "R", "Q"), and unset or null on other moves.
  *
- * @typedef {{from: Square, to: Square, p?: string}} Move
+ * @typedef {{from: Square, to: Square, p?: string | null}} Move
  */
 
 /**

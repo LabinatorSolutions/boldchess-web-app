@@ -12,6 +12,7 @@ import { onKeyDown } from "./input/keyboard.js";
 import { doMoveHandler } from "./input/mouse.js";
 import { historyEntry, state } from "./state.js";
 import { doFlip, refreshButtonRevert, showBoard } from "./ui/board.js";
+import { byId } from "./ui/dom.js";
 import { setBoardColor } from "./ui/menu.js";
 import { showHideWindow } from "./ui/panels.js";
 
@@ -414,12 +415,12 @@ function openShareUrl() {
 			}
 		}
 	}
-	const wb = document.getElementById("wb").children;
+	const wb = byId("wb").children;
 	const lparams = [];
 	for (let i = 0; i < wb.length; i++) {
 		if (wb[i].tagName !== "DIV") continue;
 		const winId = wb[i].id.substring(2);
-		const elem = document.getElementById(`w${winId}`);
+		const elem = byId(`w${winId}`);
 		if (elem.style.display === "none") continue;
 		if (elem.style.position === "absolute" && !isMobile) {
 			lparams.push(
@@ -550,7 +551,7 @@ function applyBoardColor(text) {
 function applyLayout(text) {
 	const a = text.toUpperCase().split(" ");
 	a.splice(0, 1);
-	const wb = document.getElementById("wb").children;
+	const wb = byId("wb").children;
 	for (let i = 0; i < wb.length; i++) {
 		if (wb[i].tagName !== "DIV") continue;
 		const winId = wb[i].id.substring(2);
@@ -558,9 +559,11 @@ function applyLayout(text) {
 		if (cur != null && !isMobile) {
 			cur = cur.substring(1);
 			const b = cur.length === 0 ? [] : cur.split(",");
-			const elem = document.getElementById(`w${winId}`);
+			const elem = byId(`w${winId}`);
 			// The title bar's double-click restores the window's default size.
-			elem.firstElementChild.dispatchEvent(new MouseEvent("dblclick"));
+			/** @type {Element} */ (elem.firstElementChild).dispatchEvent(
+				new MouseEvent("dblclick"),
+			);
 			if (b.length >= 2) {
 				elem.style.width = `${b[0]}px`;
 				elem.style.height = `${b[1]}px`;
@@ -610,14 +613,14 @@ export function showHideButtonGo(visible) {
 	// `.focus` is the method, always truthy; the focus itself is activeElement.
 	if (document.activeElement !== searchInput()) visible = false;
 	if (visible && searchInput().value === getCurFEN()) visible = false;
-	document.getElementById("buttonGo").style.display = visible ? "" : "none";
+	byId("buttonGo").style.display = visible ? "" : "none";
 }
 
 export function setupInput() {
-	document.getElementById("buttonGo").onclick = () => {
+	byId("buttonGo").onclick = () => {
 		dosearch();
 	};
-	document.getElementById("buttonGo").onmousedown = (event) => {
+	byId("buttonGo").onmousedown = (event) => {
 		event.preventDefault();
 	};
 	const input = searchInput();
@@ -668,7 +671,7 @@ export function setupInput() {
 			showHideButtonGo(true); // Update the visibility state of the button
 		}
 	};
-	document.getElementById("simpleSearch").onsubmit = () => {
+	byId("simpleSearch").onsubmit = () => {
 		dosearch();
 		return false;
 	};

@@ -22,6 +22,7 @@ import {
 import { loadBook } from "./src/openings/book.js";
 import { state } from "./src/state.js";
 import { doFlip, showBoard } from "./src/ui/board.js";
+import { byId } from "./src/ui/dom.js";
 import { buildEditPalette } from "./src/ui/edit-palette.js";
 import {
 	graphMouseDown,
@@ -56,7 +57,7 @@ setDefaultPromotionPiece(getPromotionPiece);
 // way to toggle a panel. The palette squares are positioned by inline left/top
 // for the same reason - the edit handlers read those values back.
 for (const id of ["wStatic", "wOpening", "wReport", "wEdit"]) {
-	const box = document.getElementById(id);
+	const box = byId(id);
 	box.removeAttribute("hidden");
 	box.style.display = "none";
 }
@@ -100,93 +101,83 @@ window.onload = () => {
 	document.onmousemove = defaultMouseMove;
 	document.onkeydown = onKeyDown;
 
-	document.getElementById("chessboard1").oncontextmenu =
-		document.getElementById("chessboard1").parentElement.oncontextmenu =
-		document.getElementById("editWrapper").oncontextmenu =
+	const boardParent = /** @type {HTMLElement} */ (
+		byId("chessboard1").parentElement
+	);
+	byId("chessboard1").oncontextmenu =
+		boardParent.oncontextmenu =
+		byId("editWrapper").oncontextmenu =
 			() => false;
 
-	document.getElementById("chessboard1").parentElement.onwheel =
-		document.getElementById("editWrapper").onwheel = onWheel;
-	document.getElementById("buttonStm").onclick = () => {
+	boardParent.onwheel = byId("editWrapper").onwheel = onWheel;
+	byId("buttonStm").onclick = () => {
 		command("sidetomove");
 	};
-	document.getElementById("buttonFlip").onclick = () => {
+	byId("buttonFlip").onclick = () => {
 		doFlip();
 	};
-	document.getElementById("buttonBack").onclick = (event) => {
+	byId("buttonBack").onclick = (event) => {
 		historyMove(-1, event);
 	};
-	document.getElementById("buttonForward").onclick = (event) => {
+	byId("buttonForward").onclick = (event) => {
 		historyMove(+1, event);
 	};
-	document.getElementById("buttonMenu").onclick = (event) => {
+	byId("buttonMenu").onclick = (event) => {
 		showHideMenu(true, event);
 	};
-	document.getElementById("buttonStaticSortByValue").onclick = () => {
+	byId("buttonStaticSortByValue").onclick = () => {
 		state.staticSortByChange = false;
 		repaintStatic();
 	};
-	document.getElementById("buttonStaticSortByChange").onclick = () => {
+	byId("buttonStaticSortByChange").onclick = () => {
 		state.staticSortByChange = true;
 		repaintStatic();
 	};
-	document.getElementById("buttonMovesPv").onclick = () => {
+	byId("buttonMovesPv").onclick = () => {
 		state.movesPv = !state.movesPv;
 		showEvals();
 	};
-	document.getElementById("graphWrapper").onmouseover = () => {
+	byId("graphWrapper").onmouseover = () => {
 		if (document.onmousemove === defaultMouseMove)
 			document.onmousemove = graphMouseMove;
 	};
-	document.getElementById("graphWrapper").onmousedown = (event) => {
+	byId("graphWrapper").onmousedown = (event) => {
 		if (document.onmousemove === defaultMouseMove) {
 			document.onmousemove = graphMouseMove;
 			graphMouseMove(event);
 			graphMouseDown();
 		}
 	};
-	document.getElementById("graphWrapper").onmouseout = () => {
+	byId("graphWrapper").onmouseout = () => {
 		if (document.onmousemove === graphMouseMove)
 			document.onmousemove = defaultMouseMove;
 		repaintGraph();
 		updateTooltip("");
 	};
-	document.getElementById("graphWrapper").onwheel = (event) => {
+	byId("graphWrapper").onwheel = (event) => {
 		onWheel(event);
 		showGraphTooltip(state.historyindex, event);
 	};
 
 	// Every arrow layer covers the board exactly: the arrows are drawn in board
 	// coordinates (40px squares), so an unplaced layer draws them off-square.
-	const board = document.getElementById("chessboard1").getBoundingClientRect();
-	const wrapper = document
-		.getElementById("boardWrapper")
-		.getBoundingClientRect();
+	const board = byId("chessboard1").getBoundingClientRect();
+	const wrapper = byId("boardWrapper").getBoundingClientRect();
 	for (const id of [
 		"arrowWrapper1",
 		"arrowWrapper2",
 		"arrowWrapper3",
 		"arrowWrapper4",
 	]) {
-		const layer = document.getElementById(id);
+		const layer = byId(id);
 		layer.style.top = `${board.top - wrapper.top}px`;
 		layer.style.left = `${board.left - wrapper.left}px`;
 		layer.style.width = layer.style.height = `${40 * 8}px`;
 	}
 
 	if (isMobile) setupMobileLayout(true);
-	setupTouchEvents(
-		document.getElementById("chessboard1"),
-		onMouseDown,
-		onMouseMove,
-		onMouseUp,
-	);
-	setupTouchEvents(
-		document.getElementById("editWrapper"),
-		onMouseDown,
-		onMouseMove,
-		onMouseUp,
-	);
+	setupTouchEvents(byId("chessboard1"), onMouseDown, onMouseMove, onMouseUp);
+	setupTouchEvents(byId("editWrapper"), onMouseDown, onMouseMove, onMouseUp);
 	checkSizes();
 	observeSizes();
 	setupBoxes();

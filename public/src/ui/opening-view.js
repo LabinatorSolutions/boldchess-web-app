@@ -25,7 +25,7 @@ import {
 } from "../openings/book.js";
 import { historyEntry, state } from "../state.js";
 import { refreshButtonRevert } from "./board.js";
-import { makeButton, setElemText } from "./dom.js";
+import { byId, makeButton, setElemText } from "./dom.js";
 
 let waiting = false;
 
@@ -112,10 +112,10 @@ export function refreshOpening() {
 	if (signature === rendered) return;
 	rendered = signature;
 
-	const nameElem = document.getElementById("openingName");
-	const statusElem = document.getElementById("openingStatus");
-	const movesElem = document.getElementById("openingMoves");
-	const infoElem = document.getElementById("openingInfo");
+	const nameElem = byId("openingName");
+	const statusElem = byId("openingStatus");
+	const movesElem = byId("openingMoves");
+	const infoElem = byId("openingInfo");
 	clear(nameElem);
 	nameElem.className = "";
 	clear(movesElem);
@@ -149,7 +149,7 @@ export function refreshOpening() {
 	}
 
 	const fullName = `${found.eco} ${found.name}`;
-	nameElem.appendChild(span("openingEco", found.eco));
+	nameElem.appendChild(span("openingEco", found.eco ?? ""));
 	const title = span("openingTitle", found.name);
 	if (analysis) {
 		makeButton(title, `Play ${found.name}`);

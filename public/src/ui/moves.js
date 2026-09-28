@@ -13,7 +13,7 @@ import { doMoveHandler } from "../input/mouse.js";
 import { state } from "../state.js";
 import { setArrow } from "./arrows.js";
 import { updateLegalMoves } from "./board.js";
-import { getCircleClassName, getEvalText, setElemText } from "./dom.js";
+import { byId, getCircleClassName, getEvalText, setElemText } from "./dom.js";
 import { showHideMenu } from "./menu.js";
 import { updateTooltip } from "./tooltip.js";
 
@@ -26,7 +26,7 @@ import { updateTooltip } from "./tooltip.js";
 export function refreshMoves() {
 	const pos = parseFEN(getCurFEN());
 	state.curmoves = [];
-	setElemText(document.getElementById("moves"), "");
+	setElemText(byId("moves"), "");
 	const errmsgs = checkPosition(pos);
 	if (errmsgs.length === 0) {
 		const moves = genMoves(pos);
@@ -63,7 +63,7 @@ export function refreshMoves() {
 			ul.appendChild(li);
 			div0.appendChild(ul);
 			fragment.appendChild(div0);
-			document.getElementById("moves").appendChild(fragment);
+			byId("moves").appendChild(fragment);
 		} else if (state.curmoves.length === 0) {
 			const matecheck =
 				(pos.w && isWhiteCheck(pos)) ||
@@ -85,7 +85,7 @@ export function refreshMoves() {
 			ul.appendChild(li);
 			div0.appendChild(ul);
 			fragment.appendChild(div0);
-			document.getElementById("moves").appendChild(fragment);
+			byId("moves").appendChild(fragment);
 		} else {
 			showEvals();
 		}
@@ -99,16 +99,13 @@ export function refreshMoves() {
 		setElemText(div, "Illegal position");
 		div0.appendChild(div);
 		fragment.appendChild(div0);
-		document.getElementById("moves").appendChild(fragment);
+		byId("moves").appendChild(fragment);
 	}
 }
 
 export function showEvals() {
-	setElemText(document.getElementById("moves"), "");
-	setElemText(
-		document.getElementById("buttonMovesPv"),
-		state.movesPv ? "PV" : "Reply",
-	);
+	setElemText(byId("moves"), "");
+	setElemText(byId("buttonMovesPv"), state.movesPv ? "PV" : "Reply");
 	if (state.curmoves.length > 0) {
 		/**
 		 * @param {import("../state.js").MoveItem} a
@@ -179,21 +176,21 @@ export function showEvals() {
 		node1.appendChild(node7);
 		node1.index = i;
 		node1.onmouseover = () => {
-			highlightMove(node1.index, true);
+			highlightMove(i, true);
 		};
 		node1.onmouseout = () => {
-			highlightMove(node1.index, false);
+			highlightMove(i, false);
 		};
 		node1.onmousedown = () => {
 			if (state.menu) showHideMenu(false);
-			doMoveHandler(state.curmoves[node1.index].move);
+			doMoveHandler(state.curmoves[i].move);
 		};
 		if (
 			state.historyindex + 1 < state.history.length &&
 			state.history[state.historyindex + 1].san === state.curmoves[i].san
 		)
 			node1.style.color = "#64c4db";
-		document.getElementById("moves").appendChild(node1);
+		byId("moves").appendChild(node1);
 	}
 	if (state.arrow) setArrow(true);
 	updateLegalMoves();
@@ -206,7 +203,7 @@ export function showEvals() {
 export function highlightMove(index, on) {
 	setArrow(!on);
 	if (state.dragElement != null) return;
-	const elem = document.getElementById("chessboard1");
+	const elem = byId("chessboard1");
 	const x1 = state.curmoves[index].move.from.x;
 	const y1 = state.curmoves[index].move.from.y;
 	const x2 = state.curmoves[index].move.to.x;

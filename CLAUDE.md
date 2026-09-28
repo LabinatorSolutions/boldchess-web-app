@@ -45,12 +45,15 @@ The repo has no GitHub Actions workflows. "CI" means running `bun run ci` locall
   plus `commands.js` (the text box: FEN/PGN/SAN input, keyword commands, the shareable `~` game
   string).
 - **Types come from JSDoc, checked by `tsc` (`jsconfig.json`), with no build step.** The check
-  covers `public/main.js` and `public/src/` with every `strict` flag on except
-  `strictNullChecks` (and `strictPropertyInitialization`, which needs it): every
-  parameter needs a JSDoc type, a caught error is `unknown` (narrow with `instanceof Error`), and shared shapes (`Position`, `Move`, `HistoryEntry`, `Engine`)
-  are `@typedef`s in the module that owns them, imported with `import("...").Name`.
-  `getElementById` and `.children` give generic element types, so narrow them with a cast such as
-  `/** @type {HTMLInputElement} */ (document.getElementById("searchInput"))`. Values the app
+  covers `public/main.js` and `public/src/` in full `strict` mode: every parameter needs a JSDoc
+  type, a caught error is `unknown` (narrow with `instanceof Error`), `null`/`undefined` must be
+  handled, and shared shapes (`Position`, `Move`, `HistoryEntry`, `Engine`) are `@typedef`s in the
+  module that owns them, imported with `import("...").Name`. Look up the page's own elements with
+  `byId()` from `ui/dom.js`, which types the result non-null (it is only a cast). For a narrower
+  type, or `.children`, cast instead:
+  `/** @type {HTMLInputElement} */ (document.getElementById("searchInput"))`. A null-check fix
+  must not change behavior: JS arithmetic reads `null` as 0, so `x < null` becomes
+  `x < (y ?? 0)`, not an early return. Values the app
   stores on DOM nodes (`tooltip`, `index`, ...) are declared in `types/globals.d.ts`; add new ones
   there. Event handlers use arrow functions over the element variable, not `this`.
 - **`chess/`, `eval/`, `openings/`, `report/` and `engine/uci.js` must not touch the DOM.** That keeps them importable under

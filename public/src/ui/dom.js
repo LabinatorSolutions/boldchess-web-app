@@ -4,6 +4,17 @@ import { isMobile } from "../env.js";
 import { state } from "../state.js";
 
 /**
+ * `getElementById` for the page's own ids, which `index.html` always has: the
+ * result is typed non-null. It is only a cast, so a missing id still fails at
+ * the first use, as it did before `strictNullChecks`.
+ *
+ * @param {string} id
+ */
+export function byId(id) {
+	return /** @type {HTMLElement} */ (document.getElementById(id));
+}
+
+/**
  * @param {Node} elem
  * @param {string} value
  */
@@ -51,9 +62,13 @@ export function setButtonEnabled(elem, enabled) {
 	elem.setAttribute("aria-disabled", String(!enabled));
 }
 
-/** @param {Node} elem */
+/**
+ * An element's text. `textContent` is null only on documents and doctypes.
+ *
+ * @param {Node} elem
+ */
 export function getElemText(elem) {
-	return elem.textContent;
+	return elem.textContent ?? "";
 }
 
 /**
@@ -81,22 +96,18 @@ export function getClientY(e) {
 }
 
 export function getCurScale() {
-	if (document.getElementById("wChessboard").style.display === "none") return 1;
+	if (byId("wChessboard").style.display === "none") return 1;
 	return Math.min(
-		(document.getElementById("wChessboard").clientWidth - 414 + 408) / 408,
-		(document.getElementById("wChessboard").clientHeight +
-			(isMobile ? 30 : 0) -
-			437 +
-			368) /
-			368,
+		(byId("wChessboard").clientWidth - 414 + 408) / 408,
+		(byId("wChessboard").clientHeight + (isMobile ? 30 : 0) - 437 + 368) / 368,
 	);
 }
 
 /** @param {string} winId */
 export function scrollReset(winId) {
 	requestAnimationFrame(() => {
-		const windowElem = document.getElementById(`w${winId}`);
-		const scrollElem = document.getElementById(winId.toLowerCase());
+		const windowElem = byId(`w${winId}`);
+		const scrollElem = byId(winId.toLowerCase());
 		const oldDisplay = windowElem.style.display;
 		windowElem.style.display = "";
 		scrollElem.scrollTop = 0;

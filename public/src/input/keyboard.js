@@ -7,6 +7,7 @@ import { togglePromotionPiece } from "../game/position.js";
 import { clearPremove } from "../game/premove.js";
 import { state } from "../state.js";
 import { showBoard } from "../ui/board.js";
+import { byId } from "../ui/dom.js";
 import {
 	menuAnalysisMode,
 	menuPlayEngineBlack,
@@ -21,23 +22,22 @@ export function onKeyDown(e) {
 	if (e.ctrlKey) return;
 
 	const key = e.key;
-	const engineReady = state.analysisEngine?.ready;
+	const engine = state.analysisEngine;
+	const engineReady = engine?.ready;
 
 	switch (key) {
 		case "`":
 		case "*":
-			if (engineReady)
-				command(
-					`depth ${state.analysisEngine.depth !== 0 ? "0" : DEFAULT_DEPTH}`,
-				);
+			if (engine && engineReady)
+				command(`depth ${engine.depth !== 0 ? "0" : DEFAULT_DEPTH}`);
 			break;
 		case "+":
-			if (engineReady)
-				command(`depth ${Math.min(MAX_DEPTH, state.analysisEngine.depth + 1)}`);
+			if (engine && engineReady)
+				command(`depth ${Math.min(MAX_DEPTH, engine.depth + 1)}`);
 			break;
 		case "-":
-			if (engineReady)
-				command(`depth ${Math.max(MIN_DEPTH, state.analysisEngine.depth - 1)}`);
+			if (engine && engineReady)
+				command(`depth ${Math.max(MIN_DEPTH, engine.depth - 1)}`);
 			break;
 		case "ArrowUp":
 		case "ArrowLeft":
@@ -71,7 +71,7 @@ export function onKeyDown(e) {
 		case "Escape":
 			// An open menu closes first, handing focus back to its button.
 			if (state.menu) {
-				document.getElementById("buttonMenu").focus();
+				byId("buttonMenu").focus();
 				showHideMenu(false);
 			} else if (state.premove != null) {
 				// Then a queued pre-move is cancelled.

@@ -16,7 +16,7 @@ import {
 	summarize,
 } from "../report/grade.js";
 import { state } from "../state.js";
-import { makeButton, setElemText } from "./dom.js";
+import { byId, makeButton, setElemText } from "./dom.js";
 
 let waiting = false;
 
@@ -112,9 +112,9 @@ export function refreshReport() {
 	const grades = gradeGame(state.history, book);
 	const summary = summarize(grades, state.history);
 
-	const statusElem = document.getElementById("reportStatus");
-	const tableElem = document.getElementById("reportTable");
-	const errorsElem = document.getElementById("reportErrors");
+	const statusElem = byId("reportStatus");
+	const tableElem = byId("reportTable");
+	const errorsElem = byId("reportErrors");
 	clear(tableElem);
 	clear(errorsElem);
 

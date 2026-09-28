@@ -1,3 +1,5 @@
+import { byId } from "./dom.js";
+
 /**
  * The piece palette in the Edit panel.
  *
@@ -18,7 +20,7 @@ const PALETTE_ROWS = [
 const SQUARE = 40;
 
 export function buildEditPalette() {
-	const board = document.getElementById("editWrapper").children[0];
+	const board = byId("editWrapper").children[0];
 	while (board.firstChild) board.removeChild(board.firstChild);
 	for (let y = 0; y < PALETTE_ROWS.length; y++) {
 		for (let x = 0; x < PALETTE_ROWS[y].length; x++) {

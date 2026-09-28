@@ -20,7 +20,7 @@ import {
 import { state } from "../state.js";
 import { finalArrow3, showArrow3 } from "../ui/arrows.js";
 import { showBoard, showLegalMoves } from "../ui/board.js";
-import { getClientY, getCurScale, setElemText } from "../ui/dom.js";
+import { byId, getClientY, getCurScale, setElemText } from "../ui/dom.js";
 import { graphMouseDown, graphMouseMove } from "../ui/graph.js";
 import { showHideMenu } from "../ui/menu.js";
 import { updateTooltip, updateTooltipPos } from "../ui/tooltip.js";
@@ -57,9 +57,7 @@ export function onMouseDown(e) {
 		target.id !== "graphWrapper" &&
 		target.id !== "graph"
 	) {
-		document
-			.getElementById("graphWrapper")
-			.dispatchEvent(new MouseEvent("mouseout"));
+		byId("graphWrapper").dispatchEvent(new MouseEvent("mouseout"));
 	} else if (document.onmousemove === graphMouseMove) {
 		graphMouseDown();
 		return;
@@ -71,7 +69,7 @@ export function onMouseDown(e) {
 		target.children[0].id === "chessboard1"
 	) {
 		target = /** @type {HTMLElement} */ (target.children[0]);
-		const bb = document.getElementById("chessboard1").getBoundingClientRect();
+		const bb = byId("chessboard1").getBoundingClientRect();
 		const w = bb.width / 8;
 		const cx = Math.round((e.clientX - bb.left - w / 2) / w);
 		const cy = Math.round((e.clientY - bb.top - w / 2) / w);
@@ -156,7 +154,7 @@ export function dragActivate() {
 	state.dragElement.style.zIndex = "10000";
 	state.dragElement.style.pointerEvents = "none";
 	state.dragElement.style.transform = `scale(${getCurScale()})`;
-	document.getElementById("dragPiece").appendChild(state.dragElement);
+	byId("dragPiece").appendChild(state.dragElement);
 	state.dragActive = true;
 	if (!isEdit() && !state.dragCtrl)
 		showLegalMoves({
@@ -271,7 +269,7 @@ export function onMouseMove(e) {
 				Math.abs(e.clientY - state.startY) < 8
 			)
 				return;
-			if (state.dragLMB > 0) {
+			if ((state.dragLMB ?? 0) > 0) {
 				const x1 = getDragX(state.startX),
 					y1 = getDragY(state.startY),
 					x2 = getDragX(e.clientX),
@@ -306,7 +304,7 @@ export function onMouseMove(e) {
  */
 function currentSquare(elem) {
 	if (elem.parentNode != null) return elem;
-	const board = document.getElementById("chessboard1");
+	const board = byId("chessboard1");
 	for (let i = 0; i < board.children.length; i++) {
 		const square = /** @type {HTMLElement} */ (board.children[i]);
 		if (
@@ -374,9 +372,8 @@ export function onMouseUp(e) {
 			}
 		} else {
 			const parent = /** @type {HTMLElement} */ (state.dragElement.parentNode);
-			const ew1br = document
-				.getElementById("editWrapper")
-				.children[0].children[0].getBoundingClientRect();
+			const ew1br =
+				byId("editWrapper").children[0].children[0].getBoundingClientRect();
 			const ew1w = ew1br.width;
 			if (parent.id !== "chessboard1") {
 				x1 = -Math.round((e.clientX - ew1br.left - ew1w / 2) / ew1w) - 1;
@@ -398,8 +395,7 @@ export function onMouseUp(e) {
 					}
 					finalArrow3();
 				} else {
-					let list =
-							document.getElementById("editWrapper").children[0].children,
+					let list = byId("editWrapper").children[0].children,
 						p = null;
 					for (let i = 0; i < list.length; i++) {
 						const x1c =
@@ -487,7 +483,7 @@ export function defaultMouseMove(event) {
 
 /** @param {number} x A client coordinate. */
 export function getDragX(x) {
-	const bb = document.getElementById("chessboard1").getBoundingClientRect();
+	const bb = byId("chessboard1").getBoundingClientRect();
 	const w = bb.width / 8;
 	const offsetX = bb.left + w / 2;
 	if (state.flip) return 7 - Math.round((x - offsetX) / w);
@@ -496,7 +492,7 @@ export function getDragX(x) {
 
 /** @param {number} y A client coordinate. */
 export function getDragY(y) {
-	const bb = document.getElementById("chessboard1").getBoundingClientRect();
+	const bb = byId("chessboard1").getBoundingClientRect();
 	const h = bb.width / 8;
 	const offsetY = bb.top + h / 2;
 	if (state.flip) return 7 - Math.round((y - offsetY) / h);
@@ -516,10 +512,8 @@ export function paintMouse(e, p) {
 	if (parent == null || parent.id !== "chessboard1") return;
 	const w = elem.getBoundingClientRect().width;
 	const h = elem.getBoundingClientRect().height;
-	const offsetX =
-		document.getElementById("chessboard1").getBoundingClientRect().left + w / 2;
-	const offsetY =
-		document.getElementById("chessboard1").getBoundingClientRect().top + h / 2;
+	const offsetX = byId("chessboard1").getBoundingClientRect().left + w / 2;
+	const offsetY = byId("chessboard1").getBoundingClientRect().top + h / 2;
 	let x1 = Math.round((e.clientX - offsetX) / w);
 	let y1 = Math.round((e.clientY - offsetY) / h);
 	if (state.flip) {
@@ -536,11 +530,12 @@ export function paintMouse(e, p) {
 		const pos = parseFEN(getCurFEN());
 		let newp = null;
 		if (e.ctrlKey || e.which === 3 || e.button === 2) newp = "-";
-		else newp = p != null ? p : state.clickFromElem.className[2];
+		// The condition above guarantees clickFromElem here.
+		else newp = p ?? state.clickFromElem?.className[2] ?? "-";
 		pos.b[x1][y1] = newp;
 		fixCastling(pos);
 		setCurFEN(generateFEN(pos));
-		showBoard(null, null, true);
+		showBoard(false, false, true);
 		if (p == null) {
 			document.onmousemove = (event) => {
 				paintMouse(event, newp);
@@ -551,7 +546,7 @@ export function paintMouse(e, p) {
 
 /** @param {string} newp */
 export function setPaintPiece(newp) {
-	let list = document.getElementById("editWrapper").children[0].children,
+	let list = byId("editWrapper").children[0].children,
 		newe = null;
 	for (let i = 0; i < list.length; i++) {
 		if (list[i].className != null && list[i].className[2] === newp)
@@ -570,7 +565,7 @@ export function setPaintPiece(newp) {
 }
 
 export function getPaintPiece() {
-	const list = document.getElementById("editWrapper").children[0].children;
+	const list = byId("editWrapper").children[0].children;
 	for (let i = 0; i < list.length; i++) {
 		if (list[i].className != null && list[i].className.indexOf(" h0") > 0)
 			return list[i].className[2];

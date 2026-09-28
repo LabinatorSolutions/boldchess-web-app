@@ -3,15 +3,15 @@
 import { isFiftyMoveRule, isInsufficientMaterial } from "../chess/draws.js";
 import { getFENPos, parseFEN } from "../chess/fen.js";
 import { state } from "../state.js";
-import { getElemText, setElemText } from "../ui/dom.js";
+import { byId, getElemText, setElemText } from "../ui/dom.js";
 
 /** @param {string} fen */
 export function setCurFEN(fen) {
-	setElemText(document.getElementById("fen"), fen);
+	setElemText(byId("fen"), fen);
 }
 
 export function getCurFEN() {
-	return getElemText(document.getElementById("fen"));
+	return getElemText(byId("fen"));
 }
 
 /** @param {import("../chess/rules.js").Move | null} move */
