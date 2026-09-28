@@ -45,7 +45,7 @@ export function getStaticEvalList(pos) {
 					`(function(){return ${terms[n](pos)};})(`,
 				);
 			} catch (e) {
-				alert(e.message);
+				alert(e instanceof Error ? e.message : String(e));
 				return [];
 			}
 		}
@@ -89,7 +89,7 @@ export function getStaticEvalList(pos) {
 				if (data[endindex].code.indexOf(`$${n}(colorflip(pos)`) >= 0)
 					eb = func(colorflip(pos));
 			} catch (e) {
-				alert(e.message);
+				alert(e instanceof Error ? e.message : String(e));
 				return [];
 			}
 			const evals = [mw - mb, ew - eb];

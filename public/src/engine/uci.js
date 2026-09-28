@@ -51,7 +51,7 @@ export function loadEngine(onReady) {
 	try {
 		worker = new Worker("./engine/stockfish-19-lite.js");
 	} catch (error) {
-		return disable(error.message);
+		return disable(error instanceof Error ? error.message : String(error));
 	}
 	worker.onmessage = (e) => {
 		if (engine.messagefunc) engine.messagefunc(e.data);
