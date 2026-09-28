@@ -143,7 +143,9 @@ so update it by hand when the policy changes.
   module-level throws, which would otherwise only show up in the browser console.
 - `bun run smoke` also asserts the engine evaluates (at start and after stepping back through a
   loaded game) and that the controls work from the keyboard. Its "no console errors" check is
-  what catches a crashed Stockfish worker; keep it last.
+  what catches a crashed Stockfish worker; keep it last. It holds `data/openings.json` from the
+  first load (CDP `Fetch`) until the late-book check releases it and disables `Fetch`, so checks
+  before that one run without the book and later reloads fetch it normally.
 - Draws apply only to games (menu modes 2-4), and end them at once with no claim, as online play
   does: threefold repetition, 50 moves or insufficient material (`gameDrawReason` in
   `game/position.js`). In analysis (mode 1) a draw is meaningless, so the engine keeps

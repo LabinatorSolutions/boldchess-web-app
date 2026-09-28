@@ -92,12 +92,18 @@ async function main() {
 	let nextId = 0;
 	const pending = new Map();
 	const errors = [];
+	/** Paused requests for the opening book, released by the late-book check. */
+	const heldBook = [];
 
 	socket.addEventListener("message", (event) => {
 		const message = JSON.parse(event.data);
 		if (message.id && pending.has(message.id)) {
 			pending.get(message.id)(message.result);
 			pending.delete(message.id);
+			return;
+		}
+		if (message.method === "Fetch.requestPaused") {
+			heldBook.push(message.params.requestId);
 			return;
 		}
 		if (message.method === "Runtime.exceptionThrown") {
@@ -132,6 +138,12 @@ async function main() {
 	await send("Runtime.enable");
 	await send("Log.enable");
 	await send("Page.enable");
+	// Hold the opening book from the first load, for the late-book check.
+	await send("Fetch.enable", {
+		patterns: [
+			{ urlPattern: "*/data/openings.json*", requestStage: "Request" },
+		],
+	});
 	await send("Page.navigate", { url: origin });
 	await sleep(SETTLE_MS);
 
@@ -153,6 +165,37 @@ async function main() {
 			).length,
 		})`),
 	);
+
+	// The opening book arriving after a game is shown. With analysis off
+	// nothing else redraws History, so its Book grades appear only if
+	// main.js redraws when the book lands. The book was held since the first
+	// load, so this needs no page load or fixed delay of its own.
+	await evaluate(`(() => {
+		const input = document.getElementById("searchInput");
+		const form = document.getElementById("simpleSearch");
+		input.value = "depth 0";
+		form.onsubmit();
+		input.value = "1. e4 e5 2. Nf3 Nc6 3. Bb5";
+		form.onsubmit();
+	})()`);
+	await sleep(300);
+	const bookGrades = () =>
+		evaluate(`document.querySelectorAll('#history [title="Book"]').length`);
+	const bookHeld = heldBook.length;
+	const bookGradesBefore = await bookGrades();
+	for (const requestId of heldBook.splice(0))
+		await send("Fetch.continueRequest", { requestId });
+	await send("Fetch.disable");
+	let bookGradesAfter = 0;
+	for (let waited = 0; waited < 10000 && bookGradesAfter === 0; waited += 250) {
+		await sleep(250);
+		bookGradesAfter = await bookGrades();
+	}
+	await evaluate(`Promise.all([
+		import("/src/commands.js"),
+		import("/src/config.js"),
+	]).then(([c, config]) => c.command(\`depth \${config.DEFAULT_DEPTH}\`))`);
+	await sleep(300);
 
 	// Load a short game and step back through it: every position change
 	// restarts the analysis, and the engine must evaluate the new position.
@@ -632,6 +675,14 @@ async function main() {
 		["move list populated", dom.moves > 0],
 		["position info rendered", dom.info.length > 0],
 		["engine evaluated the legal moves", dom.evaluated > 0],
+		[
+			"History has no Book grades while the book loads",
+			bookHeld > 0 && bookGradesBefore === 0,
+		],
+		[
+			"History redraws its Book grades when the book arrives",
+			bookGradesAfter > 0,
+		],
 		[
 			"stepping back through a loaded game",
 			browsed.info.startsWith("Position: 2 of 4"),
