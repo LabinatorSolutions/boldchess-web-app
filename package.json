@@ -32,14 +32,14 @@
 	},
 	"dependencies": {
 		"compression": "^1.8.2",
-		"dotenv": "^18.0.4",
+		"dotenv": "^18.0.5",
 		"express": "^5.2.1",
 		"express-rate-limit": "^8.7.0",
 		"helmet": "^8.3.0",
 		"morgan": "^1.12.1"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "^2.5.14",
+		"@biomejs/biome": "^2.5.15",
 		"typescript": "^7.0.2"
 	},
 	"engines": {
