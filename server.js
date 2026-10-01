@@ -93,9 +93,20 @@ app.use((err, _req, res, _next) => {
 	res.status(500).send("Something went wrong!");
 });
 
-// Only listen when started directly, so tests can import the app
+// Only listen when started directly, so tests can import the app.
+// Express 5 passes a listen failure (port in use, no permission) to this
+// callback instead of throwing, so check it before reporting success.
 if (require.main === module) {
-	app.listen(port, () => {
+	app.listen(port, (err) => {
+		if (err) {
+			console.error(`Cannot listen on port ${port} (${err.message})`);
+			if (err.code === "EADDRINUSE") {
+				console.error(
+					`Port ${port} is already in use: stop the process holding it, or set PORT to another port.`,
+				);
+			}
+			process.exit(1);
+		}
 		console.log(`HTTP Server running at http://localhost:${port}`);
 	});
 }

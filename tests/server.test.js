@@ -74,6 +74,25 @@ describe("static hosting", () => {
 	});
 });
 
+describe("startup", () => {
+	test("a port already in use is an error, not a silent exit", () => {
+		// `server` from beforeAll already holds this port.
+		const result = Bun.spawnSync({
+			cmd: [process.execPath, "server.js"],
+			cwd: `${import.meta.dir}/..`,
+			env: {
+				...process.env,
+				NODE_ENV: "test",
+				PORT: String(server.address().port),
+			},
+			timeout: 5000,
+		});
+		expect(result.exitCode).toBe(1);
+		expect(result.stdout.toString()).not.toContain("running");
+		expect(result.stderr.toString()).toContain("is already in use");
+	});
+});
+
 describe("TRUST_PROXY", () => {
 	/** Load the app in a fresh process and read back its trust proxy setting. */
 	function trustProxy(value) {
