@@ -19,7 +19,9 @@ Our mission is to create a modern, mobile-friendly, free, and open-source web-ba
 
 ## Live Version
 
-A live version is only available for the BoldChess.com paid members. As this is an open-source project, anyone can run it locally without overloading our servers.
+A free live version is at [web-app.boldchess.com](https://web-app.boldchess.com/). You can also run it locally; see the instructions below.
+
+More free BoldChess tools, all in the browser: [play the computer](https://boldchess.com/play/computer/), [analyze a game](https://boldchess.com/analysis/), [solve tactics](https://boldchess.com/tactics/) and [explore openings](https://boldchess.com/openings/). For Android there is also the [BoldChess Trainer app](https://boldchess.com/go/app/) (human-picked puzzles and game analysis, a one-time purchase).
 
 ---
 

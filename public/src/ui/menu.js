@@ -419,6 +419,23 @@ export function reloadMenu(focusFirst = false) {
 			command("window");
 			showHideMenu(false);
 		});
+		addMenuLine();
+		addMenuItem("menuApp", "Get The BoldChess App", null, true, () => {
+			window.open(
+				"https://boldchess.com/go/app/",
+				"_blank",
+				"noopener,noreferrer",
+			);
+			showHideMenu(false);
+		});
+		addMenuItem("menuAcademy", "BoldChess Academy", null, true, () => {
+			window.open(
+				"https://boldchess.com/learn/",
+				"_blank",
+				"noopener,noreferrer",
+			);
+			showHideMenu(false);
+		});
 		if (focusIndex >= 0) {
 			const controls = menuControls(parent);
 			const control = /** @type {HTMLElement | undefined} */ (
