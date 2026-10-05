@@ -20,7 +20,7 @@ const scriptSrc = (csp) =>
 
 test("an HTML response gets every security header and a nonce", async () => {
 	const response = await cspNonce(
-		new Request("https://webapp.boldchess.com/"),
+		new Request("https://web-app.boldchess.com/"),
 		context("text/html; charset=UTF-8"),
 	);
 	const expected = securityHeaders();
@@ -40,7 +40,7 @@ test("each response gets a different nonce", async () => {
 	const nonces = new Set();
 	for (let i = 0; i < 20; i++) {
 		const response = await cspNonce(
-			new Request("https://webapp.boldchess.com/"),
+			new Request("https://web-app.boldchess.com/"),
 			context("text/html"),
 		);
 		nonces.add(scriptSrc(response.headers.get("Content-Security-Policy")));
@@ -50,7 +50,7 @@ test("each response gets a different nonce", async () => {
 
 test("a response that is not HTML passes through untouched", async () => {
 	const response = await cspNonce(
-		new Request("https://webapp.boldchess.com/"),
+		new Request("https://web-app.boldchess.com/"),
 		context("application/json"),
 	);
 	expect(response.headers.get("Content-Security-Policy")).toBeNull();
