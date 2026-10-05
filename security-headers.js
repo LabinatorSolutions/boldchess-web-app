@@ -64,6 +64,9 @@ function securityHeaders() {
 		"X-Content-Type-Options": "nosniff",
 		"Referrer-Policy": "no-referrer",
 		"Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+		// A private link, not promoted anywhere (owner, 2026-10-05): keep it out of search results.
+		// Deliberately no robots.txt Disallow: a crawler that may not fetch the page never sees this.
+		"X-Robots-Tag": "noindex, nofollow",
 	};
 }
 

@@ -9,5 +9,6 @@ export const HEADERS = {
 	"X-Frame-Options": "DENY",
 	"X-Content-Type-Options": "nosniff",
 	"Referrer-Policy": "no-referrer",
-	"Permissions-Policy": "camera=(), microphone=(), geolocation=()"
+	"Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+	"X-Robots-Tag": "noindex, nofollow"
 };
