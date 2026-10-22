@@ -286,8 +286,8 @@ export function updateInfo() {
 	// Batch DOM updates
 	const positionInfoElem = byId("positionText");
 	const movesInfoElem = byId("movesInfo");
-	positionInfoElem.innerText = positionInfoText;
-	movesInfoElem.innerText = movesInfoText;
+	positionInfoElem.textContent = positionInfoText;
+	movesInfoElem.textContent = movesInfoText;
 	refreshOpening();
 	refreshReport();
 
