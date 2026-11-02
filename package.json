@@ -34,12 +34,12 @@
 		"compression": "^1.8.2",
 		"dotenv": "^18.0.9",
 		"express": "^5.3.0",
-		"express-rate-limit": "^8.7.1",
+		"express-rate-limit": "^8.7.2",
 		"helmet": "^8.3.0",
 		"morgan": "^1.12.1"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "^2.6.3",
+		"@biomejs/biome": "^2.6.4",
 		"typescript": "^7.0.2"
 	},
 	"engines": {
