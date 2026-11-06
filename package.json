@@ -39,7 +39,7 @@
 		"morgan": "^1.12.1"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "^2.6.4",
+		"@biomejs/biome": "^2.6.5",
 		"typescript": "^7.0.2"
 	},
 	"engines": {
